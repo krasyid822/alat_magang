@@ -1,0 +1,70 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    # Elevate critical issues to errors for strict code quality
+    missing_required_param: error
+    missing_return: error
+    must_call_super: error
+    # Ignore invalid_annotation_target warning which is triggered frequently by Freezed
+    invalid_annotation_target: ignore
+
+linter:
+  # The lint rules applied to this project can be customized in the
+  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+  # included above or to enable additional rules. A list of all available lints
+  # and their documentation is published at https://dart.dev/lints.
+  rules:
+    # --- Code Quality & Strict Standards ---
+    always_declare_return_types: true
+    avoid_empty_else: true
+    avoid_print: true # Enforce logging framework instead of raw print
+    avoid_relative_lib_imports: true
+    avoid_shadowing_type_parameters: true
+    avoid_types_as_parameter_names: true
+    await_only_futures: true
+    camel_case_extensions: true
+    camel_case_types: true
+    cancel_subscriptions: true # Prevent memory leaks
+    close_sinks: true # Prevent memory leaks
+    curly_braces_in_flow_control_structures: true
+    empty_catches: true
+    hash_and_equals: true
+    no_duplicate_case_values: true
+    non_constant_identifier_names: true
+    
+    # --- Performance & Const Optimization ---
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_fields: true
+    prefer_final_locals: true # Encourages immutability
+
+    # --- Style & Consistency ---
+    prefer_is_empty: true
+    prefer_is_not_empty: true
+    prefer_iterable_whereType: true
+    prefer_single_quotes: true # Maintain a unified string style
+    unnecessary_const: true
+    unnecessary_new: true
+    unnecessary_null_aware_assignments: true
+    unnecessary_nullable_for_final_variable_declarations: true
+    unnecessary_string_interpolations: true
+    
+    # --- Flutter Best Practices ---
+    use_build_context_synchronously: true # Avoid async context bugs
+    use_key_in_widget_constructors: true
+    avoid_unnecessary_containers: true
