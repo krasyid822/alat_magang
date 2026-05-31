@@ -1,122 +1,188 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/dashboard/presentation/dashboard_screen.dart';
+import 'features/logbook/presentation/logbook_screen.dart';
+import 'features/job_details/presentation/job_details_screen.dart';
+import 'features/research/presentation/research_screen.dart';
+import 'features/documents/presentation/documents_screen.dart';
+import 'features/splash/presentation/splash_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'features/dashboard/presentation/widgets/nim_setup_dialog.dart';
+import 'features/dashboard/provider/dashboard_provider.dart';
+
+import 'app_version.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+      title: 'Alat Magang - Polmed',
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.dark, // Estetika premium default dark mode
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0F172A), // Slate 900
+        primaryColor: const Color(0xFF0D9488), // Teal
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF0D9488),
+          secondary: Color(0xFF38BDF8),
+          surface: Color(0xFF1E293B), // Slate 800
+        ),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const AppRoot(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+/// Root widget yang mengatur transisi dari SplashScreen → MainNavigationShell
+class AppRoot extends StatefulWidget {
+  const AppRoot({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<AppRoot> createState() => _AppRootState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _AppRootState extends State<AppRoot> {
+  bool _splashDone = false;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void _onSplashFinished() {
+    if (mounted) setState(() => _splashDone = true);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    if (!_splashDone) {
+      return SplashScreen(onFinished: _onSplashFinished);
+    }
+    return const MainNavigationShell();
+  }
+}
+
+class MainNavigationShell extends ConsumerStatefulWidget {
+  const MainNavigationShell({super.key});
+
+  @override
+  ConsumerState<MainNavigationShell> createState() => _MainNavigationShellState();
+}
+
+class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
+  int _currentIndex = 0;
+
+  final List<String> _titles = [
+    'Dashboard Kelayakan',
+    'Logbook & Absensi',
+    'Form Detail Pekerjaan',
+    'Bahan Riset Bab 2',
+    'Dokumen Administratif',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width > 850;
+
+    final List<Widget> screens = [
+      DashboardScreen(onTabSelected: (idx) => setState(() => _currentIndex = idx)),
+      const LogbookScreen(),
+      const JobDetailsScreen(),
+      const ResearchScreen(),
+      const DocumentsScreen(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+        title: Text(_titles[_currentIndex], style: const TextStyle(fontWeight: FontWeight.w900)),
+        centerTitle: false,
+        backgroundColor: const Color(0xFF0F172A),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF0D9488), size: 28),
+            tooltip: 'Sunting Profil',
+            onPressed: () => showDialog(
+              context: context,
+              builder: (context) => const NimSetupDialog(forceSetup: false),
             ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFF43F5E), size: 26),
+            tooltip: 'Keluar',
+            onPressed: () => ref.read(dashboardControllerProvider.notifier).logout(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.info_outline_rounded, color: Color(0xFF64748B)),
+            onPressed: () => _showAboutDialog(context),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      body: Row(
+        children: [
+          if (isDesktop) _buildSidebar(),
+          Expanded(child: screens[_currentIndex]),
+        ],
       ),
+      bottomNavigationBar: !isDesktop ? _buildBottomNavBar() : null,
+    );
+  }
+
+  Widget _buildSidebar() {
+    return NavigationRail(
+      selectedIndex: _currentIndex,
+      onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
+      backgroundColor: const Color(0xFF0F172A),
+      labelType: NavigationRailLabelType.all,
+      selectedLabelTextStyle: const TextStyle(color: Color(0xFF0D9488), fontWeight: FontWeight.bold, fontSize: 11),
+      unselectedLabelTextStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+      destinations: const [
+        NavigationRailDestination(icon: Icon(Icons.dashboard_rounded), selectedIcon: Icon(Icons.dashboard_rounded, color: Color(0xFF0D9488)), label: Text('Dashboard')),
+        NavigationRailDestination(icon: Icon(Icons.calendar_month_rounded), selectedIcon: Icon(Icons.calendar_month_rounded, color: Color(0xFF38BDF8)), label: Text('Logbook')),
+        NavigationRailDestination(icon: Icon(Icons.photo_library_rounded), selectedIcon: Icon(Icons.photo_library_rounded, color: Color(0xFF0D9488)), label: Text('Pekerjaan')),
+        NavigationRailDestination(icon: Icon(Icons.analytics_rounded), selectedIcon: Icon(Icons.analytics_rounded, color: Color(0xFFF59E0B)), label: Text('Bahan Riset')),
+        NavigationRailDestination(icon: Icon(Icons.folder_zip_rounded), selectedIcon: Icon(Icons.folder_zip_rounded, color: Color(0xFFEC4899)), label: Text('Dokumen')),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavBar() {
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (idx) => setState(() => _currentIndex = idx),
+      backgroundColor: const Color(0xFF1E293B),
+      selectedItemColor: const Color(0xFF0D9488),
+      unselectedItemColor: const Color(0xFF64748B),
+      type: BottomNavigationBarType.fixed,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dash'),
+        BottomNavigationBarItem(icon: Icon(Icons.calendar_month_rounded), label: 'Log'),
+        BottomNavigationBarItem(icon: Icon(Icons.photo_library_rounded), label: 'Tugas'),
+        BottomNavigationBarItem(icon: Icon(Icons.analytics_rounded), label: 'Riset'),
+        BottomNavigationBarItem(icon: Icon(Icons.folder_zip_rounded), label: 'Berkas'),
+      ],
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showAboutDialog(
+      context: context,
+      applicationName: 'Alat Magang Web',
+      applicationVersion: 'v$kAppVersion+$kBuildNumber',
+      applicationIcon: const Icon(Icons.storage_rounded, color: Color(0xFF0D9488), size: 40),
+      children: const [
+        Text('Dikembangkan khusus untuk mahasiswa Politeknik Negeri Medan untuk mempermudah pencatatan Laporan Magang Bab 1 s.d Bab 4 secara instan dengan penyimpanan lokal yang aman.'),
+      ],
     );
   }
 }

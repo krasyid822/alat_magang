@@ -15,3 +15,17 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Build & Deploy
+Gunakan perintah berikut untuk men-generate build web dengan auto-increment nomor build:
+```bash
+dart scripts/increment_build.dart && flutter build web --release && firebase deploy --only hosting
+```
+atau
+```pwsh
+.\deploy.ps1
+```
+
+## Catatan
+tambahkan loading screen splash screen saat aplikasi baru dibuka
+

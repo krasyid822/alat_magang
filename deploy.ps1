@@ -1,0 +1,1 @@
+dart scripts/increment_build.dart && flutter build web --release && firebase deploy --only hosting
