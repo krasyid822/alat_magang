@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/dashboard/presentation/dashboard_screen.dart';
@@ -8,12 +10,18 @@ import 'features/documents/presentation/documents_screen.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
 import 'features/dashboard/presentation/widgets/nim_setup_dialog.dart';
+import 'features/dashboard/presentation/widgets/app_info_dialog.dart';
 import 'features/dashboard/provider/dashboard_provider.dart';
+import 'features/shared/data/models.dart';
 
-import 'app_version.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(
     const ProviderScope(
@@ -120,7 +128,46 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: Color(0xFFF43F5E), size: 26),
             tooltip: 'Keluar',
-            onPressed: () => ref.read(dashboardControllerProvider.notifier).logout(),
+            onPressed: () {
+              final syncState = ref.read(syncStatusProvider);
+              if (syncState.status == SyncStatusType.uploading || syncState.status == SyncStatusType.downloading) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Sinkronisasi data sedang berlangsung. Harap tunggu hingga selesai agar data Anda tersimpan sempurna.'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+              
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  title: const Text('Keluar dari Sesi?', style: TextStyle(fontWeight: FontWeight.bold)),
+                  content: const Text('Semua data lokal Anda akan dihapus bersih dari perangkat ini demi keamanan. Pastikan semua perangkat terlogin lainnya telah sinkron.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await ref.read(dashboardControllerProvider.notifier).logout();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF43F5E),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                      ),
+                      child: const Text('Keluar & Hapus Data'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.info_outline_rounded, color: Color(0xFF64748B)),
@@ -175,14 +222,9 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   }
 
   void _showAboutDialog(BuildContext context) {
-    showAboutDialog(
+    showDialog(
       context: context,
-      applicationName: 'Alat Magang Web',
-      applicationVersion: 'v$kAppVersion+$kBuildNumber',
-      applicationIcon: const Icon(Icons.storage_rounded, color: Color(0xFF0D9488), size: 40),
-      children: const [
-        Text('Dikembangkan khusus untuk mahasiswa Politeknik Negeri Medan untuk mempermudah pencatatan Laporan Magang Bab 1 s.d Bab 4 secara instan dengan penyimpanan lokal yang aman.'),
-      ],
+      builder: (context) => const AppInfoDialog(),
     );
   }
 }

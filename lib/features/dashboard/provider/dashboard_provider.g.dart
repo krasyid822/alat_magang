@@ -42,7 +42,7 @@ final class DashboardControllerProvider
 }
 
 String _$dashboardControllerHash() =>
-    r'70eda32cf3077dd8b34a680e8ac61eed0006fa94';
+    r'6ae8458bc993e132d5c53ab06395beadc05cf9f0';
 
 abstract class _$DashboardController extends $Notifier<StudentProfile> {
   StudentProfile build();
@@ -62,51 +62,11 @@ abstract class _$DashboardController extends $Notifier<StudentProfile> {
   }
 }
 
-@ProviderFor(studentDataStream)
-final studentDataStreamProvider = StudentDataStreamProvider._();
-
-final class StudentDataStreamProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<Map<String, dynamic>?>,
-          Map<String, dynamic>?,
-          Stream<Map<String, dynamic>?>
-        >
-    with
-        $FutureModifier<Map<String, dynamic>?>,
-        $StreamProvider<Map<String, dynamic>?> {
-  StudentDataStreamProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'studentDataStreamProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$studentDataStreamHash();
-
-  @$internal
-  @override
-  $StreamProviderElement<Map<String, dynamic>?> $createElement(
-    $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
-
-  @override
-  Stream<Map<String, dynamic>?> create(Ref ref) {
-    return studentDataStream(ref);
-  }
-}
-
-String _$studentDataStreamHash() => r'7842665bfb025fcf87abaa46cdad50de2abbe5b1';
-
 @ProviderFor(SyncStatus)
 final syncStatusProvider = SyncStatusProvider._();
 
-final class SyncStatusProvider extends $NotifierProvider<SyncStatus, String> {
+final class SyncStatusProvider
+    extends $NotifierProvider<SyncStatus, SyncState> {
   SyncStatusProvider._()
     : super(
         from: null,
@@ -126,27 +86,27 @@ final class SyncStatusProvider extends $NotifierProvider<SyncStatus, String> {
   SyncStatus create() => SyncStatus();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String value) {
+  Override overrideWithValue(SyncState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<String>(value),
+      providerOverride: $SyncValueProvider<SyncState>(value),
     );
   }
 }
 
-String _$syncStatusHash() => r'f771193cb9779bf8f7eb55bdf210972980de1f7d';
+String _$syncStatusHash() => r'a36d3737090750876e14e18af47c015cb3321018';
 
-abstract class _$SyncStatus extends $Notifier<String> {
-  String build();
+abstract class _$SyncStatus extends $Notifier<SyncState> {
+  SyncState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<String, String>;
+    final ref = this.ref as $Ref<SyncState, SyncState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<String, String>,
-              String,
+              AnyNotifier<SyncState, SyncState>,
+              SyncState,
               Object?,
               Object?
             >;

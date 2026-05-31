@@ -9,6 +9,7 @@ import '../../logbook/provider/logbook_provider.dart';
 import '../../job_details/provider/job_provider.dart';
 import '../../research/provider/research_provider.dart';
 import '../../documents/provider/documents_provider.dart';
+import '../../shared/data/models.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   final Function(int) onTabSelected;
@@ -37,7 +38,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(dashboardControllerProvider);
-    final syncStatus = ref.watch(syncStatusProvider);
+    final syncState = ref.watch(syncStatusProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Trigger input NIM otomatis jika belum diisi
@@ -46,10 +47,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
 
     // Hitung progress masing-masing sub-fitur secara riil dan dinamis
-    final logs = ref.watch(logbookProvider);
-    final jobs = ref.watch(jobProvider);
+    final logs = ref.watch(logbookProvider).where((e) => !e.isDeleted).toList();
+    final jobs = ref.watch(jobProvider).where((e) => !e.isDeleted).toList();
     final research = ref.watch(researchProvider);
-    final docs = ref.watch(documentsProvider);
+    final docs = ref.watch(documentsProvider).where((e) => !e.isDeleted).toList();
 
     // 1. Logbook: 50% pengisian log (target durasi magang), 50% tanda tangan mentor
     final logsProgress = (logs.length / profile.internshipDurationWeeks.toDouble()).clamp(0.0, 1.0);
@@ -82,7 +83,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(context, profile, syncStatus, isDark),
+            _buildHeader(context, profile, syncState, isDark),
             const SizedBox(height: 30),
             Center(
               child: Container(
@@ -122,11 +123,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.dispose();
   }
 
-  Widget _buildHeader(BuildContext context, dynamic profile, String syncStatus, bool isDark) {
-    final statusColor = (syncStatus == 'Sinkron' || syncStatus == 'Penyimpanan Lokal (Aktif)')
-        ? const Color(0xFF0D9488)
-        : const Color(0xFFF59E0B);
-    
+  Widget _buildHeader(BuildContext context, dynamic profile, SyncState syncState, bool isDark) {
+    Color statusColor;
+    IconData statusIcon;
+    bool showLoading = false;
+
+    switch (syncState.status) {
+      case SyncStatusType.uploading:
+        statusColor = const Color(0xFF38BDF8); // Sky 400
+        statusIcon = Icons.cloud_upload_rounded;
+        showLoading = true;
+        break;
+      case SyncStatusType.downloading:
+        statusColor = const Color(0xFF38BDF8);
+        statusIcon = Icons.cloud_download_rounded;
+        showLoading = true;
+        break;
+      case SyncStatusType.synced:
+        statusColor = const Color(0xFF0D9488); // Teal 600
+        statusIcon = Icons.cloud_done_rounded;
+        break;
+      case SyncStatusType.error:
+        statusColor = const Color(0xFFEF4444); // Red 500
+        statusIcon = Icons.cloud_off_rounded;
+        break;
+      case SyncStatusType.offline:
+        statusColor = const Color(0xFF64748B); // Slate 500
+        statusIcon = Icons.cloud_off_rounded;
+        break;
+      case SyncStatusType.idle:
+        statusColor = const Color(0xFF0D9488);
+        statusIcon = Icons.cloud_queue_rounded;
+        break;
+    }
 
     final headerText = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,18 +179,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               decoration: BoxDecoration(
                 color: statusColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: statusColor.withOpacity(0.2), width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
-                  ),
+                  if (showLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: SizedBox(
+                        width: 10,
+                        height: 10,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                        ),
+                      ),
+                    )
+                  else
+                    Icon(statusIcon, size: 12, color: statusColor),
                   const SizedBox(width: 6),
                   Text(
-                    syncStatus,
+                    syncState.message,
                     style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ],

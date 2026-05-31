@@ -41,7 +41,7 @@ final class DocumentsNotifierProvider
   }
 }
 
-String _$documentsNotifierHash() => r'836a8420aa33838bf9c150acbd1077d0385e99aa';
+String _$documentsNotifierHash() => r'b697ea4bc2fc0a3c3bf1da00b3c5eed78082c868';
 
 abstract class _$DocumentsNotifier extends $Notifier<List<DocChecklist>> {
   List<DocChecklist> build();

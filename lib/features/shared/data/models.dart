@@ -12,6 +12,10 @@ abstract class StudentProfile with _$StudentProfile {
     @Default('') String major,
     @Default('') String companyName,
     @Default(16) int internshipDurationWeeks,
+    @Default('') String whatsappNumber,
+    @Default('') String lastDeviceId,
+    int? lastLogoutAllTimestamp,
+    @Default(0) int updatedAt,
   }) = _StudentProfile;
 
   factory StudentProfile.fromJson(Map<String, dynamic> json) =>
@@ -30,6 +34,8 @@ abstract class InternshipLog with _$InternshipLog {
     required int weekNumber,
     @Default('') String signatureData,
     @Default('') String versionHistory,
+    @Default(0) int updatedAt,
+    @Default(false) bool isDeleted,
   }) = _InternshipLog;
 
   factory InternshipLog.fromJson(Map<String, dynamic> json) =>
@@ -46,6 +52,8 @@ abstract class JobDetail with _$JobDetail {
     @Default('') String reasonOfIncompletion,
     @Default('') String imageUrl,
     required String date,
+    @Default(0) int updatedAt,
+    @Default(false) bool isDeleted,
   }) = _JobDetail;
 
   factory JobDetail.fromJson(Map<String, dynamic> json) =>
@@ -61,6 +69,7 @@ abstract class ResearchData with _$ResearchData {
     @Default('') String jobDescription,
     @Default('') String procedureWork,
     @Default('') String obstacles,
+    @Default(0) int updatedAt,
   }) = _ResearchData;
 
   factory ResearchData.fromJson(Map<String, dynamic> json) =>
@@ -76,8 +85,28 @@ abstract class DocChecklist with _$DocChecklist {
     required String category, // 'Alat 3' or 'Alat 4' or 'Tambahan'
     @Default('') String fileUrl,
     @Default('') String notes,
+    @Default(0) int updatedAt,
+    @Default(false) bool isDeleted,
   }) = _DocChecklist;
 
   factory DocChecklist.fromJson(Map<String, dynamic> json) =>
       _$DocChecklistFromJson(json);
+}
+
+enum SyncStatusType {
+  idle,
+  uploading,
+  downloading,
+  error,
+  offline,
+  synced
+}
+
+@freezed
+abstract class SyncState with _$SyncState {
+  const factory SyncState({
+    @Default(SyncStatusType.idle) SyncStatusType status,
+    @Default('Sistem Siap') String message,
+    DateTime? lastSynced,
+  }) = _SyncState;
 }

@@ -41,7 +41,7 @@ final class ResearchNotifierProvider
   }
 }
 
-String _$researchNotifierHash() => r'fdecaef92a71ec2ff5567190db0c1d0fecf5c195';
+String _$researchNotifierHash() => r'c415fafca1fb06d0ce8e9c04b419dc7505c01562';
 
 abstract class _$ResearchNotifier extends $Notifier<ResearchData> {
   ResearchData build();

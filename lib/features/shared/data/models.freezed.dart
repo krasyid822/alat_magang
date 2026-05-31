@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$StudentProfile {
 
- String get nim; String get name; String get className; String get major; String get companyName; int get internshipDurationWeeks;
+ String get nim; String get name; String get className; String get major; String get companyName; int get internshipDurationWeeks; String get whatsappNumber; String get lastDeviceId; int? get lastLogoutAllTimestamp; int get updatedAt;
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $StudentProfileCopyWith<StudentProfile> get copyWith => _$StudentProfileCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks);
+int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,updatedAt);
 
 @override
 String toString() {
-  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks)';
+  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $StudentProfileCopyWith<$Res>  {
   factory $StudentProfileCopyWith(StudentProfile value, $Res Function(StudentProfile) _then) = _$StudentProfileCopyWithImpl;
 @useResult
 $Res call({
- String nim, String name, String className, String major, String companyName, int internshipDurationWeeks
+ String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, int updatedAt
 });
 
 
@@ -65,7 +65,7 @@ class _$StudentProfileCopyWithImpl<$Res>
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -73,6 +73,10 @@ as String,className: null == className ? _self.className : className // ignore: 
 as String,major: null == major ? _self.major : major // ignore: cast_nullable_to_non_nullable
 as String,companyName: null == companyName ? _self.companyName : companyName // ignore: cast_nullable_to_non_nullable
 as String,internshipDurationWeeks: null == internshipDurationWeeks ? _self.internshipDurationWeeks : internshipDurationWeeks // ignore: cast_nullable_to_non_nullable
+as int,whatsappNumber: null == whatsappNumber ? _self.whatsappNumber : whatsappNumber // ignore: cast_nullable_to_non_nullable
+as String,lastDeviceId: null == lastDeviceId ? _self.lastDeviceId : lastDeviceId // ignore: cast_nullable_to_non_nullable
+as String,lastLogoutAllTimestamp: freezed == lastLogoutAllTimestamp ? _self.lastLogoutAllTimestamp : lastLogoutAllTimestamp // ignore: cast_nullable_to_non_nullable
+as int?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -158,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  int updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StudentProfile() when $default != null:
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -179,10 +183,10 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  int updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _StudentProfile():
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +203,10 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  int updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _StudentProfile() when $default != null:
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.updatedAt);case _:
   return null;
 
 }
@@ -214,7 +218,7 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 @JsonSerializable()
 
 class _StudentProfile implements StudentProfile {
-  const _StudentProfile({required this.nim, this.name = '', this.className = '', this.major = '', this.companyName = '', this.internshipDurationWeeks = 16});
+  const _StudentProfile({required this.nim, this.name = '', this.className = '', this.major = '', this.companyName = '', this.internshipDurationWeeks = 16, this.whatsappNumber = '', this.lastDeviceId = '', this.lastLogoutAllTimestamp, this.updatedAt = 0});
   factory _StudentProfile.fromJson(Map<String, dynamic> json) => _$StudentProfileFromJson(json);
 
 @override final  String nim;
@@ -223,6 +227,10 @@ class _StudentProfile implements StudentProfile {
 @override@JsonKey() final  String major;
 @override@JsonKey() final  String companyName;
 @override@JsonKey() final  int internshipDurationWeeks;
+@override@JsonKey() final  String whatsappNumber;
+@override@JsonKey() final  String lastDeviceId;
+@override final  int? lastLogoutAllTimestamp;
+@override@JsonKey() final  int updatedAt;
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks);
+int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,updatedAt);
 
 @override
 String toString() {
-  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks)';
+  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, updatedAt: $updatedAt)';
 }
 
 
@@ -257,7 +265,7 @@ abstract mixin class _$StudentProfileCopyWith<$Res> implements $StudentProfileCo
   factory _$StudentProfileCopyWith(_StudentProfile value, $Res Function(_StudentProfile) _then) = __$StudentProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String nim, String name, String className, String major, String companyName, int internshipDurationWeeks
+ String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, int updatedAt
 });
 
 
@@ -274,7 +282,7 @@ class __$StudentProfileCopyWithImpl<$Res>
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? updatedAt = null,}) {
   return _then(_StudentProfile(
 nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -282,6 +290,10 @@ as String,className: null == className ? _self.className : className // ignore: 
 as String,major: null == major ? _self.major : major // ignore: cast_nullable_to_non_nullable
 as String,companyName: null == companyName ? _self.companyName : companyName // ignore: cast_nullable_to_non_nullable
 as String,internshipDurationWeeks: null == internshipDurationWeeks ? _self.internshipDurationWeeks : internshipDurationWeeks // ignore: cast_nullable_to_non_nullable
+as int,whatsappNumber: null == whatsappNumber ? _self.whatsappNumber : whatsappNumber // ignore: cast_nullable_to_non_nullable
+as String,lastDeviceId: null == lastDeviceId ? _self.lastDeviceId : lastDeviceId // ignore: cast_nullable_to_non_nullable
+as String,lastLogoutAllTimestamp: freezed == lastLogoutAllTimestamp ? _self.lastLogoutAllTimestamp : lastLogoutAllTimestamp // ignore: cast_nullable_to_non_nullable
+as int?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -293,7 +305,7 @@ as int,
 /// @nodoc
 mixin _$InternshipLog {
 
- String get id; String get date; String get activity; String get startTime; String get endTime; bool get isSigned; int get weekNumber; String get signatureData; String get versionHistory;
+ String get id; String get date; String get activity; String get startTime; String get endTime; bool get isSigned; int get weekNumber; String get signatureData; String get versionHistory; int get updatedAt; bool get isDeleted;
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -306,16 +318,16 @@ $InternshipLogCopyWith<InternshipLog> get copyWith => _$InternshipLogCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory);
+int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory)';
+  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -326,7 +338,7 @@ abstract mixin class $InternshipLogCopyWith<$Res>  {
   factory $InternshipLogCopyWith(InternshipLog value, $Res Function(InternshipLog) _then) = _$InternshipLogCopyWithImpl;
 @useResult
 $Res call({
- String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory
+ String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory, int updatedAt, bool isDeleted
 });
 
 
@@ -343,7 +355,7 @@ class _$InternshipLogCopyWithImpl<$Res>
 
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -354,7 +366,9 @@ as String,isSigned: null == isSigned ? _self.isSigned : isSigned // ignore: cast
 as bool,weekNumber: null == weekNumber ? _self.weekNumber : weekNumber // ignore: cast_nullable_to_non_nullable
 as int,signatureData: null == signatureData ? _self.signatureData : signatureData // ignore: cast_nullable_to_non_nullable
 as String,versionHistory: null == versionHistory ? _self.versionHistory : versionHistory // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -439,10 +453,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  int updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InternshipLog() when $default != null:
-return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory);case _:
+return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.updatedAt,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -460,10 +474,10 @@ return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  int updatedAt,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _InternshipLog():
-return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory);case _:
+return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.updatedAt,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -480,10 +494,10 @@ return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  int updatedAt,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _InternshipLog() when $default != null:
-return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory);case _:
+return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.updatedAt,_that.isDeleted);case _:
   return null;
 
 }
@@ -495,7 +509,7 @@ return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime
 @JsonSerializable()
 
 class _InternshipLog implements InternshipLog {
-  const _InternshipLog({required this.id, required this.date, required this.activity, required this.startTime, required this.endTime, this.isSigned = false, required this.weekNumber, this.signatureData = '', this.versionHistory = ''});
+  const _InternshipLog({required this.id, required this.date, required this.activity, required this.startTime, required this.endTime, this.isSigned = false, required this.weekNumber, this.signatureData = '', this.versionHistory = '', this.updatedAt = 0, this.isDeleted = false});
   factory _InternshipLog.fromJson(Map<String, dynamic> json) => _$InternshipLogFromJson(json);
 
 @override final  String id;
@@ -507,6 +521,8 @@ class _InternshipLog implements InternshipLog {
 @override final  int weekNumber;
 @override@JsonKey() final  String signatureData;
 @override@JsonKey() final  String versionHistory;
+@override@JsonKey() final  int updatedAt;
+@override@JsonKey() final  bool isDeleted;
 
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
@@ -521,16 +537,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory);
+int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory)';
+  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -541,7 +557,7 @@ abstract mixin class _$InternshipLogCopyWith<$Res> implements $InternshipLogCopy
   factory _$InternshipLogCopyWith(_InternshipLog value, $Res Function(_InternshipLog) _then) = __$InternshipLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory
+ String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory, int updatedAt, bool isDeleted
 });
 
 
@@ -558,7 +574,7 @@ class __$InternshipLogCopyWithImpl<$Res>
 
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_InternshipLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -569,7 +585,9 @@ as String,isSigned: null == isSigned ? _self.isSigned : isSigned // ignore: cast
 as bool,weekNumber: null == weekNumber ? _self.weekNumber : weekNumber // ignore: cast_nullable_to_non_nullable
 as int,signatureData: null == signatureData ? _self.signatureData : signatureData // ignore: cast_nullable_to_non_nullable
 as String,versionHistory: null == versionHistory ? _self.versionHistory : versionHistory // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -580,7 +598,7 @@ as String,
 /// @nodoc
 mixin _$JobDetail {
 
- String get id; String get title; String get description; bool get isCompleted; String get reasonOfIncompletion; String get imageUrl; String get date;
+ String get id; String get title; String get description; bool get isCompleted; String get reasonOfIncompletion; String get imageUrl; String get date; int get updatedAt; bool get isDeleted;
 /// Create a copy of JobDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -593,16 +611,16 @@ $JobDetailCopyWith<JobDetail> get copyWith => _$JobDetailCopyWithImpl<JobDetail>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.reasonOfIncompletion, reasonOfIncompletion) || other.reasonOfIncompletion == reasonOfIncompletion)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.date, date) || other.date == date));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.reasonOfIncompletion, reasonOfIncompletion) || other.reasonOfIncompletion == reasonOfIncompletion)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.date, date) || other.date == date)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,isCompleted,reasonOfIncompletion,imageUrl,date);
+int get hashCode => Object.hash(runtimeType,id,title,description,isCompleted,reasonOfIncompletion,imageUrl,date,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'JobDetail(id: $id, title: $title, description: $description, isCompleted: $isCompleted, reasonOfIncompletion: $reasonOfIncompletion, imageUrl: $imageUrl, date: $date)';
+  return 'JobDetail(id: $id, title: $title, description: $description, isCompleted: $isCompleted, reasonOfIncompletion: $reasonOfIncompletion, imageUrl: $imageUrl, date: $date, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -613,7 +631,7 @@ abstract mixin class $JobDetailCopyWith<$Res>  {
   factory $JobDetailCopyWith(JobDetail value, $Res Function(JobDetail) _then) = _$JobDetailCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String description, bool isCompleted, String reasonOfIncompletion, String imageUrl, String date
+ String id, String title, String description, bool isCompleted, String reasonOfIncompletion, String imageUrl, String date, int updatedAt, bool isDeleted
 });
 
 
@@ -630,7 +648,7 @@ class _$JobDetailCopyWithImpl<$Res>
 
 /// Create a copy of JobDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? isCompleted = null,Object? reasonOfIncompletion = null,Object? imageUrl = null,Object? date = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? isCompleted = null,Object? reasonOfIncompletion = null,Object? imageUrl = null,Object? date = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -639,7 +657,9 @@ as String,isCompleted: null == isCompleted ? _self.isCompleted : isCompleted // 
 as bool,reasonOfIncompletion: null == reasonOfIncompletion ? _self.reasonOfIncompletion : reasonOfIncompletion // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -724,10 +744,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  bool isCompleted,  String reasonOfIncompletion,  String imageUrl,  String date)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  bool isCompleted,  String reasonOfIncompletion,  String imageUrl,  String date,  int updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _JobDetail() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.reasonOfIncompletion,_that.imageUrl,_that.date);case _:
+return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.reasonOfIncompletion,_that.imageUrl,_that.date,_that.updatedAt,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -745,10 +765,10 @@ return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  bool isCompleted,  String reasonOfIncompletion,  String imageUrl,  String date)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  bool isCompleted,  String reasonOfIncompletion,  String imageUrl,  String date,  int updatedAt,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _JobDetail():
-return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.reasonOfIncompletion,_that.imageUrl,_that.date);case _:
+return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.reasonOfIncompletion,_that.imageUrl,_that.date,_that.updatedAt,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -765,10 +785,10 @@ return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  bool isCompleted,  String reasonOfIncompletion,  String imageUrl,  String date)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  bool isCompleted,  String reasonOfIncompletion,  String imageUrl,  String date,  int updatedAt,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _JobDetail() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.reasonOfIncompletion,_that.imageUrl,_that.date);case _:
+return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.reasonOfIncompletion,_that.imageUrl,_that.date,_that.updatedAt,_that.isDeleted);case _:
   return null;
 
 }
@@ -780,7 +800,7 @@ return $default(_that.id,_that.title,_that.description,_that.isCompleted,_that.r
 @JsonSerializable()
 
 class _JobDetail implements JobDetail {
-  const _JobDetail({required this.id, required this.title, required this.description, this.isCompleted = false, this.reasonOfIncompletion = '', this.imageUrl = '', required this.date});
+  const _JobDetail({required this.id, required this.title, required this.description, this.isCompleted = false, this.reasonOfIncompletion = '', this.imageUrl = '', required this.date, this.updatedAt = 0, this.isDeleted = false});
   factory _JobDetail.fromJson(Map<String, dynamic> json) => _$JobDetailFromJson(json);
 
 @override final  String id;
@@ -790,6 +810,8 @@ class _JobDetail implements JobDetail {
 @override@JsonKey() final  String reasonOfIncompletion;
 @override@JsonKey() final  String imageUrl;
 @override final  String date;
+@override@JsonKey() final  int updatedAt;
+@override@JsonKey() final  bool isDeleted;
 
 /// Create a copy of JobDetail
 /// with the given fields replaced by the non-null parameter values.
@@ -804,16 +826,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.reasonOfIncompletion, reasonOfIncompletion) || other.reasonOfIncompletion == reasonOfIncompletion)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.date, date) || other.date == date));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.reasonOfIncompletion, reasonOfIncompletion) || other.reasonOfIncompletion == reasonOfIncompletion)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.date, date) || other.date == date)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,isCompleted,reasonOfIncompletion,imageUrl,date);
+int get hashCode => Object.hash(runtimeType,id,title,description,isCompleted,reasonOfIncompletion,imageUrl,date,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'JobDetail(id: $id, title: $title, description: $description, isCompleted: $isCompleted, reasonOfIncompletion: $reasonOfIncompletion, imageUrl: $imageUrl, date: $date)';
+  return 'JobDetail(id: $id, title: $title, description: $description, isCompleted: $isCompleted, reasonOfIncompletion: $reasonOfIncompletion, imageUrl: $imageUrl, date: $date, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -824,7 +846,7 @@ abstract mixin class _$JobDetailCopyWith<$Res> implements $JobDetailCopyWith<$Re
   factory _$JobDetailCopyWith(_JobDetail value, $Res Function(_JobDetail) _then) = __$JobDetailCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String description, bool isCompleted, String reasonOfIncompletion, String imageUrl, String date
+ String id, String title, String description, bool isCompleted, String reasonOfIncompletion, String imageUrl, String date, int updatedAt, bool isDeleted
 });
 
 
@@ -841,7 +863,7 @@ class __$JobDetailCopyWithImpl<$Res>
 
 /// Create a copy of JobDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? isCompleted = null,Object? reasonOfIncompletion = null,Object? imageUrl = null,Object? date = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? isCompleted = null,Object? reasonOfIncompletion = null,Object? imageUrl = null,Object? date = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_JobDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -850,7 +872,9 @@ as String,isCompleted: null == isCompleted ? _self.isCompleted : isCompleted // 
 as bool,reasonOfIncompletion: null == reasonOfIncompletion ? _self.reasonOfIncompletion : reasonOfIncompletion // ignore: cast_nullable_to_non_nullable
 as String,imageUrl: null == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -861,7 +885,7 @@ as String,
 /// @nodoc
 mixin _$ResearchData {
 
- String get companyHistory; String get companyVisionMission; String get companyStructureUrl; String get jobDescription; String get procedureWork; String get obstacles;
+ String get companyHistory; String get companyVisionMission; String get companyStructureUrl; String get jobDescription; String get procedureWork; String get obstacles; int get updatedAt;
 /// Create a copy of ResearchData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -874,16 +898,16 @@ $ResearchDataCopyWith<ResearchData> get copyWith => _$ResearchDataCopyWithImpl<R
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ResearchData&&(identical(other.companyHistory, companyHistory) || other.companyHistory == companyHistory)&&(identical(other.companyVisionMission, companyVisionMission) || other.companyVisionMission == companyVisionMission)&&(identical(other.companyStructureUrl, companyStructureUrl) || other.companyStructureUrl == companyStructureUrl)&&(identical(other.jobDescription, jobDescription) || other.jobDescription == jobDescription)&&(identical(other.procedureWork, procedureWork) || other.procedureWork == procedureWork)&&(identical(other.obstacles, obstacles) || other.obstacles == obstacles));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ResearchData&&(identical(other.companyHistory, companyHistory) || other.companyHistory == companyHistory)&&(identical(other.companyVisionMission, companyVisionMission) || other.companyVisionMission == companyVisionMission)&&(identical(other.companyStructureUrl, companyStructureUrl) || other.companyStructureUrl == companyStructureUrl)&&(identical(other.jobDescription, jobDescription) || other.jobDescription == jobDescription)&&(identical(other.procedureWork, procedureWork) || other.procedureWork == procedureWork)&&(identical(other.obstacles, obstacles) || other.obstacles == obstacles)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,companyHistory,companyVisionMission,companyStructureUrl,jobDescription,procedureWork,obstacles);
+int get hashCode => Object.hash(runtimeType,companyHistory,companyVisionMission,companyStructureUrl,jobDescription,procedureWork,obstacles,updatedAt);
 
 @override
 String toString() {
-  return 'ResearchData(companyHistory: $companyHistory, companyVisionMission: $companyVisionMission, companyStructureUrl: $companyStructureUrl, jobDescription: $jobDescription, procedureWork: $procedureWork, obstacles: $obstacles)';
+  return 'ResearchData(companyHistory: $companyHistory, companyVisionMission: $companyVisionMission, companyStructureUrl: $companyStructureUrl, jobDescription: $jobDescription, procedureWork: $procedureWork, obstacles: $obstacles, updatedAt: $updatedAt)';
 }
 
 
@@ -894,7 +918,7 @@ abstract mixin class $ResearchDataCopyWith<$Res>  {
   factory $ResearchDataCopyWith(ResearchData value, $Res Function(ResearchData) _then) = _$ResearchDataCopyWithImpl;
 @useResult
 $Res call({
- String companyHistory, String companyVisionMission, String companyStructureUrl, String jobDescription, String procedureWork, String obstacles
+ String companyHistory, String companyVisionMission, String companyStructureUrl, String jobDescription, String procedureWork, String obstacles, int updatedAt
 });
 
 
@@ -911,7 +935,7 @@ class _$ResearchDataCopyWithImpl<$Res>
 
 /// Create a copy of ResearchData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? companyHistory = null,Object? companyVisionMission = null,Object? companyStructureUrl = null,Object? jobDescription = null,Object? procedureWork = null,Object? obstacles = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? companyHistory = null,Object? companyVisionMission = null,Object? companyStructureUrl = null,Object? jobDescription = null,Object? procedureWork = null,Object? obstacles = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 companyHistory: null == companyHistory ? _self.companyHistory : companyHistory // ignore: cast_nullable_to_non_nullable
 as String,companyVisionMission: null == companyVisionMission ? _self.companyVisionMission : companyVisionMission // ignore: cast_nullable_to_non_nullable
@@ -919,7 +943,8 @@ as String,companyStructureUrl: null == companyStructureUrl ? _self.companyStruct
 as String,jobDescription: null == jobDescription ? _self.jobDescription : jobDescription // ignore: cast_nullable_to_non_nullable
 as String,procedureWork: null == procedureWork ? _self.procedureWork : procedureWork // ignore: cast_nullable_to_non_nullable
 as String,obstacles: null == obstacles ? _self.obstacles : obstacles // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -1004,10 +1029,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String companyHistory,  String companyVisionMission,  String companyStructureUrl,  String jobDescription,  String procedureWork,  String obstacles)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String companyHistory,  String companyVisionMission,  String companyStructureUrl,  String jobDescription,  String procedureWork,  String obstacles,  int updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ResearchData() when $default != null:
-return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStructureUrl,_that.jobDescription,_that.procedureWork,_that.obstacles);case _:
+return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStructureUrl,_that.jobDescription,_that.procedureWork,_that.obstacles,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -1025,10 +1050,10 @@ return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String companyHistory,  String companyVisionMission,  String companyStructureUrl,  String jobDescription,  String procedureWork,  String obstacles)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String companyHistory,  String companyVisionMission,  String companyStructureUrl,  String jobDescription,  String procedureWork,  String obstacles,  int updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ResearchData():
-return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStructureUrl,_that.jobDescription,_that.procedureWork,_that.obstacles);case _:
+return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStructureUrl,_that.jobDescription,_that.procedureWork,_that.obstacles,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1045,10 +1070,10 @@ return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String companyHistory,  String companyVisionMission,  String companyStructureUrl,  String jobDescription,  String procedureWork,  String obstacles)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String companyHistory,  String companyVisionMission,  String companyStructureUrl,  String jobDescription,  String procedureWork,  String obstacles,  int updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ResearchData() when $default != null:
-return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStructureUrl,_that.jobDescription,_that.procedureWork,_that.obstacles);case _:
+return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStructureUrl,_that.jobDescription,_that.procedureWork,_that.obstacles,_that.updatedAt);case _:
   return null;
 
 }
@@ -1060,7 +1085,7 @@ return $default(_that.companyHistory,_that.companyVisionMission,_that.companyStr
 @JsonSerializable()
 
 class _ResearchData implements ResearchData {
-  const _ResearchData({this.companyHistory = '', this.companyVisionMission = '', this.companyStructureUrl = '', this.jobDescription = '', this.procedureWork = '', this.obstacles = ''});
+  const _ResearchData({this.companyHistory = '', this.companyVisionMission = '', this.companyStructureUrl = '', this.jobDescription = '', this.procedureWork = '', this.obstacles = '', this.updatedAt = 0});
   factory _ResearchData.fromJson(Map<String, dynamic> json) => _$ResearchDataFromJson(json);
 
 @override@JsonKey() final  String companyHistory;
@@ -1069,6 +1094,7 @@ class _ResearchData implements ResearchData {
 @override@JsonKey() final  String jobDescription;
 @override@JsonKey() final  String procedureWork;
 @override@JsonKey() final  String obstacles;
+@override@JsonKey() final  int updatedAt;
 
 /// Create a copy of ResearchData
 /// with the given fields replaced by the non-null parameter values.
@@ -1083,16 +1109,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ResearchData&&(identical(other.companyHistory, companyHistory) || other.companyHistory == companyHistory)&&(identical(other.companyVisionMission, companyVisionMission) || other.companyVisionMission == companyVisionMission)&&(identical(other.companyStructureUrl, companyStructureUrl) || other.companyStructureUrl == companyStructureUrl)&&(identical(other.jobDescription, jobDescription) || other.jobDescription == jobDescription)&&(identical(other.procedureWork, procedureWork) || other.procedureWork == procedureWork)&&(identical(other.obstacles, obstacles) || other.obstacles == obstacles));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ResearchData&&(identical(other.companyHistory, companyHistory) || other.companyHistory == companyHistory)&&(identical(other.companyVisionMission, companyVisionMission) || other.companyVisionMission == companyVisionMission)&&(identical(other.companyStructureUrl, companyStructureUrl) || other.companyStructureUrl == companyStructureUrl)&&(identical(other.jobDescription, jobDescription) || other.jobDescription == jobDescription)&&(identical(other.procedureWork, procedureWork) || other.procedureWork == procedureWork)&&(identical(other.obstacles, obstacles) || other.obstacles == obstacles)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,companyHistory,companyVisionMission,companyStructureUrl,jobDescription,procedureWork,obstacles);
+int get hashCode => Object.hash(runtimeType,companyHistory,companyVisionMission,companyStructureUrl,jobDescription,procedureWork,obstacles,updatedAt);
 
 @override
 String toString() {
-  return 'ResearchData(companyHistory: $companyHistory, companyVisionMission: $companyVisionMission, companyStructureUrl: $companyStructureUrl, jobDescription: $jobDescription, procedureWork: $procedureWork, obstacles: $obstacles)';
+  return 'ResearchData(companyHistory: $companyHistory, companyVisionMission: $companyVisionMission, companyStructureUrl: $companyStructureUrl, jobDescription: $jobDescription, procedureWork: $procedureWork, obstacles: $obstacles, updatedAt: $updatedAt)';
 }
 
 
@@ -1103,7 +1129,7 @@ abstract mixin class _$ResearchDataCopyWith<$Res> implements $ResearchDataCopyWi
   factory _$ResearchDataCopyWith(_ResearchData value, $Res Function(_ResearchData) _then) = __$ResearchDataCopyWithImpl;
 @override @useResult
 $Res call({
- String companyHistory, String companyVisionMission, String companyStructureUrl, String jobDescription, String procedureWork, String obstacles
+ String companyHistory, String companyVisionMission, String companyStructureUrl, String jobDescription, String procedureWork, String obstacles, int updatedAt
 });
 
 
@@ -1120,7 +1146,7 @@ class __$ResearchDataCopyWithImpl<$Res>
 
 /// Create a copy of ResearchData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? companyHistory = null,Object? companyVisionMission = null,Object? companyStructureUrl = null,Object? jobDescription = null,Object? procedureWork = null,Object? obstacles = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? companyHistory = null,Object? companyVisionMission = null,Object? companyStructureUrl = null,Object? jobDescription = null,Object? procedureWork = null,Object? obstacles = null,Object? updatedAt = null,}) {
   return _then(_ResearchData(
 companyHistory: null == companyHistory ? _self.companyHistory : companyHistory // ignore: cast_nullable_to_non_nullable
 as String,companyVisionMission: null == companyVisionMission ? _self.companyVisionMission : companyVisionMission // ignore: cast_nullable_to_non_nullable
@@ -1128,7 +1154,8 @@ as String,companyStructureUrl: null == companyStructureUrl ? _self.companyStruct
 as String,jobDescription: null == jobDescription ? _self.jobDescription : jobDescription // ignore: cast_nullable_to_non_nullable
 as String,procedureWork: null == procedureWork ? _self.procedureWork : procedureWork // ignore: cast_nullable_to_non_nullable
 as String,obstacles: null == obstacles ? _self.obstacles : obstacles // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -1139,7 +1166,7 @@ as String,
 /// @nodoc
 mixin _$DocChecklist {
 
- String get id; String get title; bool get isCompleted; String get category; String get fileUrl; String get notes;
+ String get id; String get title; bool get isCompleted; String get category; String get fileUrl; String get notes; int get updatedAt; bool get isDeleted;
 /// Create a copy of DocChecklist
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1152,16 +1179,16 @@ $DocChecklistCopyWith<DocChecklist> get copyWith => _$DocChecklistCopyWithImpl<D
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DocChecklist&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.category, category) || other.category == category)&&(identical(other.fileUrl, fileUrl) || other.fileUrl == fileUrl)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DocChecklist&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.category, category) || other.category == category)&&(identical(other.fileUrl, fileUrl) || other.fileUrl == fileUrl)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,isCompleted,category,fileUrl,notes);
+int get hashCode => Object.hash(runtimeType,id,title,isCompleted,category,fileUrl,notes,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'DocChecklist(id: $id, title: $title, isCompleted: $isCompleted, category: $category, fileUrl: $fileUrl, notes: $notes)';
+  return 'DocChecklist(id: $id, title: $title, isCompleted: $isCompleted, category: $category, fileUrl: $fileUrl, notes: $notes, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -1172,7 +1199,7 @@ abstract mixin class $DocChecklistCopyWith<$Res>  {
   factory $DocChecklistCopyWith(DocChecklist value, $Res Function(DocChecklist) _then) = _$DocChecklistCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, bool isCompleted, String category, String fileUrl, String notes
+ String id, String title, bool isCompleted, String category, String fileUrl, String notes, int updatedAt, bool isDeleted
 });
 
 
@@ -1189,7 +1216,7 @@ class _$DocChecklistCopyWithImpl<$Res>
 
 /// Create a copy of DocChecklist
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? isCompleted = null,Object? category = null,Object? fileUrl = null,Object? notes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? isCompleted = null,Object? category = null,Object? fileUrl = null,Object? notes = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -1197,7 +1224,9 @@ as String,isCompleted: null == isCompleted ? _self.isCompleted : isCompleted // 
 as bool,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,fileUrl: null == fileUrl ? _self.fileUrl : fileUrl // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -1282,10 +1311,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  bool isCompleted,  String category,  String fileUrl,  String notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  bool isCompleted,  String category,  String fileUrl,  String notes,  int updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DocChecklist() when $default != null:
-return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.fileUrl,_that.notes);case _:
+return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.fileUrl,_that.notes,_that.updatedAt,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -1303,10 +1332,10 @@ return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.file
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  bool isCompleted,  String category,  String fileUrl,  String notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  bool isCompleted,  String category,  String fileUrl,  String notes,  int updatedAt,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _DocChecklist():
-return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.fileUrl,_that.notes);case _:
+return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.fileUrl,_that.notes,_that.updatedAt,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1323,10 +1352,10 @@ return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.file
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  bool isCompleted,  String category,  String fileUrl,  String notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  bool isCompleted,  String category,  String fileUrl,  String notes,  int updatedAt,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _DocChecklist() when $default != null:
-return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.fileUrl,_that.notes);case _:
+return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.fileUrl,_that.notes,_that.updatedAt,_that.isDeleted);case _:
   return null;
 
 }
@@ -1338,7 +1367,7 @@ return $default(_that.id,_that.title,_that.isCompleted,_that.category,_that.file
 @JsonSerializable()
 
 class _DocChecklist implements DocChecklist {
-  const _DocChecklist({required this.id, required this.title, this.isCompleted = false, required this.category, this.fileUrl = '', this.notes = ''});
+  const _DocChecklist({required this.id, required this.title, this.isCompleted = false, required this.category, this.fileUrl = '', this.notes = '', this.updatedAt = 0, this.isDeleted = false});
   factory _DocChecklist.fromJson(Map<String, dynamic> json) => _$DocChecklistFromJson(json);
 
 @override final  String id;
@@ -1347,6 +1376,8 @@ class _DocChecklist implements DocChecklist {
 @override final  String category;
 @override@JsonKey() final  String fileUrl;
 @override@JsonKey() final  String notes;
+@override@JsonKey() final  int updatedAt;
+@override@JsonKey() final  bool isDeleted;
 
 /// Create a copy of DocChecklist
 /// with the given fields replaced by the non-null parameter values.
@@ -1361,16 +1392,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocChecklist&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.category, category) || other.category == category)&&(identical(other.fileUrl, fileUrl) || other.fileUrl == fileUrl)&&(identical(other.notes, notes) || other.notes == notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DocChecklist&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.category, category) || other.category == category)&&(identical(other.fileUrl, fileUrl) || other.fileUrl == fileUrl)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,isCompleted,category,fileUrl,notes);
+int get hashCode => Object.hash(runtimeType,id,title,isCompleted,category,fileUrl,notes,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'DocChecklist(id: $id, title: $title, isCompleted: $isCompleted, category: $category, fileUrl: $fileUrl, notes: $notes)';
+  return 'DocChecklist(id: $id, title: $title, isCompleted: $isCompleted, category: $category, fileUrl: $fileUrl, notes: $notes, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -1381,7 +1412,7 @@ abstract mixin class _$DocChecklistCopyWith<$Res> implements $DocChecklistCopyWi
   factory _$DocChecklistCopyWith(_DocChecklist value, $Res Function(_DocChecklist) _then) = __$DocChecklistCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, bool isCompleted, String category, String fileUrl, String notes
+ String id, String title, bool isCompleted, String category, String fileUrl, String notes, int updatedAt, bool isDeleted
 });
 
 
@@ -1398,7 +1429,7 @@ class __$DocChecklistCopyWithImpl<$Res>
 
 /// Create a copy of DocChecklist
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? isCompleted = null,Object? category = null,Object? fileUrl = null,Object? notes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? isCompleted = null,Object? category = null,Object? fileUrl = null,Object? notes = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_DocChecklist(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -1406,7 +1437,272 @@ as String,isCompleted: null == isCompleted ? _self.isCompleted : isCompleted // 
 as bool,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,fileUrl: null == fileUrl ? _self.fileUrl : fileUrl // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String,
+as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$SyncState {
+
+ SyncStatusType get status; String get message; DateTime? get lastSynced;
+/// Create a copy of SyncState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SyncStateCopyWith<SyncState> get copyWith => _$SyncStateCopyWithImpl<SyncState>(this as SyncState, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncState&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.lastSynced, lastSynced) || other.lastSynced == lastSynced));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,status,message,lastSynced);
+
+@override
+String toString() {
+  return 'SyncState(status: $status, message: $message, lastSynced: $lastSynced)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SyncStateCopyWith<$Res>  {
+  factory $SyncStateCopyWith(SyncState value, $Res Function(SyncState) _then) = _$SyncStateCopyWithImpl;
+@useResult
+$Res call({
+ SyncStatusType status, String message, DateTime? lastSynced
+});
+
+
+
+
+}
+/// @nodoc
+class _$SyncStateCopyWithImpl<$Res>
+    implements $SyncStateCopyWith<$Res> {
+  _$SyncStateCopyWithImpl(this._self, this._then);
+
+  final SyncState _self;
+  final $Res Function(SyncState) _then;
+
+/// Create a copy of SyncState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? message = null,Object? lastSynced = freezed,}) {
+  return _then(_self.copyWith(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as SyncStatusType,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,lastSynced: freezed == lastSynced ? _self.lastSynced : lastSynced // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [SyncState].
+extension SyncStatePatterns on SyncState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SyncState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SyncState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SyncState value)  $default,){
+final _that = this;
+switch (_that) {
+case _SyncState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SyncState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SyncState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( SyncStatusType status,  String message,  DateTime? lastSynced)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SyncState() when $default != null:
+return $default(_that.status,_that.message,_that.lastSynced);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( SyncStatusType status,  String message,  DateTime? lastSynced)  $default,) {final _that = this;
+switch (_that) {
+case _SyncState():
+return $default(_that.status,_that.message,_that.lastSynced);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( SyncStatusType status,  String message,  DateTime? lastSynced)?  $default,) {final _that = this;
+switch (_that) {
+case _SyncState() when $default != null:
+return $default(_that.status,_that.message,_that.lastSynced);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _SyncState implements SyncState {
+  const _SyncState({this.status = SyncStatusType.idle, this.message = 'Sistem Siap', this.lastSynced});
+  
+
+@override@JsonKey() final  SyncStatusType status;
+@override@JsonKey() final  String message;
+@override final  DateTime? lastSynced;
+
+/// Create a copy of SyncState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SyncStateCopyWith<_SyncState> get copyWith => __$SyncStateCopyWithImpl<_SyncState>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncState&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.lastSynced, lastSynced) || other.lastSynced == lastSynced));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,status,message,lastSynced);
+
+@override
+String toString() {
+  return 'SyncState(status: $status, message: $message, lastSynced: $lastSynced)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SyncStateCopyWith<$Res> implements $SyncStateCopyWith<$Res> {
+  factory _$SyncStateCopyWith(_SyncState value, $Res Function(_SyncState) _then) = __$SyncStateCopyWithImpl;
+@override @useResult
+$Res call({
+ SyncStatusType status, String message, DateTime? lastSynced
+});
+
+
+
+
+}
+/// @nodoc
+class __$SyncStateCopyWithImpl<$Res>
+    implements _$SyncStateCopyWith<$Res> {
+  __$SyncStateCopyWithImpl(this._self, this._then);
+
+  final _SyncState _self;
+  final $Res Function(_SyncState) _then;
+
+/// Create a copy of SyncState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? message = null,Object? lastSynced = freezed,}) {
+  return _then(_SyncState(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as SyncStatusType,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,lastSynced: freezed == lastSynced ? _self.lastSynced : lastSynced // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

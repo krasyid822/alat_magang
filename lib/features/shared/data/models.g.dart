@@ -13,7 +13,12 @@ _StudentProfile _$StudentProfileFromJson(Map<String, dynamic> json) =>
       className: json['className'] as String? ?? '',
       major: json['major'] as String? ?? '',
       companyName: json['companyName'] as String? ?? '',
-      internshipDurationWeeks: (json['internshipDurationWeeks'] as num?)?.toInt() ?? 16,
+      internshipDurationWeeks:
+          (json['internshipDurationWeeks'] as num?)?.toInt() ?? 16,
+      whatsappNumber: json['whatsappNumber'] as String? ?? '',
+      lastDeviceId: json['lastDeviceId'] as String? ?? '',
+      lastLogoutAllTimestamp: (json['lastLogoutAllTimestamp'] as num?)?.toInt(),
+      updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$StudentProfileToJson(_StudentProfile instance) =>
@@ -24,6 +29,10 @@ Map<String, dynamic> _$StudentProfileToJson(_StudentProfile instance) =>
       'major': instance.major,
       'companyName': instance.companyName,
       'internshipDurationWeeks': instance.internshipDurationWeeks,
+      'whatsappNumber': instance.whatsappNumber,
+      'lastDeviceId': instance.lastDeviceId,
+      'lastLogoutAllTimestamp': instance.lastLogoutAllTimestamp,
+      'updatedAt': instance.updatedAt,
     };
 
 _InternshipLog _$InternshipLogFromJson(Map<String, dynamic> json) =>
@@ -37,6 +46,8 @@ _InternshipLog _$InternshipLogFromJson(Map<String, dynamic> json) =>
       weekNumber: (json['weekNumber'] as num).toInt(),
       signatureData: json['signatureData'] as String? ?? '',
       versionHistory: json['versionHistory'] as String? ?? '',
+      updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
+      isDeleted: json['isDeleted'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$InternshipLogToJson(_InternshipLog instance) =>
@@ -50,6 +61,8 @@ Map<String, dynamic> _$InternshipLogToJson(_InternshipLog instance) =>
       'weekNumber': instance.weekNumber,
       'signatureData': instance.signatureData,
       'versionHistory': instance.versionHistory,
+      'updatedAt': instance.updatedAt,
+      'isDeleted': instance.isDeleted,
     };
 
 _JobDetail _$JobDetailFromJson(Map<String, dynamic> json) => _JobDetail(
@@ -60,6 +73,8 @@ _JobDetail _$JobDetailFromJson(Map<String, dynamic> json) => _JobDetail(
   reasonOfIncompletion: json['reasonOfIncompletion'] as String? ?? '',
   imageUrl: json['imageUrl'] as String? ?? '',
   date: json['date'] as String,
+  updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
+  isDeleted: json['isDeleted'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$JobDetailToJson(_JobDetail instance) =>
@@ -71,6 +86,8 @@ Map<String, dynamic> _$JobDetailToJson(_JobDetail instance) =>
       'reasonOfIncompletion': instance.reasonOfIncompletion,
       'imageUrl': instance.imageUrl,
       'date': instance.date,
+      'updatedAt': instance.updatedAt,
+      'isDeleted': instance.isDeleted,
     };
 
 _ResearchData _$ResearchDataFromJson(Map<String, dynamic> json) =>
@@ -81,6 +98,7 @@ _ResearchData _$ResearchDataFromJson(Map<String, dynamic> json) =>
       jobDescription: json['jobDescription'] as String? ?? '',
       procedureWork: json['procedureWork'] as String? ?? '',
       obstacles: json['obstacles'] as String? ?? '',
+      updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$ResearchDataToJson(_ResearchData instance) =>
@@ -91,6 +109,7 @@ Map<String, dynamic> _$ResearchDataToJson(_ResearchData instance) =>
       'jobDescription': instance.jobDescription,
       'procedureWork': instance.procedureWork,
       'obstacles': instance.obstacles,
+      'updatedAt': instance.updatedAt,
     };
 
 _DocChecklist _$DocChecklistFromJson(Map<String, dynamic> json) =>
@@ -101,6 +120,8 @@ _DocChecklist _$DocChecklistFromJson(Map<String, dynamic> json) =>
       category: json['category'] as String,
       fileUrl: json['fileUrl'] as String? ?? '',
       notes: json['notes'] as String? ?? '',
+      updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
+      isDeleted: json['isDeleted'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$DocChecklistToJson(_DocChecklist instance) =>
@@ -111,4 +132,6 @@ Map<String, dynamic> _$DocChecklistToJson(_DocChecklist instance) =>
       'category': instance.category,
       'fileUrl': instance.fileUrl,
       'notes': instance.notes,
+      'updatedAt': instance.updatedAt,
+      'isDeleted': instance.isDeleted,
     };

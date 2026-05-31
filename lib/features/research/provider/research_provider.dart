@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../shared/data/models.dart';
 import '../../shared/data/local_storage.dart';
+import '../../shared/data/firebase_service.dart';
 import '../../dashboard/provider/dashboard_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,15 +18,68 @@ class ResearchNotifier extends _$ResearchNotifier {
     final local = ref.read(localStorageProvider);
     final localKey = 'research_$nim';
     final cached = local.read(localKey);
+    
     if (cached != null) {
       try {
-        return ResearchData.fromJson(jsonDecode(cached));
+        final data = ResearchData.fromJson(jsonDecode(cached));
+        _initCloudSync(nim);
+        return data;
       } catch (_) {}
     }
+    
+    _initCloudSync(nim);
     return const ResearchData();
   }
 
-  void _save(ResearchData research) {
+  void _initCloudSync(String nim) {
+    // 1. Rekonsiliasi awal
+    Future.microtask(() async {
+      try {
+        ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek riset...');
+        final cloudData = await ref.read(firebaseServiceProvider).getResearchData(nim);
+        
+        if (cloudData != null) {
+          if (cloudData.updatedAt >= state.updatedAt) {
+            state = cloudData;
+            _saveLocal(cloudData);
+            ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset dimuat');
+          } else {
+            // Local is newer, upload to cloud
+            ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah riset terbaru...');
+            await ref.read(firebaseServiceProvider).saveResearchData(nim, state);
+            ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset terunggah');
+          }
+        } else if (state.companyHistory.isNotEmpty || state.jobDescription.isNotEmpty) {
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Migrasi riset...');
+          await ref.read(firebaseServiceProvider).saveResearchData(nim, state);
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset termigrasi');
+        } else {
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset dimuat');
+        }
+      } catch (e) {
+        ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron riset');
+      }
+    });
+
+    // 2. Real-time
+    ref.listen(
+      firebaseServiceProvider.select((s) => s.researchDataStream(nim)),
+      (previous, next) {
+        next.listen(
+          (cloudData) {
+            if (cloudData != null && cloudData != state && cloudData.updatedAt > state.updatedAt) {
+              state = cloudData;
+              _saveLocal(cloudData);
+              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset sinkron');
+            }
+          },
+        );
+      },
+      fireImmediately: true,
+    );
+  }
+
+  void _saveLocal(ResearchData research) {
     final nim = ref.read(dashboardControllerProvider).nim;
     if (nim.isEmpty) return;
     final local = ref.read(localStorageProvider);
@@ -34,8 +88,20 @@ class ResearchNotifier extends _$ResearchNotifier {
   }
 
   Future<void> updateResearch(ResearchData research) async {
-    state = research;
-    _save(research);
+    final updated = research.copyWith(
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+    );
+    state = updated;
+    _saveLocal(updated);
+    
+    final nim = ref.read(dashboardControllerProvider).nim;
+    try {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah riset...');
+      await ref.read(firebaseServiceProvider).saveResearchData(nim, updated);
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset terunggah');
+    } catch (e) {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal unggah riset');
+    }
   }
 }
 

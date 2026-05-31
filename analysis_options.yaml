@@ -13,6 +13,8 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - "build/**"
+    - ".dart_tool/**"
   errors:
     # Elevate critical issues to errors for strict code quality
     missing_required_param: error

@@ -41,7 +41,7 @@ final class LogbookNotifierProvider
   }
 }
 
-String _$logbookNotifierHash() => r'1c7de27fd5f776e035f8adb46bf2a4d866fb56f9';
+String _$logbookNotifierHash() => r'b2dc2edfa3da57d3458e2539b56f4150fc7a7126';
 
 abstract class _$LogbookNotifier extends $Notifier<List<InternshipLog>> {
   List<InternshipLog> build();

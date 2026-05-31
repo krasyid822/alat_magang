@@ -8,4 +8,4 @@ const String kAppVersion = '1.0.0';
 const String kAppYear = '2026';
 
 /// Incrementing build number, e.g. 2
-const int kBuildNumber = 2;
+const int kBuildNumber = 15;

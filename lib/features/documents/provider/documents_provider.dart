@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../shared/data/models.dart';
 import '../../shared/data/local_storage.dart';
+import '../../shared/data/firebase_service.dart';
 import '../../dashboard/provider/dashboard_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,7 +35,10 @@ class DocumentsNotifier extends _$DocumentsNotifier {
       try {
         final List decoded = jsonDecode(cached);
         localList = decoded.map((e) => DocChecklist.fromJson(Map<String, dynamic>.from(e))).toList();
+        _initCloudSync(nim, defaultDocs);
       } catch (_) {}
+    } else {
+      _initCloudSync(nim, defaultDocs);
     }
 
     final parsed = List<DocChecklist>.from(localList.isEmpty ? defaultDocs : localList);
@@ -49,7 +53,132 @@ class DocumentsNotifier extends _$DocumentsNotifier {
     return parsed;
   }
 
-  void _save(List<DocChecklist> docs) {
+  void _initCloudSync(String nim, List<DocChecklist> defaultDocs) {
+    // 1. Rekonsiliasi awal
+    Future.microtask(() async {
+      try {
+        ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek dokumen...');
+        final cloudDocs = await ref.read(firebaseServiceProvider).getDocuments(nim);
+        
+        final Map<String, DocChecklist> merged = {};
+        for (final item in state) {
+          merged[item.id] = item;
+        }
+        for (final item in cloudDocs) {
+          final localItem = merged[item.id];
+          if (localItem == null || item.updatedAt > localItem.updatedAt) {
+            merged[item.id] = item;
+          }
+        }
+        
+        // Pastikan item default selalu ada
+        for (final defDoc in defaultDocs) {
+          if (!merged.containsKey(defDoc.id)) {
+            merged[defDoc.id] = defDoc;
+          }
+        }
+        
+        final mergedList = merged.values.toList();
+        
+        bool needsUpload = false;
+        bool needsLocalUpdate = false;
+        
+        for (final item in mergedList) {
+          final localItem = state.firstWhere((e) => e.id == item.id, orElse: () => const DocChecklist(id: '', title: '', category: ''));
+          final cloudItem = cloudDocs.firstWhere((e) => e.id == item.id, orElse: () => const DocChecklist(id: '', title: '', category: ''));
+          
+          if (localItem.id.isEmpty || item.updatedAt > localItem.updatedAt) {
+            needsLocalUpdate = true;
+          }
+          if (cloudItem.id.isEmpty || item.updatedAt > cloudItem.updatedAt) {
+            needsUpload = true;
+          }
+        }
+        
+        if (needsLocalUpdate) {
+          state = mergedList;
+          _saveLocal(mergedList);
+        }
+        
+        if (needsUpload) {
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah dokumen...');
+          for (final item in mergedList) {
+            final cloudItem = cloudDocs.firstWhere((e) => e.id == item.id, orElse: () => const DocChecklist(id: '', title: '', category: ''));
+            if (cloudItem.id.isEmpty || item.updatedAt > cloudItem.updatedAt) {
+              await ref.read(firebaseServiceProvider).saveDocument(nim, item);
+            }
+          }
+        }
+
+        // 1. Declare sync time for this session
+        final deviceId = ref.read(localStorageProvider).getDeviceId();
+        await ref.read(firebaseServiceProvider).updateSessionSyncTime(nim, deviceId);
+        
+        // 2. Fetch all active sessions
+        final sessions = await ref.read(firebaseServiceProvider).getSessions(nim);
+        
+        // 3. Find the oldest lastSyncedAt among all devices
+        int minSyncTime = DateTime.now().millisecondsSinceEpoch;
+        if (sessions.isNotEmpty) {
+          for (final session in sessions) {
+            final lastSynced = session['lastSyncedAt'] as int? ?? 0;
+            if (lastSynced < minSyncTime) {
+              minSyncTime = lastSynced;
+            }
+          }
+        }
+        
+        // 4. Purge tombstones that have been synced by all devices
+        if (minSyncTime > 0) {
+          final toPurge = mergedList.where((e) => e.isDeleted && e.updatedAt < minSyncTime).toList();
+          if (toPurge.isNotEmpty) {
+            for (final item in toPurge) {
+              await ref.read(firebaseServiceProvider).deleteDocument(nim, item.id);
+            }
+            final purgedList = state.where((e) => !toPurge.any((p) => p.id == e.id)).toList();
+            state = purgedList;
+            _saveLocal(purgedList);
+          }
+        }
+        
+        ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen dimuat');
+      } catch (e) {
+        ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron dokumen');
+      }
+    });
+
+    // 2. Real-time
+    ref.listen(
+      firebaseServiceProvider.select((s) => s.documentsStream(nim)),
+      (previous, next) {
+        next.listen(
+          (cloudDocs) {
+            final Map<String, DocChecklist> merged = {};
+            for (final item in state) {
+              merged[item.id] = item;
+            }
+            bool changed = false;
+            for (final item in cloudDocs) {
+              final localItem = merged[item.id];
+              if (localItem == null || item.updatedAt > localItem.updatedAt) {
+                merged[item.id] = item;
+                changed = true;
+              }
+            }
+            if (changed) {
+              final mergedList = merged.values.toList();
+              state = mergedList;
+              _saveLocal(mergedList);
+              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen sinkron');
+            }
+          },
+        );
+      },
+      fireImmediately: true,
+    );
+  }
+
+  void _saveLocal(List<DocChecklist> docs) {
     final nim = ref.read(dashboardControllerProvider).nim;
     if (nim.isEmpty) return;
     final local = ref.read(localStorageProvider);
@@ -64,46 +193,105 @@ class DocumentsNotifier extends _$DocumentsNotifier {
           isCompleted: isCompleted,
           notes: notes.isNotEmpty ? notes : e.notes,
           fileUrl: fileUrl.isNotEmpty ? fileUrl : e.fileUrl,
+          updatedAt: DateTime.now().millisecondsSinceEpoch,
         );
       }
       return e;
     }).toList();
     state = updated;
-    _save(updated);
+    _saveLocal(updated);
+    
+    final nim = ref.read(dashboardControllerProvider).nim;
+    final doc = updated.firstWhere((e) => e.id == id);
+    try {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengupdate dokumen...');
+      await ref.read(firebaseServiceProvider).saveDocument(nim, doc);
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen terupdate');
+    } catch (e) {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal update dokumen');
+    }
   }
 
   Future<void> addCustomDocument(String title, String category) async {
     final newId = 'custom_${DateTime.now().millisecondsSinceEpoch}';
+    final doc = DocChecklist(
+      id: newId,
+      title: title,
+      category: category,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+    );
     final updated = [
       ...state,
-      DocChecklist(id: newId, title: title, category: category),
+      doc,
     ];
     state = updated;
-    _save(updated);
+    _saveLocal(updated);
+    
+    final nim = ref.read(dashboardControllerProvider).nim;
+    try {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menambah dokumen...');
+      await ref.read(firebaseServiceProvider).saveDocument(nim, doc);
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen ditambah');
+    } catch (e) {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal tambah dokumen');
+    }
   }
+  
   Future<void> updateNotes(String id, String notes) async {
-    final updated = state.map((e) => e.id == id ? e.copyWith(notes: notes) : e).toList();
+    final updated = state.map((e) => e.id == id ? e.copyWith(
+      notes: notes,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+    ) : e).toList();
     state = updated;
-    _save(updated);
+    _saveLocal(updated);
+    
+    final nim = ref.read(dashboardControllerProvider).nim;
+    final doc = updated.firstWhere((e) => e.id == id);
+    await ref.read(firebaseServiceProvider).saveDocument(nim, doc);
   }
 
   Future<void> updateFileUrl(String id, String fileUrl) async {
-    final updated = state.map((e) => e.id == id ? e.copyWith(fileUrl: fileUrl) : e).toList();
+    final updated = state.map((e) => e.id == id ? e.copyWith(
+      fileUrl: fileUrl,
+      updatedAt: DateTime.now().millisecondsSinceEpoch,
+    ) : e).toList();
     state = updated;
-    _save(updated);
+    _saveLocal(updated);
+    
+    final nim = ref.read(dashboardControllerProvider).nim;
+    final doc = updated.firstWhere((e) => e.id == id);
+    await ref.read(firebaseServiceProvider).saveDocument(nim, doc);
   }
 
   Future<void> removeDocument(String id) async {
-    final updated = state.where((e) => e.id != id).toList();
+    final updated = state.map((e) {
+      if (e.id == id) {
+        return e.copyWith(
+          isDeleted: true,
+          updatedAt: DateTime.now().millisecondsSinceEpoch,
+        );
+      }
+      return e;
+    }).toList();
     state = updated;
-    _save(updated);
+    _saveLocal(updated);
+
+    final nim = ref.read(dashboardControllerProvider).nim;
+    final deletedDoc = updated.firstWhere((e) => e.id == id);
+    try {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menghapus dokumen...');
+      await ref.read(firebaseServiceProvider).saveDocument(nim, deletedDoc);
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen terhapus');
+    } catch (e) {
+      ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal hapus dokumen');
+    }
   }
 }
 
 @riverpod
 Stream<List<DocChecklist>> documentsStream(Ref ref) {
   final docs = ref.watch(documentsProvider);
-  return Stream.value(docs);
+  return Stream.value(docs.where((e) => !e.isDeleted).toList());
 }
 
 @riverpod
