@@ -48,7 +48,13 @@ class DashboardController extends _$DashboardController {
           final lastLogout = cloudProfile.lastLogoutAllTimestamp ?? 0;
           final loginTs = local.getLoginTimestamp();
           if (lastLogout > loginTs) {
-            logout();
+            if (cloudProfile.logoutAllForce) {
+              await logout();
+            } else {
+              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menyinkronkan data sebelum logout...');
+              await _syncAllLocalDataToCloud(nim, lastLogout);
+              await logout();
+            }
             return;
           }
 
@@ -87,7 +93,15 @@ class DashboardController extends _$DashboardController {
               final lastLogout = cloudProfile.lastLogoutAllTimestamp ?? 0;
               final loginTs = local.getLoginTimestamp();
               if (lastLogout > loginTs) {
-                logout();
+                if (cloudProfile.logoutAllForce) {
+                  logout();
+                } else {
+                  Future.microtask(() async {
+                    ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menyinkronkan data sebelum logout...');
+                    await _syncAllLocalDataToCloud(nim, lastLogout);
+                    await logout();
+                  });
+                }
                 return;
               }
 
@@ -160,10 +174,109 @@ class DashboardController extends _$DashboardController {
     }
   }
 
-  Future<void> logoutAll() async {
+  Future<void> _syncAllLocalDataToCloud(String nim, int lastLogout) async {
+    final local = ref.read(localStorageProvider);
+    final firebase = ref.read(firebaseServiceProvider);
+
+    // 1. Profil
+    try {
+      final cloudProfile = await firebase.getProfile(nim);
+      if (cloudProfile != null) {
+        if (state.updatedAt > cloudProfile.updatedAt) {
+          await firebase.saveProfile(state);
+        }
+      }
+    } catch (_) {}
+
+    // 2. Logbook
+    try {
+      final cached = local.read('logs_$nim');
+      if (cached != null) {
+        final List decoded = jsonDecode(cached);
+        final localLogs = decoded.map((e) => InternshipLog.fromJson(Map<String, dynamic>.from(e))).toList();
+        final cloudLogs = await firebase.getLogs(nim);
+        for (final item in localLogs) {
+          final cloudItem = cloudLogs.firstWhere(
+            (e) => e.id == item.id,
+            orElse: () => const InternshipLog(id: '', date: '', activity: '', startTime: '', endTime: '', weekNumber: 0),
+          );
+          if (cloudItem.id.isEmpty) {
+            // Jika data tidak ada di cloud, dan updatedAt lokal lebih lama dari lastLogout,
+            // itu berarti data ini telah dihapus oleh device lain dan tombstone-nya sudah di-purge.
+            // Jangan unggah kembali untuk menghindari kebangkitan data (resurrection).
+            if (item.updatedAt < lastLogout) continue;
+            await firebase.saveLog(nim, item);
+          } else if (item.updatedAt > cloudItem.updatedAt) {
+            await firebase.saveLog(nim, item);
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 3. Pekerjaan (Jobs)
+    try {
+      final cached = local.read('jobs_$nim');
+      if (cached != null) {
+        final List decoded = jsonDecode(cached);
+        final localJobs = decoded.map((e) => JobDetail.fromJson(Map<String, dynamic>.from(e))).toList();
+        final cloudJobs = await firebase.getJobs(nim);
+        for (final item in localJobs) {
+          final cloudItem = cloudJobs.firstWhere(
+            (e) => e.id == item.id,
+            orElse: () => const JobDetail(id: '', title: '', description: '', date: ''),
+          );
+          if (cloudItem.id.isEmpty) {
+            if (item.updatedAt < lastLogout) continue;
+            await firebase.saveJob(nim, item);
+          } else if (item.updatedAt > cloudItem.updatedAt) {
+            await firebase.saveJob(nim, item);
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 4. Dokumen
+    try {
+      final cached = local.read('docs_$nim');
+      if (cached != null) {
+        final List decoded = jsonDecode(cached);
+        final localDocs = decoded.map((e) => DocChecklist.fromJson(Map<String, dynamic>.from(e))).toList();
+        final cloudDocs = await firebase.getDocuments(nim);
+        for (final item in localDocs) {
+          final cloudItem = cloudDocs.firstWhere(
+            (e) => e.id == item.id,
+            orElse: () => const DocChecklist(id: '', title: '', category: ''),
+          );
+          if (cloudItem.id.isEmpty) {
+            if (item.updatedAt < lastLogout) continue;
+            await firebase.saveDocument(nim, item);
+          } else if (item.updatedAt > cloudItem.updatedAt) {
+            await firebase.saveDocument(nim, item);
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 5. Riset (Research)
+    try {
+      final cached = local.read('research_$nim');
+      if (cached != null) {
+        final localResearch = ResearchData.fromJson(jsonDecode(cached));
+        final cloudResearch = await firebase.getResearchData(nim);
+        if (cloudResearch == null) {
+          if (localResearch.updatedAt < lastLogout) return;
+          await firebase.saveResearchData(nim, localResearch);
+        } else if (localResearch.updatedAt > cloudResearch.updatedAt) {
+          await firebase.saveResearchData(nim, localResearch);
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> logoutAll({bool force = false}) async {
     final nim = state.nim;
     if (nim.isEmpty) return;
-    await ref.read(firebaseServiceProvider).logoutAll(nim);
+    await ref.read(firebaseServiceProvider).logoutAll(nim, force: force);
     await logout();
   }
 
@@ -180,6 +293,7 @@ class DashboardController extends _$DashboardController {
     }
     local.clearNim();
     state = const StudentProfile(nim: '');
+    ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.offline, 'Belum Login');
   }
 }
 
@@ -187,8 +301,9 @@ class DashboardController extends _$DashboardController {
 class SyncStatus extends _$SyncStatus {
   @override
   SyncState build() {
-    final nim = ref.watch(dashboardControllerProvider).nim;
-    if (nim.isEmpty) {
+    final local = ref.read(localStorageProvider);
+    final nim = local.getNim();
+    if (nim == null || nim.isEmpty) {
       return const SyncState(status: SyncStatusType.offline, message: 'Belum Login');
     }
     return const SyncState(status: SyncStatusType.idle, message: 'Terhubung');

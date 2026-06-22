@@ -15,6 +15,7 @@ abstract class StudentProfile with _$StudentProfile {
     @Default('') String whatsappNumber,
     @Default('') String lastDeviceId,
     int? lastLogoutAllTimestamp,
+    @Default(false) bool logoutAllForce,
     @Default(0) int updatedAt,
   }) = _StudentProfile;
 

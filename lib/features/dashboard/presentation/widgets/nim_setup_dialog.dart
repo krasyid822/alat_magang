@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/dashboard_provider.dart';
 import '../../../shared/data/firebase_service.dart';
@@ -35,6 +36,11 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
   bool _hasCloudCompany = false;
   bool _hasCloudWa = false;
 
+  // Base64 login
+  bool _isBase64Mode = false;
+  final _base64Controller = TextEditingController();
+  bool _base64Decoded = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +62,38 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
     _majorController.dispose();
     _companyController.dispose();
     _waController.dispose();
+    _base64Controller.dispose();
     super.dispose();
+  }
+
+  /// Decode Base64 token and pre-fill the form fields
+  void _decodeBase64Token() {
+    final token = _base64Controller.text.trim();
+    if (token.isEmpty) {
+      setState(() => _errorMessage = 'Token Base64 tidak boleh kosong.');
+      return;
+    }
+    try {
+      final bytes = base64Decode(token);
+      final jsonStr = utf8.decode(bytes);
+      final Map<String, dynamic> profileData = jsonDecode(jsonStr);
+      final profile = StudentProfile.fromJson(profileData);
+
+      setState(() {
+        _nimController.text = profile.nim;
+        _nameController.text = profile.name;
+        _classController.text = profile.className;
+        _majorController.text = profile.major;
+        _companyController.text = profile.companyName;
+        _waController.text = profile.whatsappNumber;
+        _durationWeeks = profile.internshipDurationWeeks;
+        _base64Decoded = true;
+        _isBase64Mode = false; // Switch back to form mode
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() => _errorMessage = 'Token Base64 tidak valid atau rusak. Pastikan Anda menyalin seluruh kode.');
+    }
   }
 
   Future<void> _checkNimAndProceed() async {
@@ -95,6 +132,13 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
           });
           return;
         }
+
+        // 4. Jika ini forceSetup (login) dan data cloud sudah ada, JANGAN timpa.
+        //    Load dari cloud, bukan dari input form.
+        if (widget.forceSetup) {
+          _saveFromCloud(nim, profile);
+          return;
+        }
       }
 
       _save();
@@ -104,6 +148,15 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         _errorMessage = 'Gagal mengecek NIM. Periksa koneksi Anda.';
       });
     }
+  }
+
+  /// Login berhasil — load data dari cloud, tidak timpa dengan form input
+  void _saveFromCloud(String nim, StudentProfile cloudProfile) {
+    final controller = ref.read(dashboardControllerProvider.notifier);
+    controller.setNim(nim);
+    // Profile akan otomatis diambil dari cloud via _initCloudSync
+    // Kita cukup setNim saja, cloud sync akan menangani sisanya
+    Navigator.pop(context);
   }
 
   void _save() {
@@ -309,7 +362,150 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildSetupView();
+    return _isBase64Mode ? _buildBase64View() : _buildSetupView();
+  }
+
+  Widget _buildBase64View() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+      child: AlertDialog(
+        backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.9),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24.0),
+          side: BorderSide(
+            color: const Color(0xFF38BDF8).withOpacity(0.4),
+            width: 1.5,
+          ),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.qr_code_rounded, color: Color(0xFF38BDF8), size: 28),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Login dengan Kode Pemulihan',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 500,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.2)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: Color(0xFF38BDF8), size: 18),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Tempel kode Base64 yang dikirim ke WhatsApp Anda melalui fitur "Lupa Akun". Kode ini akan mengisi form login secara otomatis.',
+                          style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF38BDF8)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => setState(() => _errorMessage = null),
+                            child: const Icon(Icons.close_rounded, color: Color(0xFFEF4444), size: 18),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                TextField(
+                  controller: _base64Controller,
+                  maxLines: 6,
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+                  decoration: InputDecoration(
+                    labelText: 'Kode Pemulihan Base64',
+                    alignLabelWithHint: true,
+                    prefixIcon: const Icon(Icons.code_rounded, color: Color(0xFF38BDF8), size: 20),
+                    filled: true,
+                    fillColor: const Color(0xFF64748B).withOpacity(0.06),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.content_paste_rounded, color: Color(0xFF38BDF8), size: 18),
+                      tooltip: 'Tempel dari clipboard',
+                      onPressed: () async {
+                        final data = await Clipboard.getData(Clipboard.kTextPlain);
+                        if (data?.text != null) {
+                          _base64Controller.text = data!.text!;
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actions: [
+          TextButton(
+            onPressed: () => setState(() {
+              _isBase64Mode = false;
+              _errorMessage = null;
+            }),
+            child: const Text('Kembali ke Form', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton.icon(
+            onPressed: _decodeBase64Token,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF38BDF8),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            ),
+            icon: const Icon(Icons.login_rounded, size: 18),
+            label: const Text('Decode & Isi Form', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSetupView() {
@@ -534,36 +730,86 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                   const SizedBox(height: 20),
                   _buildDurationStepper(isDark),
                   const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: InkWell(
-                      onTap: () {
-                        if (_nimController.text.trim().isEmpty) {
-                          setState(() {
-                            _errorMessage =
-                                'Silakan masukkan NIM Anda terlebih dahulu pada form utama.';
-                          });
-                          return;
-                        }
-                        _showForgotPasswordDialog();
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        child: Text(
-                          'Lupa NIM / Akun?',
-                          style: TextStyle(
-                            color: Color(0xFF0D9488),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            decoration: TextDecoration.underline,
+                  if (_base64Decoded) ...[  
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D9488).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF0D9488).withOpacity(0.3)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.check_circle_rounded, color: Color(0xFF0D9488), size: 16),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Form berhasil diisi dari kode pemulihan. Verifikasi dan simpan.',
+                              style: TextStyle(color: Color(0xFF0D9488), fontSize: 12, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            if (_nimController.text.trim().isEmpty) {
+                              setState(() {
+                                _errorMessage =
+                                    'Silakan masukkan NIM Anda terlebih dahulu pada form utama.';
+                              });
+                              return;
+                            }
+                            _showForgotPasswordDialog();
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Text(
+                              'Lupa NIM / Akun?',
+                              style: TextStyle(
+                                color: Color(0xFF0D9488),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      if (widget.forceSetup)
+                        InkWell(
+                          onTap: () => setState(() {
+                            _isBase64Mode = true;
+                            _errorMessage = null;
+                          }),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.qr_code_rounded, size: 13, color: Color(0xFF38BDF8)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Login dengan Kode',
+                                  style: TextStyle(
+                                    color: Color(0xFF38BDF8),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),

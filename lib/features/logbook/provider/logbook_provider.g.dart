@@ -41,7 +41,7 @@ final class LogbookNotifierProvider
   }
 }
 
-String _$logbookNotifierHash() => r'b2dc2edfa3da57d3458e2539b56f4150fc7a7126';
+String _$logbookNotifierHash() => r'2308d5400c5aacdfc61b2a19fa2b0ef303dbffa3';
 
 abstract class _$LogbookNotifier extends $Notifier<List<InternshipLog>> {
   List<InternshipLog> build();
@@ -100,7 +100,7 @@ final class LogbookStreamProvider
   }
 }
 
-String _$logbookStreamHash() => r'9777f75b828080e16136a2cb17ad05156463e7b8';
+String _$logbookStreamHash() => r'7375920f025eab38a0e02ff0139fb4721ef71ac4';
 
 @ProviderFor(LogbookController)
 final logbookControllerProvider = LogbookControllerProvider._();

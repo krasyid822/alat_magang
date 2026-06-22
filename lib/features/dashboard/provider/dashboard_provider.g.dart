@@ -42,7 +42,7 @@ final class DashboardControllerProvider
 }
 
 String _$dashboardControllerHash() =>
-    r'6ae8458bc993e132d5c53ab06395beadc05cf9f0';
+    r'2ad2951d9fc23affeeb8bd64b5296915decb2978';
 
 abstract class _$DashboardController extends $Notifier<StudentProfile> {
   StudentProfile build();
@@ -94,7 +94,7 @@ final class SyncStatusProvider
   }
 }
 
-String _$syncStatusHash() => r'a36d3737090750876e14e18af47c015cb3321018';
+String _$syncStatusHash() => r'178ee8d84ddb08ec924bcddee079a228cf64fcfc';
 
 abstract class _$SyncStatus extends $Notifier<SyncState> {
   SyncState build();

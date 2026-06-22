@@ -41,7 +41,7 @@ final class JobNotifierProvider
   }
 }
 
-String _$jobNotifierHash() => r'93207c4237fb2ce554faf82cb4a72e4e7792c3b3';
+String _$jobNotifierHash() => r'9c414b39aa7ee0109302c94c4433b6a0260d1584';
 
 abstract class _$JobNotifier extends $Notifier<List<JobDetail>> {
   List<JobDetail> build();
@@ -98,7 +98,7 @@ final class JobDetailsStreamProvider
   }
 }
 
-String _$jobDetailsStreamHash() => r'd4d11f2ee1c4d70c395b8dd6336570b731b4bcb8';
+String _$jobDetailsStreamHash() => r'81b5c05efec76e16e38157fb189d55a4cb82a384';
 
 @ProviderFor(JobController)
 final jobControllerProvider = JobControllerProvider._();

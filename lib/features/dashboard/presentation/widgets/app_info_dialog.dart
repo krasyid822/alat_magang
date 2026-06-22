@@ -314,32 +314,66 @@ class AppInfoDialog extends ConsumerWidget {
   }
 
   void _confirmLogoutAll(BuildContext context, WidgetRef ref) {
+    bool forceLogout = false;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Logout Semua Perangkat?'),
-        content: const Text(
-          'Tindakan ini akan mengeluarkan akun Anda dari seluruh perangkat yang saat ini sedang login secara permanen. Lanjutkan?',
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx2, setState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Logout Semua Perangkat?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Pilih metode logout untuk perangkat lain yang mungkin sedang offline:',
+                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              RadioListTile<bool>(
+                title: const Text('Sinkronkan dahulu, lalu Logout (Rekomendasi)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                subtitle: const Text('Perangkat offline akan mengunggah data lokal terbarunya ke cloud sebelum keluar.', style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                value: false,
+                groupValue: forceLogout,
+                activeColor: const Color(0xFF0D9488),
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) => setState(() => forceLogout = val ?? false),
+              ),
+              RadioListTile<bool>(
+                title: const Text('Keluar Paksa & Hapus Data', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                subtitle: const Text('Perangkat offline akan langsung menghapus data lokal tanpa sinkronisasi saat online.', style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
+                value: true,
+                groupValue: forceLogout,
+                activeColor: const Color(0xFF0D9488),
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) => setState(() => forceLogout = val ?? true),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                Navigator.pop(ctx); // Close confirmation
+                Navigator.pop(context); // Close about dialog
+                await ref.read(dashboardControllerProvider.notifier).logoutAll(force: forceLogout);
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Perintah logout telah dikirim ke semua perangkat.')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF43F5E),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Ya, Logout All', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final messenger = ScaffoldMessenger.of(context);
-              Navigator.pop(ctx); // Close confirmation
-              Navigator.pop(context); // Close about dialog
-              await ref.read(dashboardControllerProvider.notifier).logoutAll();
-              messenger.showSnackBar(
-                const SnackBar(content: Text('Berhasil keluar dari semua perangkat.')),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E)),
-            child: const Text('Ya, Logout All', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
   }

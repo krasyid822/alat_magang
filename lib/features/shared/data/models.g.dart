@@ -18,6 +18,7 @@ _StudentProfile _$StudentProfileFromJson(Map<String, dynamic> json) =>
       whatsappNumber: json['whatsappNumber'] as String? ?? '',
       lastDeviceId: json['lastDeviceId'] as String? ?? '',
       lastLogoutAllTimestamp: (json['lastLogoutAllTimestamp'] as num?)?.toInt(),
+      logoutAllForce: json['logoutAllForce'] as bool? ?? false,
       updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
     );
 
@@ -32,6 +33,7 @@ Map<String, dynamic> _$StudentProfileToJson(_StudentProfile instance) =>
       'whatsappNumber': instance.whatsappNumber,
       'lastDeviceId': instance.lastDeviceId,
       'lastLogoutAllTimestamp': instance.lastLogoutAllTimestamp,
+      'logoutAllForce': instance.logoutAllForce,
       'updatedAt': instance.updatedAt,
     };
 

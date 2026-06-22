@@ -41,7 +41,7 @@ final class DocumentsNotifierProvider
   }
 }
 
-String _$documentsNotifierHash() => r'b697ea4bc2fc0a3c3bf1da00b3c5eed78082c868';
+String _$documentsNotifierHash() => r'07ba362fc845a915b34451c5ff52b691b045ddc0';
 
 abstract class _$DocumentsNotifier extends $Notifier<List<DocChecklist>> {
   List<DocChecklist> build();
@@ -100,7 +100,7 @@ final class DocumentsStreamProvider
   }
 }
 
-String _$documentsStreamHash() => r'0db80ad7c7bf91fbbc6900556d468eaf0d71c503';
+String _$documentsStreamHash() => r'fac9c5db469c093ba06b84341b6bcec250739f38';
 
 @ProviderFor(DocumentsController)
 final documentsControllerProvider = DocumentsControllerProvider._();

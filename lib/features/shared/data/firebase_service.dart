@@ -68,11 +68,12 @@ class FirebaseService {
     return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
-  Future<void> logoutAll(String nim) async {
+  Future<void> logoutAll(String nim, {required bool force}) async {
     if (nim.isEmpty) return;
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     await _db.collection(studentsCollection).doc(nim).update({
       'lastLogoutAllTimestamp': timestamp,
+      'logoutAllForce': force,
     });
     // Delete all session documents in sessions subcollection
     try {

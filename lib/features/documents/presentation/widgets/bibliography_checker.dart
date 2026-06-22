@@ -380,7 +380,10 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
       // It's a URL link (Google Drive / Online source)
       return InkWell(
         onTap: () {
-          html.window.open(fileUrl, '_blank');
+          final anchor = html.AnchorElement(href: fileUrl)
+            ..target = '_blank'
+            ..rel = 'noopener';
+          anchor.click();
         },
         borderRadius: BorderRadius.circular(8),
         child: Container(

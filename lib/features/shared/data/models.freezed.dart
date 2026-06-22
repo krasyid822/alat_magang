@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$StudentProfile {
 
- String get nim; String get name; String get className; String get major; String get companyName; int get internshipDurationWeeks; String get whatsappNumber; String get lastDeviceId; int? get lastLogoutAllTimestamp; int get updatedAt;
+ String get nim; String get name; String get className; String get major; String get companyName; int get internshipDurationWeeks; String get whatsappNumber; String get lastDeviceId; int? get lastLogoutAllTimestamp; bool get logoutAllForce; int get updatedAt;
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $StudentProfileCopyWith<StudentProfile> get copyWith => _$StudentProfileCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.logoutAllForce, logoutAllForce) || other.logoutAllForce == logoutAllForce)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,updatedAt);
+int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,logoutAllForce,updatedAt);
 
 @override
 String toString() {
-  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, updatedAt: $updatedAt)';
+  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, logoutAllForce: $logoutAllForce, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $StudentProfileCopyWith<$Res>  {
   factory $StudentProfileCopyWith(StudentProfile value, $Res Function(StudentProfile) _then) = _$StudentProfileCopyWithImpl;
 @useResult
 $Res call({
- String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, int updatedAt
+ String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, bool logoutAllForce, int updatedAt
 });
 
 
@@ -65,7 +65,7 @@ class _$StudentProfileCopyWithImpl<$Res>
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? logoutAllForce = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -76,7 +76,8 @@ as String,internshipDurationWeeks: null == internshipDurationWeeks ? _self.inter
 as int,whatsappNumber: null == whatsappNumber ? _self.whatsappNumber : whatsappNumber // ignore: cast_nullable_to_non_nullable
 as String,lastDeviceId: null == lastDeviceId ? _self.lastDeviceId : lastDeviceId // ignore: cast_nullable_to_non_nullable
 as String,lastLogoutAllTimestamp: freezed == lastLogoutAllTimestamp ? _self.lastLogoutAllTimestamp : lastLogoutAllTimestamp // ignore: cast_nullable_to_non_nullable
-as int?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int?,logoutAllForce: null == logoutAllForce ? _self.logoutAllForce : logoutAllForce // ignore: cast_nullable_to_non_nullable
+as bool,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  int updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StudentProfile() when $default != null:
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.updatedAt);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  int updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _StudentProfile():
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.updatedAt);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  int updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _StudentProfile() when $default != null:
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.updatedAt);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
   return null;
 
 }
@@ -218,7 +219,7 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 @JsonSerializable()
 
 class _StudentProfile implements StudentProfile {
-  const _StudentProfile({required this.nim, this.name = '', this.className = '', this.major = '', this.companyName = '', this.internshipDurationWeeks = 16, this.whatsappNumber = '', this.lastDeviceId = '', this.lastLogoutAllTimestamp, this.updatedAt = 0});
+  const _StudentProfile({required this.nim, this.name = '', this.className = '', this.major = '', this.companyName = '', this.internshipDurationWeeks = 16, this.whatsappNumber = '', this.lastDeviceId = '', this.lastLogoutAllTimestamp, this.logoutAllForce = false, this.updatedAt = 0});
   factory _StudentProfile.fromJson(Map<String, dynamic> json) => _$StudentProfileFromJson(json);
 
 @override final  String nim;
@@ -230,6 +231,7 @@ class _StudentProfile implements StudentProfile {
 @override@JsonKey() final  String whatsappNumber;
 @override@JsonKey() final  String lastDeviceId;
 @override final  int? lastLogoutAllTimestamp;
+@override@JsonKey() final  bool logoutAllForce;
 @override@JsonKey() final  int updatedAt;
 
 /// Create a copy of StudentProfile
@@ -245,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.logoutAllForce, logoutAllForce) || other.logoutAllForce == logoutAllForce)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,updatedAt);
+int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,logoutAllForce,updatedAt);
 
 @override
 String toString() {
-  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, updatedAt: $updatedAt)';
+  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, logoutAllForce: $logoutAllForce, updatedAt: $updatedAt)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$StudentProfileCopyWith<$Res> implements $StudentProfileCo
   factory _$StudentProfileCopyWith(_StudentProfile value, $Res Function(_StudentProfile) _then) = __$StudentProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, int updatedAt
+ String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, bool logoutAllForce, int updatedAt
 });
 
 
@@ -282,7 +284,7 @@ class __$StudentProfileCopyWithImpl<$Res>
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? logoutAllForce = null,Object? updatedAt = null,}) {
   return _then(_StudentProfile(
 nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -293,7 +295,8 @@ as String,internshipDurationWeeks: null == internshipDurationWeeks ? _self.inter
 as int,whatsappNumber: null == whatsappNumber ? _self.whatsappNumber : whatsappNumber // ignore: cast_nullable_to_non_nullable
 as String,lastDeviceId: null == lastDeviceId ? _self.lastDeviceId : lastDeviceId // ignore: cast_nullable_to_non_nullable
 as String,lastLogoutAllTimestamp: freezed == lastLogoutAllTimestamp ? _self.lastLogoutAllTimestamp : lastLogoutAllTimestamp // ignore: cast_nullable_to_non_nullable
-as int?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int?,logoutAllForce: null == logoutAllForce ? _self.logoutAllForce : logoutAllForce // ignore: cast_nullable_to_non_nullable
+as bool,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
