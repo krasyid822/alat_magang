@@ -40,8 +40,10 @@ class DashboardController extends _$DashboardController {
     // 1. Cek data di cloud terlebih dahulu untuk rekonsiliasi awal
     Future.microtask(() async {
       try {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek cloud...');
         final cloudProfile = await ref.read(firebaseServiceProvider).getProfile(nim);
+        if (!ref.mounted) return;
         
         if (cloudProfile != null) {
           // Check for global logout
@@ -51,8 +53,10 @@ class DashboardController extends _$DashboardController {
             if (cloudProfile.logoutAllForce) {
               await logout();
             } else {
+              if (!ref.mounted) return;
               ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menyinkronkan data sebelum logout...');
               await _syncAllLocalDataToCloud(nim, lastLogout);
+              if (!ref.mounted) return;
               await logout();
             }
             return;
@@ -62,60 +66,69 @@ class DashboardController extends _$DashboardController {
           if (cloudProfile.updatedAt >= state.updatedAt) {
             state = cloudProfile;
             local.write('profile_$nim', jsonEncode(cloudProfile.toJson()));
+            if (!ref.mounted) return;
             ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Data dimuat dari cloud');
           } else {
             // Local is newer, upload to cloud
+            if (!ref.mounted) return;
             ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah profil terbaru...');
             await ref.read(firebaseServiceProvider).saveProfile(state);
+            if (!ref.mounted) return;
             ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Profil terunggah');
           }
         } else if (state.name.isNotEmpty || state.companyName.isNotEmpty) {
           // Cloud kosong tapi lokal punya data (device lama), migrasikan ke cloud
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Migrasi ke cloud...');
           await ref.read(firebaseServiceProvider).saveProfile(state);
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Data termigrasi ke cloud');
         } else {
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Data dimuat dari cloud');
         }
       } catch (e) {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron awal');
       }
     });
 
     // 2. Listen to cloud changes and update local state/cache (Real-time)
-    ref.listen(
-      firebaseServiceProvider.select((s) => s.profileStream(nim)),
-      (previous, next) {
-        next.listen(
-          (cloudProfile) {
-            if (cloudProfile != null) {
-              // Check for global logout in real-time
-              final lastLogout = cloudProfile.lastLogoutAllTimestamp ?? 0;
-              final loginTs = local.getLoginTimestamp();
-              if (lastLogout > loginTs) {
-                if (cloudProfile.logoutAllForce) {
-                  logout();
-                } else {
-                  Future.microtask(() async {
-                    ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menyinkronkan data sebelum logout...');
-                    await _syncAllLocalDataToCloud(nim, lastLogout);
-                    await logout();
-                  });
-                }
-                return;
-              }
-
-              if (cloudProfile != state && cloudProfile.updatedAt > state.updatedAt) {
-                state = cloudProfile;
-                local.write('profile_$nim', jsonEncode(cloudProfile.toJson()));
-                ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Sinkron');
-              }
+    final subscription = ref.read(firebaseServiceProvider).profileStream(nim).listen(
+      (cloudProfile) {
+        if (!ref.mounted) return;
+        if (cloudProfile != null) {
+          // Check for global logout in real-time
+          final lastLogout = cloudProfile.lastLogoutAllTimestamp ?? 0;
+          final loginTs = local.getLoginTimestamp();
+          if (lastLogout > loginTs) {
+            if (cloudProfile.logoutAllForce) {
+              logout();
+            } else {
+              Future.microtask(() async {
+                if (!ref.mounted) return;
+                ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Menyinkronkan data sebelum logout...');
+                await _syncAllLocalDataToCloud(nim, lastLogout);
+                if (!ref.mounted) return;
+                await logout();
+              });
             }
-          },
-        );
+            return;
+          }
+
+          if (cloudProfile != state && cloudProfile.updatedAt > state.updatedAt) {
+            state = cloudProfile;
+            local.write('profile_$nim', jsonEncode(cloudProfile.toJson()));
+            if (!ref.mounted) return;
+            ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Sinkron');
+          }
+        }
       },
-      fireImmediately: true,
     );
+
+    ref.onDispose(() {
+      subscription.cancel();
+    });
   }
 
   /// Memperbarui NIM aktif dan menyimpannya secara lokal

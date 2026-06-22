@@ -35,48 +35,57 @@ class ResearchNotifier extends _$ResearchNotifier {
     // 1. Rekonsiliasi awal
     Future.microtask(() async {
       try {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek riset...');
         final cloudData = await ref.read(firebaseServiceProvider).getResearchData(nim);
+        if (!ref.mounted) return;
         
         if (cloudData != null) {
           if (cloudData.updatedAt >= state.updatedAt) {
             state = cloudData;
             _saveLocal(cloudData);
+            if (!ref.mounted) return;
             ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset dimuat');
           } else {
             // Local is newer, upload to cloud
+            if (!ref.mounted) return;
             ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah riset terbaru...');
             await ref.read(firebaseServiceProvider).saveResearchData(nim, state);
+            if (!ref.mounted) return;
             ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset terunggah');
           }
         } else if (state.companyHistory.isNotEmpty || state.jobDescription.isNotEmpty) {
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Migrasi riset...');
           await ref.read(firebaseServiceProvider).saveResearchData(nim, state);
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset termigrasi');
         } else {
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset dimuat');
         }
       } catch (e) {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron riset');
       }
     });
 
     // 2. Real-time
-    ref.listen(
-      firebaseServiceProvider.select((s) => s.researchDataStream(nim)),
-      (previous, next) {
-        next.listen(
-          (cloudData) {
-            if (cloudData != null && cloudData != state && cloudData.updatedAt > state.updatedAt) {
-              state = cloudData;
-              _saveLocal(cloudData);
-              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset sinkron');
-            }
-          },
-        );
+    final subscription = ref.read(firebaseServiceProvider).researchDataStream(nim).listen(
+      (cloudData) {
+        if (!ref.mounted) return;
+        if (cloudData != null && cloudData != state && cloudData.updatedAt > state.updatedAt) {
+          state = cloudData;
+          _saveLocal(cloudData);
+          if (!ref.mounted) return;
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Riset sinkron');
+        }
       },
-      fireImmediately: true,
     );
+
+    ref.onDispose(() {
+      subscription.cancel();
+    });
   }
 
   void _saveLocal(ResearchData research) {

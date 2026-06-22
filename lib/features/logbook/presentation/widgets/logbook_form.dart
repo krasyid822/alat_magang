@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/data/models.dart';
 import '../../provider/logbook_provider.dart';
+import '../../../shared/data/theme_provider.dart';
 
 class LogbookForm extends ConsumerStatefulWidget {
   final InternshipLog? existingLog;
@@ -105,11 +106,11 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
         backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.0),
-          side: BorderSide(color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1.5),
+          side: BorderSide(color: context.toolColors.logbook.withOpacity(0.3), width: 1.5),
         ),
         title: Row(
           children: [
-            const Icon(Icons.calendar_month_rounded, color: Color(0xFF38BDF8), size: 24),
+            Icon(Icons.calendar_month_rounded, color: context.toolColors.logbook, size: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -175,18 +176,18 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF38BDF8).withOpacity(0.06),
+                      color: context.toolColors.logbook.withOpacity(0.06),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.15)),
+                      border: Border.all(color: context.toolColors.logbook.withOpacity(0.15)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded, color: Color(0xFF38BDF8), size: 20),
+                        Icon(Icons.info_outline_rounded, color: context.toolColors.logbook, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Pelaksanaan: Minggu Ke-$calculatedWeek (Dihitung Otomatis)',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF38BDF8), fontSize: 13),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: context.toolColors.logbook, fontSize: 13),
                           ),
                         ),
                       ],
@@ -196,14 +197,14 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
                   TextFormField(
                     controller: _activityController,
                     maxLines: 3,
-                    decoration: _inputDecoration('Uraian Kegiatan / Pekerjaan', Icons.description_rounded),
+                    decoration: _inputDecoration(context, 'Uraian Kegiatan / Pekerjaan', Icons.description_rounded),
                     validator: (v) => v!.trim().isEmpty ? 'Uraian kegiatan wajib diisi' : null,
                   ),
                   if (widget.existingLog != null) ...[
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _reasonController,
-                      decoration: _inputDecoration('Alasan Perubahan (Opsional)', Icons.rate_review_rounded),
+                      decoration: _inputDecoration(context, 'Alasan Perubahan (Opsional)', Icons.rate_review_rounded),
                     ),
                   ],
                 ],
@@ -219,7 +220,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
           ElevatedButton(
             onPressed: (widget.existingLog != null && !_hasChanges) ? null : () => _save(calculatedWeek),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF38BDF8),
+              backgroundColor: context.toolColors.logbook,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -244,7 +245,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
         if (date != null) setState(() => _selectedDate = date);
       },
       child: InputDecorator(
-        decoration: _inputDecoration('Tanggal Kegiatan', Icons.calendar_today_rounded),
+        decoration: _inputDecoration(context, 'Tanggal Kegiatan', Icons.calendar_today_rounded),
         child: Text('${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
       ),
     );
@@ -257,20 +258,20 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
         if (t != null) onPicked(t);
       },
       child: InputDecorator(
-        decoration: _inputDecoration(label, Icons.access_time_rounded),
+        decoration: _inputDecoration(context, label, Icons.access_time_rounded),
         child: Text(time.format(context)),
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon) {
+  InputDecoration _inputDecoration(BuildContext context, String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, size: 20, color: const Color(0xFF38BDF8)),
+      prefixIcon: Icon(icon, size: 20, color: context.toolColors.logbook),
       filled: true,
       fillColor: const Color(0xFF64748B).withOpacity(0.06),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: const BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide(color: context.toolColors.logbook, width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }

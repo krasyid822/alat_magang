@@ -57,8 +57,10 @@ class DocumentsNotifier extends _$DocumentsNotifier {
     // 1. Rekonsiliasi awal
     Future.microtask(() async {
       try {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek dokumen...');
         final cloudDocs = await ref.read(firebaseServiceProvider).getDocuments(nim);
+        if (!ref.mounted) return;
         
         final Map<String, DocChecklist> merged = {};
         for (final item in state) {
@@ -101,20 +103,24 @@ class DocumentsNotifier extends _$DocumentsNotifier {
         }
         
         if (needsUpload) {
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah dokumen...');
           for (final item in mergedList) {
             final cloudItem = cloudDocs.firstWhere((e) => e.id == item.id, orElse: () => const DocChecklist(id: '', title: '', category: ''));
             if (cloudItem.id.isEmpty || item.updatedAt > cloudItem.updatedAt) {
+              if (!ref.mounted) return;
               await ref.read(firebaseServiceProvider).saveDocument(nim, item);
             }
           }
         }
 
         // 1. Declare sync time for this session
+        if (!ref.mounted) return;
         final deviceId = ref.read(localStorageProvider).getDeviceId();
         await ref.read(firebaseServiceProvider).updateSessionSyncTime(nim, deviceId);
         
         // 2. Fetch all active sessions
+        if (!ref.mounted) return;
         final sessions = await ref.read(firebaseServiceProvider).getSessions(nim);
         
         // 3. Find the oldest lastSyncedAt among all devices
@@ -133,6 +139,7 @@ class DocumentsNotifier extends _$DocumentsNotifier {
           final toPurge = mergedList.where((e) => e.isDeleted && e.updatedAt < minSyncTime).toList();
           if (toPurge.isNotEmpty) {
             for (final item in toPurge) {
+              if (!ref.mounted) return;
               await ref.read(firebaseServiceProvider).deleteDocument(nim, item.id);
             }
             final purgedList = state.where((e) => !toPurge.any((p) => p.id == e.id)).toList();
@@ -141,41 +148,43 @@ class DocumentsNotifier extends _$DocumentsNotifier {
           }
         }
         
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen dimuat');
       } catch (e) {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron dokumen');
       }
     });
 
     // 2. Real-time
-    ref.listen(
-      firebaseServiceProvider.select((s) => s.documentsStream(nim)),
-      (previous, next) {
-        next.listen(
-          (cloudDocs) {
-            final Map<String, DocChecklist> merged = {};
-            for (final item in state) {
-              merged[item.id] = item;
-            }
-            bool changed = false;
-            for (final item in cloudDocs) {
-              final localItem = merged[item.id];
-              if (localItem == null || item.updatedAt > localItem.updatedAt) {
-                merged[item.id] = item;
-                changed = true;
-              }
-            }
-            if (changed) {
-              final mergedList = merged.values.toList();
-              state = mergedList;
-              _saveLocal(mergedList);
-              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen sinkron');
-            }
-          },
-        );
+    final subscription = ref.read(firebaseServiceProvider).documentsStream(nim).listen(
+      (cloudDocs) {
+        if (!ref.mounted) return;
+        final Map<String, DocChecklist> merged = {};
+        for (final item in state) {
+          merged[item.id] = item;
+        }
+        bool changed = false;
+        for (final item in cloudDocs) {
+          final localItem = merged[item.id];
+          if (localItem == null || item.updatedAt > localItem.updatedAt) {
+            merged[item.id] = item;
+            changed = true;
+          }
+        }
+        if (changed) {
+          final mergedList = merged.values.toList();
+          state = mergedList;
+          _saveLocal(mergedList);
+          if (!ref.mounted) return;
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Dokumen sinkron');
+        }
       },
-      fireImmediately: true,
     );
+
+    ref.onDispose(() {
+      subscription.cancel();
+    });
   }
 
   void _saveLocal(List<DocChecklist> docs) {

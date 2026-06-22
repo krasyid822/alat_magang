@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/data/models.dart';
+import '../../shared/data/theme_provider.dart';
 import '../provider/research_provider.dart';
 
 class ResearchScreen extends ConsumerStatefulWidget {
@@ -13,6 +14,7 @@ class ResearchScreen extends ConsumerStatefulWidget {
 }
 
 class _ResearchScreenState extends ConsumerState<ResearchScreen> {
+  Color get _accentColor => context.toolColors.research;
   final _formKey = GlobalKey<FormState>();
   final _historyController = TextEditingController();
   final _visionController = TextEditingController();
@@ -353,10 +355,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               const SizedBox(height: 20),
               researchAsync.when(
                 data: (data) => _buildFormContent(isDark),
-                loading: () => const Center(
+                loading: () => Center(
                   child: Padding(
-                    padding: EdgeInsets.all(40.0),
-                    child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+                    padding: const EdgeInsets.all(40.0),
+                    child: CircularProgressIndicator(color: _accentColor),
                   ),
                 ),
                 error: (err, _) => Center(
@@ -397,7 +399,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         ElevatedButton.icon(
           onPressed: _saveResearch,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF59E0B),
+            backgroundColor: _accentColor,
             foregroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -430,7 +432,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       child: Row(
         children: List.generate(tabs.length, (idx) {
           final isSelected = _activeTab == idx;
-          final color = isSelected ? const Color(0xFFF59E0B) : const Color(0xFF64748B);
+          final color = isSelected ? _accentColor : const Color(0xFF64748B);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: InkWell(
@@ -442,12 +444,12 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFFF59E0B).withOpacity(0.08)
+                      ? _accentColor.withOpacity(0.08)
                       : (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.4),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFFF59E0B)
+                        ? _accentColor
                         : (isDark ? Colors.white10 : Colors.black12),
                     width: isSelected ? 1.5 : 1,
                   ),
@@ -596,9 +598,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFFF59E0B).withOpacity(0.04),
+          color: _accentColor.withOpacity(0.04),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.12)),
+          border: Border.all(color: _accentColor.withOpacity(0.12)),
         ),
         child: Column(
           children: [
@@ -607,7 +609,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             ElevatedButton.icon(
               onPressed: _addNewImage,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
+                backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -630,7 +632,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             margin: const EdgeInsets.only(bottom: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: const Color(0xFFF59E0B).withOpacity(0.15)),
+              side: BorderSide(color: _accentColor.withOpacity(0.15)),
             ),
             color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
             child: Padding(
@@ -680,7 +682,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                       ElevatedButton.icon(
                         onPressed: () => _pickImageFromGallery(idx),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF59E0B).withOpacity(0.12),
+                          backgroundColor: _accentColor.withOpacity(0.12),
                           foregroundColor: const Color(0xFFD97706),
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
@@ -718,9 +720,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFFF59E0B).withOpacity(0.04),
+          color: _accentColor.withOpacity(0.04),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.12)),
+          border: Border.all(color: _accentColor.withOpacity(0.12)),
         ),
         child: Column(
           children: [
@@ -729,7 +731,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             ElevatedButton.icon(
               onPressed: _addNewTask,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
+                backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -752,7 +754,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: const Color(0xFFF59E0B).withOpacity(0.15)),
+              side: BorderSide(color: _accentColor.withOpacity(0.15)),
             ),
             color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
             child: Padding(
@@ -818,9 +820,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFFF59E0B).withOpacity(0.04),
+          color: _accentColor.withOpacity(0.04),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.12)),
+          border: Border.all(color: _accentColor.withOpacity(0.12)),
         ),
         child: Column(
           children: [
@@ -829,7 +831,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             ElevatedButton.icon(
               onPressed: _addNewStep,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
+                backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -852,7 +854,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: const Color(0xFFF59E0B).withOpacity(0.15)),
+              side: BorderSide(color: _accentColor.withOpacity(0.15)),
             ),
             color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
             child: Padding(
@@ -918,13 +920,13 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFFF59E0B).withOpacity(0.04),
+          color: _accentColor.withOpacity(0.04),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.15)),
+          border: Border.all(color: _accentColor.withOpacity(0.15)),
         ),
         child: Column(
           children: [
-            Icon(Icons.warning_amber_rounded, color: const Color(0xFFF59E0B).withOpacity(0.6), size: 40),
+            Icon(Icons.warning_amber_rounded, color: _accentColor.withOpacity(0.6), size: 40),
             const SizedBox(height: 12),
             const Text(
               'Belum ada hambatan yang ditambahkan',
@@ -940,7 +942,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             ElevatedButton.icon(
               onPressed: _addNewObstacle,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
+                backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -963,7 +965,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             margin: const EdgeInsets.only(bottom: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: const Color(0xFFF59E0B).withOpacity(0.2)),
+              side: BorderSide(color: _accentColor.withOpacity(0.2)),
             ),
             color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.6),
             child: Padding(
@@ -997,7 +999,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                       filled: true,
                       fillColor: const Color(0xFF64748B).withOpacity(0.04),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide(color: _accentColor, width: 1.5)),
                       contentPadding: const EdgeInsets.all(12.0),
                     ),
                     onChanged: (val) {
@@ -1015,7 +1017,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                       filled: true,
                       fillColor: const Color(0xFF64748B).withOpacity(0.04),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.5)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide(color: _accentColor, width: 1.5)),
                       contentPadding: const EdgeInsets.all(12.0),
                     ),
                     onChanged: (val) {
@@ -1034,7 +1036,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           child: ElevatedButton.icon(
             onPressed: _addNewObstacle,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B).withOpacity(0.12),
+              backgroundColor: _accentColor.withOpacity(0.12),
               foregroundColor: const Color(0xFFD97706),
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1061,7 +1063,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFFF59E0B), size: 24),
+              Icon(icon, color: _accentColor, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: RunningText(
@@ -1474,7 +1476,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       filled: true,
       fillColor: const Color(0xFF64748B).withOpacity(0.04),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: const BorderSide(color: Color(0xFFF59E0B), width: 1.2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide(color: _accentColor, width: 1.2)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     );
   }
@@ -1485,7 +1487,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFFF59E0B), size: 16),
+          Icon(icon, color: _accentColor, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -1513,7 +1515,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       decoration: BoxDecoration(
         color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.15)),
+        border: Border.all(color: _accentColor.withOpacity(0.15)),
       ),
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -1549,10 +1551,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               ),
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
-                return const Center(
+                return Center(
                   child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+                    padding: const EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(color: _accentColor),
                   ),
                 );
               },

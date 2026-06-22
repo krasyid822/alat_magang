@@ -47,6 +47,8 @@ class _ProgressCircleState extends State<ProgressCircle> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final secondaryColor = Theme.of(context).colorScheme.secondary;
     
     return AnimatedBuilder(
       animation: _animation,
@@ -64,6 +66,8 @@ class _ProgressCircleState extends State<ProgressCircle> with SingleTickerProvid
                       painter: _CircleProgressPainter(
                         progress: _animation.value,
                         isDark: isDark,
+                        primaryColor: primaryColor,
+                        secondaryColor: secondaryColor,
                       ),
                     ),
                   ),
@@ -77,7 +81,7 @@ class _ProgressCircleState extends State<ProgressCircle> with SingleTickerProvid
                             fontSize: 36,
                             fontWeight: FontWeight.w900,
                             letterSpacing: -1,
-                            color: const Color(0xFF0D9488),
+                            color: primaryColor,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -106,8 +110,15 @@ class _ProgressCircleState extends State<ProgressCircle> with SingleTickerProvid
 class _CircleProgressPainter extends CustomPainter {
   final double progress;
   final bool isDark;
+  final Color primaryColor;
+  final Color secondaryColor;
 
-  _CircleProgressPainter({required this.progress, required this.isDark});
+  _CircleProgressPainter({
+    required this.progress,
+    required this.isDark,
+    required this.primaryColor,
+    required this.secondaryColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -122,13 +133,13 @@ class _CircleProgressPainter extends CustomPainter {
     canvas.drawCircle(center, radius, bgPaint);
 
     final progressPaint = Paint()
-      ..shader = const SweepGradient(
+      ..shader = SweepGradient(
         colors: [
-          Color(0xFF38BDF8),
-          Color(0xFF0D9488),
-          Color(0xFF38BDF8),
+          secondaryColor,
+          primaryColor,
+          secondaryColor,
         ],
-        stops: [0.0, 0.5, 1.0],
+        stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

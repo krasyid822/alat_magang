@@ -4,6 +4,7 @@ import '../../shared/data/models.dart';
 import '../provider/job_provider.dart';
 import 'widgets/job_detail_card.dart';
 import 'widgets/job_form.dart';
+import '../../shared/data/theme_provider.dart';
 
 class JobDetailsScreen extends ConsumerStatefulWidget {
   const JobDetailsScreen({super.key});
@@ -41,9 +42,9 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
         children: [
           _buildHeader(context),
           const SizedBox(height: 20),
-          _buildSearchBar(isDark),
+          _buildSearchBar(context, isDark),
           const SizedBox(height: 20),
-          _buildFilters(),
+          _buildFilters(context),
           const SizedBox(height: 20),
           Expanded(
             child: jobsAsync.when(
@@ -99,7 +100,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488))),
+              loading: () => Center(child: CircularProgressIndicator(color: context.toolColors.job)),
               error: (err, _) => Center(child: Text('Gagal memuat tugas: $err')),
             ),
           ),
@@ -108,7 +109,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     );
   }
 
-  Widget _buildSearchBar(bool isDark) {
+  Widget _buildSearchBar(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
         color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
@@ -121,7 +122,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
         decoration: InputDecoration(
           hintText: 'Cari nama tugas, uraian, tanggal, atau kendala...',
           hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
-          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0D9488), size: 20),
+          prefixIcon: Icon(Icons.search_rounded, color: context.toolColors.job, size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear_rounded, color: Color(0xFF64748B), size: 18),
@@ -163,7 +164,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
         ElevatedButton.icon(
           onPressed: () => showDialog(context: context, builder: (context) => const JobForm()),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0D9488),
+            backgroundColor: context.toolColors.job,
             foregroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -176,30 +177,30 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     );
   }
 
-  Widget _buildFilters() {
+  Widget _buildFilters(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       controller: _filterScrollController,
       child: Row(
         children: [
-          _buildFilterChip('Semua Tugas', 0),
+          _buildFilterChip(context, 'Semua Tugas', 0),
           const SizedBox(width: 8),
-          _buildFilterChip('Selesai', 1),
+          _buildFilterChip(context, 'Selesai', 1),
           const SizedBox(width: 8),
-          _buildFilterChip('Kendala', 2),
+          _buildFilterChip(context, 'Kendala', 2),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, int filterIndex) {
+  Widget _buildFilterChip(BuildContext context, String label, int filterIndex) {
     final isSelected = _selectedFilter == filterIndex;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: const Color(0xFF0D9488).withOpacity(0.2),
+      selectedColor: context.toolColors.job.withOpacity(0.2),
       labelStyle: TextStyle(
-        color: isSelected ? const Color(0xFF0D9488) : const Color(0xFF64748B),
+        color: isSelected ? context.toolColors.job : const Color(0xFF64748B),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       onSelected: (_) => setState(() => _selectedFilter = filterIndex),

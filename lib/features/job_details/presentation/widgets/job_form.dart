@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/data/models.dart';
 import '../../provider/job_provider.dart';
+import '../../../shared/data/theme_provider.dart';
 
 class JobForm extends ConsumerStatefulWidget {
   final JobDetail? existingJob;
@@ -96,7 +97,7 @@ class _JobFormState extends ConsumerState<JobForm> {
       ..style.backgroundColor = '#1E293B'
       ..style.borderRadius = '24px'
       ..style.padding = '24px'
-      ..style.border = '1.5px solid rgba(13, 148, 136, 0.3)'
+      ..style.border = '1.5px solid rgba(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue}, 0.3)'
       ..style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
       ..style.display = 'flex'
       ..style.flexDirection = 'column'
@@ -104,7 +105,7 @@ class _JobFormState extends ConsumerState<JobForm> {
 
     final header = html.HeadingElement.h3()
       ..text = 'Kamera Dokumentasi Magang'
-      ..style.color = '#0D9488'
+      ..style.color = 'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
       ..style.margin = '0'
       ..style.fontSize = '20px'
       ..style.fontWeight = 'bold'
@@ -143,7 +144,7 @@ class _JobFormState extends ConsumerState<JobForm> {
       ..style.padding = '12px 24px'
       ..style.borderRadius = '12px'
       ..style.border = 'none'
-      ..style.backgroundColor = '#0D9488'
+      ..style.backgroundColor = 'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
       ..style.color = '#FFFFFF'
       ..style.fontSize = '14px'
       ..style.fontWeight = 'bold'
@@ -260,11 +261,11 @@ class _JobFormState extends ConsumerState<JobForm> {
         backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.0),
-          side: BorderSide(color: const Color(0xFF0D9488).withOpacity(0.3), width: 1.5),
+          side: BorderSide(color: context.toolColors.job.withOpacity(0.3), width: 1.5),
         ),
         title: Row(
           children: [
-            const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF0D9488), size: 24),
+            Icon(Icons.add_photo_alternate_rounded, color: context.toolColors.job, size: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -286,14 +287,14 @@ class _JobFormState extends ConsumerState<JobForm> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _titleController,
-                    decoration: _inputDecoration('Nama Tugas / Pekerjaan', Icons.task_alt_rounded),
+                    decoration: _inputDecoration(context, 'Nama Tugas / Pekerjaan', Icons.task_alt_rounded),
                     validator: (v) => v!.trim().isEmpty ? 'Nama tugas wajib diisi' : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _descController,
                     maxLines: 3,
-                    decoration: _inputDecoration('Uraian Pekerjaan / Langkah Kerja', Icons.description_rounded),
+                    decoration: _inputDecoration(context, 'Uraian Pekerjaan / Langkah Kerja', Icons.description_rounded),
                     validator: (v) => v!.trim().isEmpty ? 'Uraian pekerjaan wajib diisi' : null,
                   ),
                   const SizedBox(height: 14),
@@ -303,7 +304,7 @@ class _JobFormState extends ConsumerState<JobForm> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Foto Dokumentasi Kegiatan (Bisa Lebih dari 1)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF0D9488).withOpacity(0.9)),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.toolColors.job.withOpacity(0.9)),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -324,7 +325,7 @@ class _JobFormState extends ConsumerState<JobForm> {
                             height: 100,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFF0D9488).withOpacity(0.3)),
+                              border: Border.all(color: context.toolColors.job.withOpacity(0.3)),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
@@ -379,16 +380,19 @@ class _JobFormState extends ConsumerState<JobForm> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildOptionButton(
+                          context,
                           icon: Icons.camera_alt_rounded,
                           label: 'Kamera',
                           onTap: _captureFromCamera,
                         ),
                         _buildOptionButton(
+                          context,
                           icon: Icons.photo_library_rounded,
                           label: 'Galeri',
                           onTap: _pickFromGallery,
                         ),
                         _buildOptionButton(
+                          context,
                           icon: Icons.link_rounded,
                           label: 'Tautan URL',
                           onTap: () => setState(() => _showUrlField = !_showUrlField),
@@ -405,12 +409,12 @@ class _JobFormState extends ConsumerState<JobForm> {
                         Expanded(
                           child: TextFormField(
                             controller: _imageController,
-                            decoration: _inputDecoration('Tempel / Input URL Foto Baru', Icons.link_rounded),
+                            decoration: _inputDecoration(context, 'Tempel / Input URL Foto Baru', Icons.link_rounded),
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.add_circle_rounded, color: Color(0xFF0D9488), size: 28),
+                          icon: Icon(Icons.add_circle_rounded, color: context.toolColors.job, size: 28),
                           onPressed: () {
                             final val = _imageController.text.trim();
                             if (val.isNotEmpty) {
@@ -449,13 +453,13 @@ class _JobFormState extends ConsumerState<JobForm> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  _buildCompletionStatusSwitch(),
+                  _buildCompletionStatusSwitch(context),
                   if (!_isCompleted) ...[
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _reasonController,
                       maxLines: 2,
-                      decoration: _inputDecoration('Alasan Tugas Tidak Selesai', Icons.warning_amber_rounded),
+                      decoration: _inputDecoration(context, 'Alasan Tugas Tidak Selesai', Icons.warning_amber_rounded),
                       validator: (v) => !_isCompleted && v!.trim().isEmpty ? 'Wajib menuliskan alasan jika belum selesai' : null,
                     ),
                   ],
@@ -472,7 +476,7 @@ class _JobFormState extends ConsumerState<JobForm> {
           ElevatedButton(
             onPressed: _save,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0D9488),
+              backgroundColor: context.toolColors.job,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -497,17 +501,17 @@ class _JobFormState extends ConsumerState<JobForm> {
         if (date != null) setState(() => _selectedDate = date);
       },
       child: InputDecorator(
-        decoration: _inputDecoration('Tanggal Eksekusi', Icons.calendar_today_rounded),
+        decoration: _inputDecoration(context, 'Tanggal Eksekusi', Icons.calendar_today_rounded),
         child: Text('${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
       ),
     );
   }
 
-  Widget _buildCompletionStatusSwitch() {
+  Widget _buildCompletionStatusSwitch(BuildContext context) {
     return SwitchListTile(
       title: const Text('Status Tugas: Selesai?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       value: _isCompleted,
-      activeColor: const Color(0xFF0D9488),
+      activeColor: context.toolColors.job,
       onChanged: (val) => setState(() => _isCompleted = val),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       tileColor: const Color(0xFF64748B).withOpacity(0.06),
@@ -515,19 +519,19 @@ class _JobFormState extends ConsumerState<JobForm> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon) {
+  InputDecoration _inputDecoration(BuildContext context, String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, size: 20, color: const Color(0xFF0D9488)),
+      prefixIcon: Icon(icon, size: 20, color: context.toolColors.job),
       filled: true,
       fillColor: const Color(0xFF64748B).withOpacity(0.06),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: const BorderSide(color: Color(0xFF0D9488), width: 1.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide(color: context.toolColors.job, width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 
-  Widget _buildOptionButton({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildOptionButton(BuildContext context, {required IconData icon, required String label, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -539,10 +543,10 @@ class _JobFormState extends ConsumerState<JobForm> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF0D9488).withOpacity(0.1),
+                color: context.toolColors.job.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: const Color(0xFF0D9488), size: 22),
+              child: Icon(icon, color: context.toolColors.job, size: 22),
             ),
             const SizedBox(height: 8),
             Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),

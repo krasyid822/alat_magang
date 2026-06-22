@@ -6,6 +6,7 @@ import '../provider/logbook_provider.dart';
 import 'widgets/logbook_form.dart';
 import 'widgets/signature_dialog.dart';
 import '../../shared/data/models.dart';
+import '../../shared/data/theme_provider.dart';
 
 class LogbookScreen extends ConsumerStatefulWidget {
   const LogbookScreen({super.key});
@@ -41,9 +42,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         children: [
           _buildHeader(context),
           const SizedBox(height: 20),
-          _buildSearchBar(isDark),
+          _buildSearchBar(context, isDark),
           const SizedBox(height: 20),
-          _buildWeekFilters(logsAsync.value ?? []),
+          _buildWeekFilters(context, logsAsync.value ?? []),
           const SizedBox(height: 20),
           Expanded(
             child: logsAsync.when(
@@ -63,7 +64,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 if (filtered.isEmpty) return _buildEmptyState(isDark);
                 return _buildLogsTableOrList(context, filtered, isDark);
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8))),
+              loading: () => Center(child: CircularProgressIndicator(color: context.toolColors.logbook)),
               error: (err, _) => Center(child: Text('Gagal memuat logbook: $err')),
             ),
           ),
@@ -72,7 +73,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     );
   }
 
-  Widget _buildSearchBar(bool isDark) {
+  Widget _buildSearchBar(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
         color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
@@ -85,7 +86,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         decoration: InputDecoration(
           hintText: 'Cari aktivitas atau tanggal logbook...',
           hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
-          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF38BDF8), size: 20),
+          prefixIcon: Icon(Icons.search_rounded, color: context.toolColors.logbook, size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear_rounded, color: Color(0xFF64748B), size: 18),
@@ -127,7 +128,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         ElevatedButton.icon(
           onPressed: () => showDialog(context: context, builder: (context) => const LogbookForm()),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF38BDF8),
+            backgroundColor: context.toolColors.logbook,
             foregroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -140,7 +141,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     );
   }
 
-  Widget _buildWeekFilters(List<dynamic> logs) {
+  Widget _buildWeekFilters(BuildContext context, List<dynamic> logs) {
     final weeks = {0, ...logs.map((e) => e.weekNumber as int)}.toList()..sort();
     
     return SingleChildScrollView(
@@ -154,9 +155,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             child: ChoiceChip(
               label: Text(week == 0 ? 'Semua Minggu' : 'Minggu $week'),
               selected: isSelected,
-              selectedColor: const Color(0xFF38BDF8).withOpacity(0.2),
+              selectedColor: context.toolColors.logbook.withOpacity(0.2),
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFF38BDF8) : const Color(0xFF64748B),
+                color: isSelected ? context.toolColors.logbook : const Color(0xFF64748B),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               onSelected: (_) => setState(() => _selectedWeekFilter = week),
@@ -184,9 +185,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
 
   Widget _buildLogsTableOrList(BuildContext context, List<dynamic> logs, bool isDark) {
     return Scrollbar(
-      controller: _mainScrollController,
       child: ListView.separated(
-        controller: _mainScrollController,
         itemCount: logs.length,
         separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (context, idx) {
@@ -215,15 +214,15 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF38BDF8).withOpacity(0.1),
+                          color: context.toolColors.logbook.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('W${log.weekNumber}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF38BDF8), fontSize: 13)),
+                            Text('W${log.weekNumber}', style: TextStyle(fontWeight: FontWeight.bold, color: context.toolColors.logbook, fontSize: 13)),
                             const SizedBox(height: 2),
-                            Text(log.date.split('-')[2], style: const TextStyle(fontSize: 11, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+                            Text(log.date.split('-')[2], style: TextStyle(fontSize: 11, color: context.toolColors.logbook, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
@@ -251,9 +250,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0D9488).withOpacity(0.06),
+                            color: context.toolColors.job.withOpacity(0.06),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF0D9488).withOpacity(0.12)),
+                            border: Border.all(color: context.toolColors.job.withOpacity(0.12)),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -262,13 +261,13 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                                 signatureData: log.signatureData,
                                 width: 70,
                                 height: 35,
-                                color: const Color(0xFF0D9488),
+                                color: context.toolColors.job,
                               ),
                               const SizedBox(height: 2),
-                              const Text(
+                              Text(
                                 'Paraf Mentor',
                                 style: TextStyle(
-                                  color: Color(0xFF0D9488),
+                                  color: context.toolColors.job,
                                   fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -284,8 +283,8 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                             builder: (context) => SignatureDialog(logId: log.id),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
-                            foregroundColor: const Color(0xFF38BDF8),
+                            side: BorderSide(color: context.toolColors.logbook, width: 1.2),
+                            foregroundColor: context.toolColors.logbook,
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
@@ -300,7 +299,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.visibility_rounded, color: Color(0xFF38BDF8), size: 20),
+                        icon: Icon(Icons.visibility_rounded, color: context.toolColors.logbook, size: 20),
                         onPressed: () => _showViewDialog(context, log),
                         constraints: const BoxConstraints(),
                         padding: const EdgeInsets.all(8),
@@ -387,16 +386,16 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.92),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
-              side: BorderSide(color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1.5),
+              side: BorderSide(color: context.toolColors.logbook.withOpacity(0.3), width: 1.5),
             ),
             title: Row(
               children: [
-                const Icon(Icons.event_note_rounded, color: Color(0xFF38BDF8), size: 24),
+                Icon(Icons.event_note_rounded, color: context.toolColors.logbook, size: 24),
                 const SizedBox(width: 12),
-                Expanded(
+                const Expanded(
                   child: Text(
                     'Detail Logbook Absensi',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
                 CircleAvatar(
@@ -428,20 +427,20 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF38BDF8).withOpacity(0.1),
+                            color: context.toolColors.logbook.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'Minggu Ke-${log.weekNumber}',
-                            style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: context.toolColors.logbook, fontSize: 11, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const Text(
+                    Text(
                       'Uraian Kegiatan:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF38BDF8)),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.toolColors.logbook),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -457,29 +456,29 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                     
                     // PARAF AREA
                     if (log.isSigned && log.signatureData.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'Paraf Mentor Lapangan:',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0D9488)),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: context.toolColors.job),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0D9488).withOpacity(0.06),
+                          color: context.toolColors.job.withOpacity(0.06),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF0D9488).withOpacity(0.15)),
+                          border: Border.all(color: context.toolColors.job.withOpacity(0.15)),
                         ),
                         child: Row(
                           children: [
-                            SignaturePreviewWidget(signatureData: log.signatureData, width: 80, height: 40, color: const Color(0xFF0D9488)),
+                            SignaturePreviewWidget(signatureData: log.signatureData, width: 80, height: 40, color: context.toolColors.job),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Paraf Terverifikasi', style: TextStyle(color: Color(0xFF0D9488), fontSize: 13, fontWeight: FontWeight.bold)),
+                                  Text('Paraf Terverifikasi', style: TextStyle(color: context.toolColors.job, fontSize: 13, fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 2),
-                                  Text('Telah disetujui oleh mentor.', style: TextStyle(color: const Color(0xFF0D9488).withOpacity(0.8), fontSize: 11)),
+                                  Text('Telah disetujui oleh mentor.', style: TextStyle(color: context.toolColors.job.withOpacity(0.8), fontSize: 11)),
                                 ],
                               ),
                             ),
@@ -503,21 +502,21 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF38BDF8).withOpacity(0.04),
+                          color: context.toolColors.logbook.withOpacity(0.04),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.1)),
+                          border: Border.all(color: context.toolColors.logbook.withOpacity(0.1)),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.draw_rounded, color: const Color(0xFF38BDF8).withOpacity(0.6), size: 28),
+                            Icon(Icons.draw_rounded, color: context.toolColors.logbook.withOpacity(0.6), size: 28),
                             const SizedBox(width: 14),
-                            Expanded(
+                            const Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Belum Diparaf', style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 2),
-                                  const Text('Minta mentor paraf secara digital di beranda.', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                  Text('Belum Diparaf', style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 2),
+                                  Text('Minta mentor paraf secara digital di beranda.', style: TextStyle(color: Colors.grey, fontSize: 11)),
                                 ],
                               ),
                             ),
@@ -538,24 +537,24 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF38BDF8).withOpacity(0.08),
+                            color: context.toolColors.logbook.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.2)),
+                            border: Border.all(color: context.toolColors.logbook.withOpacity(0.2)),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.history_rounded, color: Color(0xFF38BDF8), size: 18),
+                                  Icon(Icons.history_rounded, color: context.toolColors.logbook, size: 18),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Lihat Riwayat Perubahan (${jsonDecode(log.versionHistory).length} Versi)',
-                                    style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.bold),
+                                    style: TextStyle(color: context.toolColors.logbook, fontSize: 12, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
-                              const Icon(Icons.chevron_right_rounded, color: Color(0xFF38BDF8), size: 18),
+                              Icon(Icons.chevron_right_rounded, color: context.toolColors.logbook, size: 18),
                             ],
                           ),
                         ),
@@ -579,7 +578,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF38BDF8),
+                  backgroundColor: context.toolColors.logbook,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -663,11 +662,11 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.92),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24.0),
-            side: BorderSide(color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1.5),
+            side: BorderSide(color: context.toolColors.logbook.withOpacity(0.3), width: 1.5),
           ),
           title: Row(
             children: [
-              const Icon(Icons.history_rounded, color: Color(0xFF38BDF8), size: 24),
+              Icon(Icons.history_rounded, color: context.toolColors.logbook, size: 24),
               const SizedBox(width: 12),
               const Expanded(
                 child: Text(
@@ -702,7 +701,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                               children: [
                                 Text(
                                   'Versi #${history.length - idx}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF38BDF8), fontSize: 12),
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: context.toolColors.logbook, fontSize: 12),
                                 ),
                                 Text(
                                   item['editedAt'] ?? '',
@@ -715,18 +714,18 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8).withOpacity(0.08),
+                                  color: context.toolColors.logbook.withOpacity(0.08),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.15)),
+                                  border: Border.all(color: context.toolColors.logbook.withOpacity(0.15)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.label_outline_rounded, color: Color(0xFF38BDF8), size: 12),
+                                    Icon(Icons.label_outline_rounded, color: context.toolColors.logbook, size: 12),
                                     const SizedBox(width: 4),
                                     Text(
                                       item['changeReason'] ?? '',
-                                      style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.bold),
+                                      style: TextStyle(color: context.toolColors.logbook, fontSize: 10, fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -752,15 +751,15 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF0D9488).withOpacity(0.1),
+                                      color: context.toolColors.job.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.verified_rounded, color: Color(0xFF0D9488), size: 10),
-                                        SizedBox(width: 2),
-                                        Text('Paraf', style: TextStyle(color: Color(0xFF0D9488), fontSize: 9, fontWeight: FontWeight.bold)),
+                                        Icon(Icons.verified_rounded, color: context.toolColors.job, size: 10),
+                                        const SizedBox(width: 2),
+                                        Text('Paraf', style: TextStyle(color: context.toolColors.job, fontSize: 9, fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   ),
@@ -769,8 +768,8 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                                 ElevatedButton.icon(
                                   onPressed: () => _restoreVersion(context, log, item, idx),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF38BDF8).withOpacity(0.12),
-                                    foregroundColor: const Color(0xFF38BDF8),
+                                    backgroundColor: context.toolColors.logbook.withOpacity(0.12),
+                                    foregroundColor: context.toolColors.logbook,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

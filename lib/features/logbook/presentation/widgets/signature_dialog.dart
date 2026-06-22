@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/logbook_provider.dart';
+import '../../../shared/data/theme_provider.dart';
 
 class SignatureDialog extends ConsumerStatefulWidget {
   final String logId;
@@ -75,11 +76,11 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
         backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.9),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.0),
-          side: BorderSide(color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1.5),
+          side: BorderSide(color: context.toolColors.logbook.withOpacity(0.3), width: 1.5),
         ),
         title: Row(
           children: [
-            const Icon(Icons.gesture_rounded, color: Color(0xFF38BDF8), size: 28),
+            Icon(Icons.gesture_rounded, color: context.toolColors.logbook, size: 28),
             const SizedBox(width: 12),
             const Text(
               'Paraf Mentor Lapangan',
@@ -104,7 +105,7 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
                   color: isDark ? const Color(0xFF0F172A) : Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF38BDF8).withOpacity(0.2),
+                    color: context.toolColors.logbook.withOpacity(0.2),
                     style: BorderStyle.solid,
                     width: 1.5,
                   ),
@@ -137,7 +138,7 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
                               });
                             },
                             child: CustomPaint(
-                              painter: SignaturePainter(strokes: _strokes, color: const Color(0xFF38BDF8), mentorName: _mentorName),
+                              painter: SignaturePainter(strokes: _strokes, color: context.toolColors.logbook, mentorName: _mentorName),
                             ),
                           ),
                         ),
@@ -158,11 +159,11 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Nama Mentor (Ketik untuk tanda tangan digital)',
-                  prefixIcon: const Icon(Icons.person_rounded, size: 20, color: Color(0xFF38BDF8)),
+                  prefixIcon: Icon(Icons.person_rounded, size: 20, color: context.toolColors.logbook),
                   filled: true,
                   fillColor: const Color(0xFF64748B).withOpacity(0.06),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide.none),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: const BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide(color: context.toolColors.logbook, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 onChanged: (val) {
@@ -185,7 +186,7 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
                           }
                         : null,
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF38BDF8),
+                      foregroundColor: context.toolColors.logbook,
                       disabledForegroundColor: Colors.grey.withOpacity(0.4),
                     ),
                     icon: const Icon(Icons.undo_rounded, size: 18),
@@ -202,7 +203,7 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
                           }
                         : null,
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF38BDF8),
+                      foregroundColor: context.toolColors.logbook,
                       disabledForegroundColor: Colors.grey.withOpacity(0.4),
                     ),
                     icon: const Icon(Icons.redo_rounded, size: 18),
@@ -255,15 +256,15 @@ class _SignatureDialogState extends ConsumerState<SignatureDialog> {
                               ref.read(logbookControllerProvider.notifier).saveSignature(widget.logId, data);
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Paraf mentor berhasil disimpan!'),
-                                  backgroundColor: Color(0xFF0D9488),
+                                SnackBar(
+                                  content: const Text('Paraf mentor berhasil disimpan!'),
+                                  backgroundColor: context.toolColors.job,
                                 ),
                               );
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF38BDF8),
+                        backgroundColor: context.toolColors.logbook,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

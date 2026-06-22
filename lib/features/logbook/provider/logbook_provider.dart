@@ -37,8 +37,10 @@ class LogbookNotifier extends _$LogbookNotifier {
     // 1. Rekonsiliasi awal
     Future.microtask(() async {
       try {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek logbook...');
         final cloudLogs = await ref.read(firebaseServiceProvider).getLogs(nim);
+        if (!ref.mounted) return;
         
         final Map<String, InternshipLog> merged = {};
         for (final item in state) {
@@ -74,20 +76,24 @@ class LogbookNotifier extends _$LogbookNotifier {
         }
         
         if (needsUpload) {
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah logbook...');
           for (final item in mergedList) {
             final cloudItem = cloudLogs.firstWhere((e) => e.id == item.id, orElse: () => const InternshipLog(id: '', date: '', activity: '', startTime: '', endTime: '', weekNumber: 0));
             if (cloudItem.id.isEmpty || item.updatedAt > cloudItem.updatedAt) {
+              if (!ref.mounted) return;
               await ref.read(firebaseServiceProvider).saveLog(nim, item);
             }
           }
         }
 
         // 1. Declare sync time for this session
+        if (!ref.mounted) return;
         final deviceId = ref.read(localStorageProvider).getDeviceId();
         await ref.read(firebaseServiceProvider).updateSessionSyncTime(nim, deviceId);
         
         // 2. Fetch all active sessions
+        if (!ref.mounted) return;
         final sessions = await ref.read(firebaseServiceProvider).getSessions(nim);
         
         // 3. Find the oldest lastSyncedAt among all devices
@@ -106,6 +112,7 @@ class LogbookNotifier extends _$LogbookNotifier {
           final toPurge = mergedList.where((e) => e.isDeleted && e.updatedAt < minSyncTime).toList();
           if (toPurge.isNotEmpty) {
             for (final item in toPurge) {
+              if (!ref.mounted) return;
               await ref.read(firebaseServiceProvider).deleteLog(nim, item.id);
             }
             final purgedList = state.where((e) => !toPurge.any((p) => p.id == e.id)).toList();
@@ -114,41 +121,43 @@ class LogbookNotifier extends _$LogbookNotifier {
           }
         }
         
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Logbook sinkron');
       } catch (e) {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron logbook');
       }
     });
 
     // 2. Real-time listener
-    ref.listen(
-      firebaseServiceProvider.select((s) => s.logsStream(nim)),
-      (previous, next) {
-        next.listen(
-          (cloudLogs) {
-            final Map<String, InternshipLog> merged = {};
-            for (final item in state) {
-              merged[item.id] = item;
-            }
-            bool changed = false;
-            for (final item in cloudLogs) {
-              final localItem = merged[item.id];
-              if (localItem == null || item.updatedAt > localItem.updatedAt) {
-                merged[item.id] = item;
-                changed = true;
-              }
-            }
-            if (changed) {
-              final mergedList = merged.values.toList()..sort((a, b) => b.date.compareTo(a.date));
-              state = mergedList;
-              _saveLocal(mergedList);
-              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Logbook sinkron');
-            }
-          },
-        );
+    final subscription = ref.read(firebaseServiceProvider).logsStream(nim).listen(
+      (cloudLogs) {
+        if (!ref.mounted) return;
+        final Map<String, InternshipLog> merged = {};
+        for (final item in state) {
+          merged[item.id] = item;
+        }
+        bool changed = false;
+        for (final item in cloudLogs) {
+          final localItem = merged[item.id];
+          if (localItem == null || item.updatedAt > localItem.updatedAt) {
+            merged[item.id] = item;
+            changed = true;
+          }
+        }
+        if (changed) {
+          final mergedList = merged.values.toList()..sort((a, b) => b.date.compareTo(a.date));
+          state = mergedList;
+          _saveLocal(mergedList);
+          if (!ref.mounted) return;
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Logbook sinkron');
+        }
       },
-      fireImmediately: true,
     );
+
+    ref.onDispose(() {
+      subscription.cancel();
+    });
   }
 
   void _saveLocal(List<InternshipLog> logs) {
@@ -251,7 +260,39 @@ class LogbookNotifier extends _$LogbookNotifier {
 @riverpod
 Stream<List<InternshipLog>> logbookStream(Ref ref) {
   final logs = ref.watch(logbookProvider);
-  return Stream.value(logs.where((e) => !e.isDeleted).toList());
+  final activeLogs = logs.where((e) => !e.isDeleted).toList();
+
+  if (activeLogs.isEmpty) return Stream.value([]);
+
+  // 1. Cari tanggal paling awal dari seluruh log aktif
+  DateTime? earliest;
+  for (final log in activeLogs) {
+    final parsed = DateTime.tryParse(log.date);
+    if (parsed != null) {
+      if (earliest == null || parsed.isBefore(earliest)) {
+        earliest = parsed;
+      }
+    }
+  }
+
+  if (earliest == null) return Stream.value(activeLogs);
+
+  final earliestMonday = earliest.subtract(Duration(days: earliest.weekday - 1));
+
+  // 2. Hitung ulang weekNumber untuk setiap log secara dinamis
+  final updatedLogs = activeLogs.map((log) {
+    final parsed = DateTime.tryParse(log.date);
+    if (parsed == null) return log;
+
+    final inputMonday = parsed.subtract(Duration(days: parsed.weekday - 1));
+    final diffDays = inputMonday.difference(earliestMonday).inDays;
+    final week = (diffDays / 7).floor() + 1;
+    final finalWeek = week > 0 ? week : 1;
+
+    return log.copyWith(weekNumber: finalWeek);
+  }).toList();
+
+  return Stream.value(updatedLogs);
 }
 
 @riverpod

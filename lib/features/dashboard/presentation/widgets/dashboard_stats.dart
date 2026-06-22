@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../shared/data/theme_provider.dart';
 
 class DashboardStats extends StatelessWidget {
   final double progressAlat1Log;
@@ -19,46 +20,147 @@ class DashboardStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final toolColors = Theme.of(context).extension<ToolColors>()!;
 
-    return GridView.builder(
+    final steps = [
+      _TimelineStep(
+        title: 'Tahap 1: Administrasi Dokumen (Alat 3 & 4)',
+        subtitle: 'Lengkapi berkas surat izin/selesai magang & rancang daftar pustaka laporan.',
+        progress: progressAlat3And4,
+        accentColor: toolColors.documents,
+        icon: Icons.folder_zip_rounded,
+        tabIndex: 4,
+        typeLabel: 'Sekali Isi (Mandatori)',
+        typeColor: toolColors.documents,
+      ),
+      _TimelineStep(
+        title: 'Tahap 2: Catatan Logbook (Alat 1)',
+        subtitle: 'Catat kehadiran harian dan ringkasan aktivitas mingguan.',
+        progress: progressAlat1Log,
+        accentColor: toolColors.logbook,
+        icon: Icons.calendar_month_rounded,
+        tabIndex: 1,
+        typeLabel: 'Tugas Rutin (Harian / Mingguan)',
+        typeColor: toolColors.logbook,
+      ),
+      _TimelineStep(
+        title: 'Tahap 3: Dokumentasi Detail Pekerjaan (Alat 1)',
+        subtitle: 'Tulis uraian teknis tugas & lampirkan foto dokumentasi kegiatan.',
+        progress: progressAlat1Job,
+        accentColor: toolColors.job,
+        icon: Icons.photo_library_rounded,
+        tabIndex: 2,
+        typeLabel: 'Tanpa Batasan Jumlah (Fleksibel)',
+        typeColor: toolColors.job,
+      ),
+      _TimelineStep(
+        title: 'Tahap 4: Bahan Riset Bab 2 Laporan (Alat 2)',
+        subtitle: 'Kumpulkan profil perusahaan, sejarah, prosedur & hambatan kerja.',
+        progress: progressAlat2,
+        accentColor: toolColors.research,
+        icon: Icons.analytics_rounded,
+        tabIndex: 3,
+        typeLabel: 'Sekali Isi (6 Kriteria)',
+        typeColor: toolColors.research,
+      ),
+    ];
+
+    return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 320,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        mainAxisExtent: 165,
-      ),
-      itemCount: 4,
-      itemBuilder: (context, i) {
-        final cards = [
-          _buildStatCard(context, title: 'Alat 1: Logbook & Absensi Magang Mingguan', subtitle: 'Catatan Mingguan & Absensi Harian Terintegrasi', progress: progressAlat1Log, color: const Color(0xFF0F172A), accentColor: const Color(0xFF38BDF8), icon: Icons.calendar_month_rounded, isDark: isDark, index: 1),
-          _buildStatCard(context, title: 'Alat 1: Detail Pekerjaan & Dokumentasi', subtitle: 'Deskripsi Tugas & Foto Kegiatan Lapangan', progress: progressAlat1Job, color: const Color(0xFF0F172A), accentColor: const Color(0xFF0D9488), icon: Icons.photo_library_rounded, isDark: isDark, index: 2),
-          _buildStatCard(context, title: 'Alat 2: Data & Bahan Riset Laporan', subtitle: 'Profil Perusahaan, Prosedur & Hambatan Kerja', progress: progressAlat2, color: const Color(0xFF0F172A), accentColor: const Color(0xFFF59E0B), icon: Icons.analytics_rounded, isDark: isDark, index: 3),
-          _buildStatCard(context, title: 'Alat 3 & 4: Administrasi & Pustaka', subtitle: 'Surat Resmi & Daftar Pustaka Terakreditasi', progress: progressAlat3And4, color: const Color(0xFF0F172A), accentColor: const Color(0xFFEC4899), icon: Icons.folder_zip_rounded, isDark: isDark, index: 4),
-        ];
-        return cards[i];
+      itemCount: steps.length,
+      itemBuilder: (context, index) {
+        final step = steps[index];
+        final isLast = index == steps.length - 1;
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Timeline line & indicator
+              _buildTimelineIndicator(context, index + 1, step.accentColor, step.progress == 1.0, isLast, isDark),
+              const SizedBox(width: 16),
+              // Step Card
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  child: _buildStepCard(context, step, isDark),
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
 
-  Widget _buildStatCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required double progress,
-    required Color color,
-    required Color accentColor,
-    required IconData icon,
-    required bool isDark,
-    required int index,
-  }) {
-    final percentage = (progress * 100).toInt();
+  Widget _buildTimelineIndicator(
+    BuildContext context,
+    int stepNumber,
+    Color accentColor,
+    bool isCompleted,
+    bool isLast,
+    bool isDark,
+  ) {
+    return Column(
+      children: [
+        // Glowing circle containing step number
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: isCompleted
+                ? accentColor
+                : (isDark ? const Color(0xFF1E293B) : Colors.white),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: accentColor,
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Center(
+            child: isCompleted
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                : Text(
+                    '$stepNumber',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: accentColor,
+                    ),
+                  ),
+          ),
+        ),
+        // Connecting line
+        if (!isLast)
+          Expanded(
+            child: Container(
+              width: 2,
+              color: accentColor.withOpacity(0.3),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildStepCard(
+    BuildContext context,
+    _TimelineStep step,
+    bool isDark,
+  ) {
+    final percentage = (step.progress * 100).toInt();
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => onTabSelected(index),
+        onTap: () => onTabSelected(step.tabIndex),
         child: Container(
           decoration: BoxDecoration(
             color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
@@ -75,65 +177,102 @@ class DashboardStats extends StatelessWidget {
               ),
             ],
           ),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(18.0),
+          child: Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10.0),
+              // Icon & details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: step.accentColor.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Icon(step.icon, color: step.accentColor, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                step.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: step.typeColor.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: step.typeColor.withOpacity(0.25), width: 1),
+                                ),
+                                child: Text(
+                                  step.typeLabel,
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: step.typeColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Icon(icon, color: accentColor, size: 22),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      '$percentage%',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: accentColor,
+                    const SizedBox(height: 10),
+                    Text(
+                      step.subtitle,
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 12,
+                        height: 1.3,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RunningText(
-                    text: title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6.0),
+                            child: LinearProgressIndicator(
+                              value: step.progress,
+                              backgroundColor: step.accentColor.withOpacity(0.1),
+                              valueColor: AlwaysStoppedAnimation<Color>(step.accentColor),
+                              minHeight: 5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '$percentage%',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: step.accentColor,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  RunningText(
-                    text: subtitle,
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6.0),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: accentColor.withOpacity(0.1),
-                  valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-                  minHeight: 5,
+                  ],
                 ),
+              ),
+              const SizedBox(width: 12),
+              // Action indicator button
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: step.accentColor.withOpacity(0.6),
+                size: 16,
               ),
             ],
           ),
@@ -143,77 +282,24 @@ class DashboardStats extends StatelessWidget {
   }
 }
 
-class RunningText extends StatefulWidget {
-  final String text;
-  final TextStyle style;
+class _TimelineStep {
+  final String title;
+  final String subtitle;
+  final double progress;
+  final Color accentColor;
+  final IconData icon;
+  final int tabIndex;
+  final String typeLabel;
+  final Color typeColor;
 
-  const RunningText({
-    super.key,
-    required this.text,
-    required this.style,
+  const _TimelineStep({
+    required this.title,
+    required this.subtitle,
+    required this.progress,
+    required this.accentColor,
+    required this.icon,
+    required this.tabIndex,
+    required this.typeLabel,
+    required this.typeColor,
   });
-
-  @override
-  State<RunningText> createState() => _RunningTextState();
-}
-
-class _RunningTextState extends State<RunningText> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _startScrolling());
-  }
-
-  void _startScrolling() async {
-    if (!_scrollController.hasClients) return;
-
-    final maxScrollExtent = _scrollController.position.maxScrollExtent;
-    if (maxScrollExtent > 0) {
-      while (mounted) {
-        // Jeda di awal
-        await Future.delayed(const Duration(seconds: 2));
-        if (!mounted) break;
-        
-        // Animasi ke ujung kanan
-        await _scrollController.animateTo(
-          maxScrollExtent,
-          duration: Duration(milliseconds: (maxScrollExtent * 40).toInt()),
-          curve: Curves.easeInOut,
-        );
-        
-        // Jeda di ujung kanan
-        await Future.delayed(const Duration(seconds: 2));
-        if (!mounted) break;
-        
-        // Animasi kembali ke ujung kiri (bolak-balik)
-        await _scrollController.animateTo(
-          0,
-          duration: Duration(milliseconds: (maxScrollExtent * 40).toInt()),
-          curve: Curves.easeInOut,
-        );
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const NeverScrollableScrollPhysics(),
-      child: Text(
-        widget.text,
-        style: widget.style,
-        maxLines: 1,
-      ),
-    );
-  }
 }

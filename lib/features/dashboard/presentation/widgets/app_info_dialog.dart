@@ -22,7 +22,7 @@ class AppInfoDialog extends ConsumerWidget {
         backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.9),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.0),
-          side: BorderSide(color: const Color(0xFF0D9488).withOpacity(0.3), width: 1.5),
+          side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), width: 1.5),
         ),
         contentPadding: const EdgeInsets.all(24.0),
         content: SizedBox(
@@ -36,12 +36,12 @@ class AppInfoDialog extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0D9488).withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.storage_rounded,
-                    color: Color(0xFF0D9488),
+                    color: Theme.of(context).colorScheme.primary,
                     size: 48,
                   ),
                 ),
@@ -57,8 +57,8 @@ class AppInfoDialog extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   'v$kAppVersion+$kBuildNumber',
-                  style: const TextStyle(
-                    color: Color(0xFF0D9488),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -124,13 +124,13 @@ class AppInfoDialog extends ConsumerWidget {
                             return Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0D9488).withOpacity(0.15),
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 '$count Device',
-                                style: const TextStyle(
-                                  color: Color(0xFF0D9488),
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
@@ -147,16 +147,16 @@ class AppInfoDialog extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF0F172A).withOpacity(0.5) : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF0D9488).withOpacity(0.1)),
+                      border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
                     ),
                     child: StreamBuilder<List<Map<String, dynamic>>>(
                       stream: ref.read(firebaseServiceProvider).activeSessionsStream(nim),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(
+                          return Center(
                             child: Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D9488)),
+                              padding: const EdgeInsets.all(20.0),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.primary),
                             ),
                           );
                         }
@@ -221,13 +221,13 @@ class AppInfoDialog extends ConsumerWidget {
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                     color: isCurrent 
-                                        ? const Color(0xFF0D9488).withOpacity(0.15)
+                                        ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
                                         : Colors.grey.withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     deviceIcon,
-                                    color: isCurrent ? const Color(0xFF0D9488) : Colors.grey,
+                                    color: isCurrent ? Theme.of(context).colorScheme.primary : Colors.grey,
                                     size: 20,
                                   ),
                                 ),
@@ -247,7 +247,7 @@ class AppInfoDialog extends ConsumerWidget {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF0D9488),
+                                                color: Theme.of(context).colorScheme.primary,
                                                 borderRadius: BorderRadius.circular(4),
                                               ),
                                               child: const Text(
@@ -292,7 +292,7 @@ class AppInfoDialog extends ConsumerWidget {
                         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF43F5E),
+                         backgroundColor: const Color(0xFFF43F5E),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
@@ -306,13 +306,13 @@ class AppInfoDialog extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup', style: TextStyle(color: Color(0xFF0D9488), fontWeight: FontWeight.bold)),
+            child: Text('Tutup', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
-
+ 
   void _confirmLogoutAll(BuildContext context, WidgetRef ref) {
     bool forceLogout = false;
     showDialog(
@@ -336,7 +336,7 @@ class AppInfoDialog extends ConsumerWidget {
                 subtitle: const Text('Perangkat offline akan mengunggah data lokal terbarunya ke cloud sebelum keluar.', style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
                 value: false,
                 groupValue: forceLogout,
-                activeColor: const Color(0xFF0D9488),
+                activeColor: Theme.of(context).colorScheme.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => forceLogout = val ?? false),
               ),
@@ -345,7 +345,7 @@ class AppInfoDialog extends ConsumerWidget {
                 subtitle: const Text('Perangkat offline akan langsung menghapus data lokal tanpa sinkronisasi saat online.', style: TextStyle(color: Color(0xFF64748B), fontSize: 11)),
                 value: true,
                 groupValue: forceLogout,
-                activeColor: const Color(0xFF0D9488),
+                activeColor: Theme.of(context).colorScheme.primary,
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) => setState(() => forceLogout = val ?? true),
               ),

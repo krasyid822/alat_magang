@@ -217,9 +217,9 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: 'Nomor WhatsApp Terdaftar',
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.phone_android_rounded,
-                        color: Color(0xFF0D9488),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                       filled: true,
                       fillColor: const Color(0xFF64748B).withOpacity(0.06),
@@ -335,7 +335,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D9488),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -519,15 +519,15 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.0),
           side: BorderSide(
-            color: const Color(0xFF0D9488).withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
             width: 1.5,
           ),
         ),
         title: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.storage_rounded,
-              color: Color(0xFF0D9488),
+              color: Theme.of(context).colorScheme.primary,
               size: 28,
             ),
             const SizedBox(width: 12),
@@ -734,18 +734,18 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0D9488).withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF0D9488).withOpacity(0.3)),
+                        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.check_circle_rounded, color: Color(0xFF0D9488), size: 16),
-                          SizedBox(width: 8),
+                          Icon(Icons.check_circle_rounded, color: Theme.of(context).colorScheme.primary, size: 16),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Form berhasil diisi dari kode pemulihan. Verifikasi dan simpan.',
-                              style: TextStyle(color: Color(0xFF0D9488), fontSize: 12, fontWeight: FontWeight.w500),
+                              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12, fontWeight: FontWeight.w500),
                             ),
                           ),
                         ],
@@ -768,12 +768,12 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                             _showForgotPasswordDialog();
                           },
                           borderRadius: BorderRadius.circular(8),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             child: Text(
                               'Lupa NIM / Akun?',
                               style: TextStyle(
-                                color: Color(0xFF0D9488),
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                                 decoration: TextDecoration.underline,
@@ -832,7 +832,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
           ElevatedButton(
             onPressed: _isLoading ? null : _checkNimAndProceed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0D9488),
+              backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
@@ -868,10 +868,10 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.calendar_month_rounded,
             size: 20,
-            color: Color(0xFF0D9488),
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -917,9 +917,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
 
   Widget _stepperButton({required IconData icon, VoidCallback? onPressed}) {
     return Material(
-      color: const Color(
-        0xFF0D9488,
-      ).withOpacity(onPressed == null ? 0.2 : 0.15),
+      color: Theme.of(context).colorScheme.primary.withOpacity(onPressed == null ? 0.2 : 0.15),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: onPressed,
@@ -931,7 +929,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
             size: 18,
             color: onPressed == null
                 ? const Color(0xFF94A3B8)
-                : const Color(0xFF0D9488),
+                : Theme.of(context).colorScheme.primary,
           ),
         ),
       ),
@@ -957,7 +955,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF0D9488)),
+        prefixIcon: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         filled: true,
         fillColor: const Color(0xFF64748B).withOpacity(0.06),
         border: OutlineInputBorder(
@@ -966,7 +964,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(color: Color(0xFF0D9488), width: 1.5),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

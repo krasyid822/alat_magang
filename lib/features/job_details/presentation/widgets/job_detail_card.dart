@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/data/models.dart';
 import '../../provider/job_provider.dart';
 import 'job_form.dart';
+import '../../../shared/data/theme_provider.dart';
 
 class JobDetailCard extends ConsumerWidget {
   final JobDetail job;
@@ -32,7 +33,7 @@ class JobDetailCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildImageHeader(),
+            _buildImageHeader(context),
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -46,7 +47,7 @@ class JobDetailCard extends ConsumerWidget {
                         job.date,
                         style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold),
                       ),
-                      _buildStatusBadge(),
+                      _buildStatusBadge(context),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -69,13 +70,13 @@ class JobDetailCard extends ConsumerWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withOpacity(0.08),
+                        color: context.toolColors.research.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
+                        border: Border.all(color: context.toolColors.research.withOpacity(0.2)),
                       ),
                       child: Text(
                         'Kendala: ${job.reasonOfIncompletion}',
-                        style: const TextStyle(color: Color(0xFFD97706), fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: context.toolColors.research, fontSize: 10, fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -86,7 +87,7 @@ class JobDetailCard extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.visibility_rounded, color: Color(0xFF0D9488), size: 18),
+                        icon: Icon(Icons.visibility_rounded, color: context.toolColors.job, size: 18),
                         onPressed: () => _showViewDialog(context),
                         constraints: const BoxConstraints(),
                         padding: const EdgeInsets.all(8),
@@ -161,7 +162,7 @@ class JobDetailCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildImageHeader() {
+  Widget _buildImageHeader(BuildContext context) {
     final images = job.imageUrl.split('|||').where((s) => s.isNotEmpty).toList();
     final firstImage = images.isNotEmpty ? images.first : '';
 
@@ -172,7 +173,7 @@ class JobDetailCard extends ConsumerWidget {
           ? Stack(
               children: [
                 Positioned.fill(
-                  child: imgWidget(firstImage),
+                  child: imgWidget(context, firstImage),
                 ),
                 if (images.length > 1)
                   Positioned(
@@ -193,15 +194,15 @@ class JobDetailCard extends ConsumerWidget {
               ],
             )
           : Container(
-              color: const Color(0xFF0D9488).withOpacity(0.06),
-              child: const Center(
-                child: Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF0D9488), size: 40),
+              color: context.toolColors.job.withOpacity(0.06),
+              child: Center(
+                child: Icon(Icons.add_photo_alternate_rounded, color: context.toolColors.job, size: 40),
               ),
             ),
     );
   }
 
-  Widget imgWidget(String url) {
+  Widget imgWidget(BuildContext context, String url) {
     if (url.startsWith('data:image')) {
       return Image.network(url, fit: BoxFit.cover);
     }
@@ -209,21 +210,21 @@ class JobDetailCard extends ConsumerWidget {
       url,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => Container(
-        color: const Color(0xFF0D9488).withOpacity(0.06),
+        color: context.toolColors.job.withOpacity(0.06),
         child: const Center(
           child: Icon(Icons.broken_image_rounded, color: Color(0xFF64748B), size: 30),
         ),
       ),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
-        return const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D9488)));
+        return Center(child: CircularProgressIndicator(strokeWidth: 2, color: context.toolColors.job));
       },
     );
   }
 
-  Widget _buildStatusBadge() {
-    final bgColor = job.isCompleted ? const Color(0xFF0D9488).withOpacity(0.12) : const Color(0xFFF59E0B).withOpacity(0.12);
-    final fgColor = job.isCompleted ? const Color(0xFF0D9488) : const Color(0xFFD97706);
+  Widget _buildStatusBadge(BuildContext context) {
+    final bgColor = job.isCompleted ? context.toolColors.job.withOpacity(0.12) : context.toolColors.research.withOpacity(0.12);
+    final fgColor = job.isCompleted ? context.toolColors.job : context.toolColors.research;
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -248,7 +249,7 @@ class JobDetailCard extends ConsumerWidget {
             backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.92),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
-              side: BorderSide(color: const Color(0xFF0D9488).withOpacity(0.3), width: 1.5),
+              side: BorderSide(color: context.toolColors.job.withOpacity(0.3), width: 1.5),
             ),
             contentPadding: EdgeInsets.zero,
             content: SizedBox(
@@ -267,13 +268,13 @@ class JobDetailCard extends ConsumerWidget {
                               ? PageView.builder(
                                   itemCount: images.length,
                                   itemBuilder: (context, idx) {
-                                    return imgWidget(images[idx]);
+                                    return imgWidget(context, images[idx]);
                                   },
                                 )
                               : Container(
-                                  color: const Color(0xFF0D9488).withOpacity(0.06),
-                                  child: const Center(
-                                    child: Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF0D9488), size: 50),
+                                  color: context.toolColors.job.withOpacity(0.06),
+                                  child: Center(
+                                    child: Icon(Icons.add_photo_alternate_rounded, color: context.toolColors.job, size: 50),
                                   ),
                                 ),
                         ),
@@ -325,7 +326,7 @@ class JobDetailCard extends ConsumerWidget {
                                 job.date,
                                 style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.bold),
                               ),
-                              _buildStatusBadge(),
+                              _buildStatusBadge(context),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -334,9 +335,9 @@ class JobDetailCard extends ConsumerWidget {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: -0.3),
                           ),
                           const Divider(height: 24, thickness: 1, color: Colors.white10),
-                          const Text(
+                          Text(
                             'Uraian Pekerjaan:',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0D9488)),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.toolColors.job),
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -349,27 +350,27 @@ class JobDetailCard extends ConsumerWidget {
                               width: double.infinity,
                               padding: const EdgeInsets.all(12.0),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF59E0B).withOpacity(0.08),
+                                color: context.toolColors.research.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
+                                border: Border.all(color: context.toolColors.research.withOpacity(0.2)),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Row(
+                                  Row(
                                     children: [
-                                      Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 16),
-                                      SizedBox(width: 6),
+                                      Icon(Icons.warning_amber_rounded, color: context.toolColors.research, size: 16),
+                                      const SizedBox(width: 6),
                                       Text(
                                         'Kendala Pelaksanaan:',
-                                        style: TextStyle(color: Color(0xFFD97706), fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: TextStyle(color: context.toolColors.research, fontSize: 11, fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     job.reasonOfIncompletion,
-                                    style: const TextStyle(color: Color(0xFFD97706), fontSize: 13, height: 1.4),
+                                    style: TextStyle(color: context.toolColors.research, fontSize: 13, height: 1.4),
                                   ),
                                 ],
                               ),
@@ -396,7 +397,7 @@ class JobDetailCard extends ConsumerWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0D9488),
+                  backgroundColor: context.toolColors.job,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

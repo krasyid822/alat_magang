@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui_web;
 import '../../shared/data/models.dart';
+import '../../shared/data/theme_provider.dart';
 import '../../shared/data/indexed_db_service.dart';
 import '../../shared/data/file_chunk_service.dart';
 import '../../dashboard/provider/dashboard_provider.dart';
@@ -19,6 +20,7 @@ class DocumentsScreen extends ConsumerStatefulWidget {
 }
 
 class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
+  Color get _accentColor => context.toolColors.documents;
   // Set of expanded card IDs
   final Set<String> _expandedIds = {};
   final _scrollController = ScrollController();
@@ -241,7 +243,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               decoration: InputDecoration(
                 hintText: 'Cari berkas administratif, catatan, atau kategori...',
                 hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFEC4899), size: 20),
+                prefixIcon: Icon(Icons.search_rounded, color: _accentColor, size: 20),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear_rounded, size: 18),
@@ -262,7 +264,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: Color(0xFFEC4899), width: 1.5),
+                  borderSide: BorderSide(color: _accentColor, width: 1.5),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
@@ -309,7 +311,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                   ],
                 );
               },
-              loading: () => const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: Color(0xFFEC4899)))),
+              loading: () => Center(child: Padding(padding: const EdgeInsets.all(40), child: CircularProgressIndicator(color: _accentColor))),
               error: (err, _) => Center(child: Text('Gagal: $err')),
             ),
           ],
@@ -344,7 +346,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
         ElevatedButton.icon(
           onPressed: _showAddCustomDialog,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFEC4899),
+            backgroundColor: _accentColor,
             foregroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -363,8 +365,8 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
 
   Widget _buildDocumentPanel(List<DocChecklist> docs, bool isDark) {
     final categories = [
-      ('Alat 3', 'Berkas Administratif Wajib', Icons.assignment_rounded, const Color(0xFFEC4899)),
-      ('Alat 4', 'Kelengkapan Laporan Akhir', Icons.verified_rounded, const Color(0xFFF59E0B)),
+      ('Alat 3', 'Berkas Administratif Wajib', Icons.assignment_rounded, _accentColor),
+      ('Alat 4', 'Kelengkapan Laporan Akhir', Icons.verified_rounded, context.toolColors.research),
     ];
 
     // Gather all non-standard categories as "Tambahan"
@@ -1159,10 +1161,10 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEC4899).withOpacity(0.15),
+                        color: _accentColor.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.add_task_rounded, color: Color(0xFFEC4899), size: 20),
+                      child: Icon(Icons.add_task_rounded, color: _accentColor, size: 20),
                     ),
                     const SizedBox(width: 12),
                     const Text('Tambah Dokumen Kustom', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -1190,7 +1192,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFEC4899), width: 1.5),
+                      borderSide: BorderSide(color: _accentColor, width: 1.5),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   ),
@@ -1204,10 +1206,10 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                   children: ['Alat 3', 'Alat 4', 'Tambahan'].map((cat) {
                     final isSelected = selectedCat == cat;
                     final catColor = cat == 'Alat 3'
-                        ? const Color(0xFFEC4899)
+                        ? _accentColor
                         : cat == 'Alat 4'
-                            ? const Color(0xFFF59E0B)
-                            : const Color(0xFF0D9488);
+                            ? context.toolColors.research
+                            : context.toolColors.job;
                     return ChoiceChip(
                       label: Text(cat, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isSelected ? catColor : const Color(0xFF64748B))),
                       selected: isSelected,
@@ -1248,7 +1250,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFEC4899),
+                          backgroundColor: _accentColor,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 14),

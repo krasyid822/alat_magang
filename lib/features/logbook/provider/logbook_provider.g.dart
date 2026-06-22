@@ -100,7 +100,7 @@ final class LogbookStreamProvider
   }
 }
 
-String _$logbookStreamHash() => r'7375920f025eab38a0e02ff0139fb4721ef71ac4';
+String _$logbookStreamHash() => r'f50ac513cce3da089971e54f10ac38df0d73e1a8';
 
 @ProviderFor(LogbookController)
 final logbookControllerProvider = LogbookControllerProvider._();

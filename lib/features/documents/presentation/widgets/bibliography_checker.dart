@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:html' as html;
+import '../../../shared/data/theme_provider.dart';
 import '../../../shared/data/indexed_db_service.dart';
 import '../../provider/documents_provider.dart';
 
@@ -13,7 +14,7 @@ class BibliographyChecker extends ConsumerStatefulWidget {
 }
 
 class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
-  static const _accentColor = Color(0xFFEC4899);
+  Color get _accentColor => context.toolColors.documents;
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +260,7 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Text('$index', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _accentColor)),
+                  child: Text('$index', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _accentColor)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -389,25 +390,25 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFF59E0B).withOpacity(0.12),
+            color: _accentColor.withOpacity(0.12),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
+            border: Border.all(color: _accentColor.withOpacity(0.2)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.link_rounded, size: 12, color: Color(0xFFF59E0B)),
+              Icon(Icons.link_rounded, size: 12, color: _accentColor),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
                   fileUrl,
-                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B)),
+                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: _accentColor),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 6),
-              const Icon(Icons.open_in_new_rounded, size: 12, color: Color(0xFFF59E0B)),
+              Icon(Icons.open_in_new_rounded, size: 12, color: _accentColor),
             ],
           ),
         ),
@@ -417,10 +418,10 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
 
   Color _typeColor(ReferenceType type) {
     switch (type) {
-      case ReferenceType.buku:      return const Color(0xFF0D9488);
-      case ReferenceType.jurnal:    return const Color(0xFF38BDF8);
-      case ReferenceType.website:   return const Color(0xFFF59E0B);
-      case ReferenceType.skripsi:   return const Color(0xFFEC4899);
+      case ReferenceType.buku:      return context.toolColors.job;
+      case ReferenceType.jurnal:    return context.toolColors.logbook;
+      case ReferenceType.website:   return context.toolColors.research;
+      case ReferenceType.skripsi:   return context.toolColors.documents;
       case ReferenceType.prosiding: return const Color(0xFF8B5CF6);
       case ReferenceType.lainnya:   return const Color(0xFF64748B);
     }
@@ -501,7 +502,7 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
                   fillColor: Colors.white.withOpacity(0.04),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF334155))),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF334155))),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _accentColor, width: 1.5)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: _accentColor, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
               ),
@@ -574,7 +575,7 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(color: _accentColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-                          child: const Icon(Icons.menu_book_rounded, color: _accentColor, size: 20),
+                          child: Icon(Icons.menu_book_rounded, color: _accentColor, size: 20),
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -706,7 +707,7 @@ class _BibliographyCheckerState extends ConsumerState<BibliographyChecker> {
                                         fillColor: Colors.white.withOpacity(0.04),
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF334155))),
                                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF334155))),
-                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: _accentColor, width: 1.5)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: _accentColor, width: 1.5)),
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                       ),
                                     ),

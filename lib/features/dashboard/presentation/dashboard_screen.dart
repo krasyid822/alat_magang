@@ -10,6 +10,7 @@ import '../../job_details/provider/job_provider.dart';
 import '../../research/provider/research_provider.dart';
 import '../../documents/provider/documents_provider.dart';
 import '../../shared/data/models.dart';
+import '../../shared/data/theme_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   final Function(int) onTabSelected;
@@ -40,6 +41,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final profile = ref.watch(dashboardControllerProvider);
     final syncState = ref.watch(syncStatusProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final themeState = ref.watch(themeProvider);
+    final isStandard = themeState.colorVariant == ThemeColorVariant.standard;
 
     // Trigger input NIM otomatis jika belum diisi
     if (profile.nim.isEmpty) {
@@ -92,7 +96,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.4),
                   borderRadius: BorderRadius.circular(24.0),
                   border: Border.all(
-                    color: (isDark ? Colors.white10 : Colors.black12),
+                    color: isStandard
+                        ? (isDark ? Colors.white10 : Colors.black12)
+                        : Theme.of(context).colorScheme.primary.withOpacity(0.25),
+                    width: isStandard ? 1.0 : 2.0,
                   ),
                 ),
                 child: ProgressCircle(progress: averageProgress),
@@ -128,19 +135,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     IconData statusIcon;
     bool showLoading = false;
 
+    final primary = Theme.of(context).colorScheme.primary;
+    final secondary = Theme.of(context).colorScheme.secondary;
+
     switch (syncState.status) {
       case SyncStatusType.uploading:
-        statusColor = const Color(0xFF38BDF8); // Sky 400
+        statusColor = secondary;
         statusIcon = Icons.cloud_upload_rounded;
         showLoading = true;
         break;
       case SyncStatusType.downloading:
-        statusColor = const Color(0xFF38BDF8);
+        statusColor = secondary;
         statusIcon = Icons.cloud_download_rounded;
         showLoading = true;
         break;
       case SyncStatusType.synced:
-        statusColor = const Color(0xFF0D9488); // Teal 600
+        statusColor = primary;
         statusIcon = Icons.cloud_done_rounded;
         break;
       case SyncStatusType.error:
@@ -152,7 +162,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         statusIcon = Icons.cloud_off_rounded;
         break;
       case SyncStatusType.idle:
-        statusColor = const Color(0xFF0D9488);
+        statusColor = primary;
         statusIcon = Icons.cloud_queue_rounded;
         break;
     }

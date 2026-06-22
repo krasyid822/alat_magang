@@ -37,8 +37,10 @@ class JobNotifier extends _$JobNotifier {
     // 1. Rekonsiliasi awal
     Future.microtask(() async {
       try {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.downloading, 'Mengecek tugas...');
         final cloudJobs = await ref.read(firebaseServiceProvider).getJobs(nim);
+        if (!ref.mounted) return;
         
         final Map<String, JobDetail> merged = {};
         for (final item in state) {
@@ -74,20 +76,24 @@ class JobNotifier extends _$JobNotifier {
         }
         
         if (needsUpload) {
+          if (!ref.mounted) return;
           ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.uploading, 'Mengunggah tugas...');
           for (final item in mergedList) {
             final cloudItem = cloudJobs.firstWhere((e) => e.id == item.id, orElse: () => const JobDetail(id: '', title: '', description: '', date: ''));
             if (cloudItem.id.isEmpty || item.updatedAt > cloudItem.updatedAt) {
+              if (!ref.mounted) return;
               await ref.read(firebaseServiceProvider).saveJob(nim, item);
             }
           }
         }
 
         // 1. Declare sync time for this session
+        if (!ref.mounted) return;
         final deviceId = ref.read(localStorageProvider).getDeviceId();
         await ref.read(firebaseServiceProvider).updateSessionSyncTime(nim, deviceId);
         
         // 2. Fetch all active sessions
+        if (!ref.mounted) return;
         final sessions = await ref.read(firebaseServiceProvider).getSessions(nim);
         
         // 3. Find the oldest lastSyncedAt among all devices
@@ -106,6 +112,7 @@ class JobNotifier extends _$JobNotifier {
           final toPurge = mergedList.where((e) => e.isDeleted && e.updatedAt < minSyncTime).toList();
           if (toPurge.isNotEmpty) {
             for (final item in toPurge) {
+              if (!ref.mounted) return;
               await ref.read(firebaseServiceProvider).deleteJob(nim, item.id);
             }
             final purgedList = state.where((e) => !toPurge.any((p) => p.id == e.id)).toList();
@@ -114,41 +121,43 @@ class JobNotifier extends _$JobNotifier {
           }
         }
         
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Tugas sinkron');
       } catch (e) {
+        if (!ref.mounted) return;
         ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.error, 'Gagal sinkron tugas');
       }
     });
 
     // 2. Real-time
-    ref.listen(
-      firebaseServiceProvider.select((s) => s.jobsStream(nim)),
-      (previous, next) {
-        next.listen(
-          (cloudJobs) {
-            final Map<String, JobDetail> merged = {};
-            for (final item in state) {
-              merged[item.id] = item;
-            }
-            bool changed = false;
-            for (final item in cloudJobs) {
-              final localItem = merged[item.id];
-              if (localItem == null || item.updatedAt > localItem.updatedAt) {
-                merged[item.id] = item;
-                changed = true;
-              }
-            }
-            if (changed) {
-              final mergedList = merged.values.toList()..sort((a, b) => b.date.compareTo(a.date));
-              state = mergedList;
-              _saveLocal(mergedList);
-              ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Tugas sinkron');
-            }
-          },
-        );
+    final subscription = ref.read(firebaseServiceProvider).jobsStream(nim).listen(
+      (cloudJobs) {
+        if (!ref.mounted) return;
+        final Map<String, JobDetail> merged = {};
+        for (final item in state) {
+          merged[item.id] = item;
+        }
+        bool changed = false;
+        for (final item in cloudJobs) {
+          final localItem = merged[item.id];
+          if (localItem == null || item.updatedAt > localItem.updatedAt) {
+            merged[item.id] = item;
+            changed = true;
+          }
+        }
+        if (changed) {
+          final mergedList = merged.values.toList()..sort((a, b) => b.date.compareTo(a.date));
+          state = mergedList;
+          _saveLocal(mergedList);
+          if (!ref.mounted) return;
+          ref.read(syncStatusProvider.notifier).setStatus(SyncStatusType.synced, 'Tugas sinkron');
+        }
       },
-      fireImmediately: true,
     );
+
+    ref.onDispose(() {
+      subscription.cancel();
+    });
   }
 
   void _saveLocal(List<JobDetail> jobs) {
