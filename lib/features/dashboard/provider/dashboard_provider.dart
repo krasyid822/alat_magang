@@ -152,12 +152,13 @@ class DashboardController extends _$DashboardController {
     _initCloudSync(trimmed);
   }
 
-  /// Memperbarui informasi profil mahasiswa ke lokal dan cloud
   Future<void> updateProfile({
     required String name,
     required String className,
     required String major,
     required String companyName,
+    String? division,
+    String? mentorName,
     int? internshipDurationWeeks,
     String? whatsappNumber,
   }) async {
@@ -166,6 +167,8 @@ class DashboardController extends _$DashboardController {
       className: className,
       major: major,
       companyName: companyName,
+      division: division ?? state.division,
+      mentorName: mentorName ?? state.mentorName,
       internshipDurationWeeks: internshipDurationWeeks ?? state.internshipDurationWeeks,
       whatsappNumber: whatsappNumber ?? state.whatsappNumber,
       lastDeviceId: ref.read(localStorageProvider).getDeviceId(),

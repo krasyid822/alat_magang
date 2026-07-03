@@ -7,6 +7,8 @@ import 'widgets/logbook_form.dart';
 import 'widgets/signature_dialog.dart';
 import '../../shared/data/models.dart';
 import '../../shared/data/theme_provider.dart';
+import '../../shared/presentation/image_preview_dialog.dart';
+import '../../dashboard/provider/dashboard_provider.dart';
 
 class LogbookScreen extends ConsumerStatefulWidget {
   const LogbookScreen({super.key});
@@ -33,6 +35,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(logbookStreamProvider);
+    final profile = ref.watch(dashboardControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -41,11 +44,13 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          _buildProfileInfoCard(context, profile, isDark),
+          const SizedBox(height: 16),
           _buildSearchBar(context, isDark),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           _buildWeekFilters(context, logsAsync.value ?? []),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Expanded(
             child: logsAsync.when(
               data: (logs) {
@@ -183,6 +188,100 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     );
   }
 
+  Widget _buildProfileInfoCard(BuildContext context, StudentProfile profile, bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.business_rounded, color: context.toolColors.logbook, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Informasi Tempat Magang',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.black87),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 24,
+            runSpacing: 10,
+            children: [
+              _buildProfileItem('Nama Mahasiswa', profile.name.isEmpty ? '—' : profile.name, Icons.person_rounded),
+              _buildProfileItem('NIM / Kelas', '${profile.nim.isEmpty ? '—' : profile.nim} / ${profile.className.isEmpty ? '—' : profile.className}', Icons.badge_rounded),
+              _buildProfileItem('Nama Perusahaan', profile.companyName.isEmpty ? '—' : profile.companyName, Icons.corporate_fare_rounded),
+              _buildProfileItem('Bagian / Divisi', profile.division.isEmpty ? '—' : profile.division, Icons.schema_rounded),
+              _buildProfileItem('Pembimbing Lapangan', profile.mentorName.isEmpty ? '—' : profile.mentorName, Icons.supervisor_account_rounded),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileItem(String label, String value, IconData icon) {
+    return SizedBox(
+      width: 220,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMonthName(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      const months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      return months[date.month - 1];
+    } catch (_) {
+      return '—';
+    }
+  }
+
+  String _getDayAndDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+      final dayName = days[date.weekday - 1];
+      return '$dayName, ${date.day} ${_getMonthName(dateStr)} ${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  void _showImagePreview(BuildContext context, String url) {
+    showZoomableImagePreview(context, url);
+  }
+
   Widget _buildLogsTableOrList(BuildContext context, List<dynamic> logs, bool isDark) {
     return Scrollbar(
       child: ListView.separated(
@@ -239,8 +338,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Jam Kerja: ${log.startTime} - ${log.endTime} | ${log.date}',
+                              'Jam Kerja: ${log.startTime} - ${log.endTime} | ${_getDayAndDate(log.date)}',
                               style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                            ),
+                            Text(
+                              'Bulan: ${_getMonthName(log.date)} | Minggu Ke-${log.weekNumber}',
+                              style: TextStyle(color: context.toolColors.logbook, fontSize: 11, fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),
@@ -294,6 +397,50 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                       ],
                     ],
                   ),
+                  
+                  // Image Gallery
+                  if (log.imageUrls.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Colors.white10),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.photo_library_rounded, size: 13, color: Colors.grey),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Dokumentasi Kegiatan (${log.imageUrls.length} Foto)',
+                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 70,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: log.imageUrls.length,
+                        itemBuilder: (context, imgIdx) {
+                          final imgUrl = log.imageUrls[imgIdx];
+                          return GestureDetector(
+                            onTap: () => _showImagePreview(context, imgUrl),
+                            child: Container(
+                              width: 70,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                                image: DecorationImage(
+                                  image: NetworkImage(imgUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 14),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -5,6 +5,7 @@ import '../../../shared/data/models.dart';
 import '../../provider/job_provider.dart';
 import 'job_form.dart';
 import '../../../shared/data/theme_provider.dart';
+import '../../../shared/presentation/image_preview_dialog.dart';
 
 class JobDetailCard extends ConsumerWidget {
   final JobDetail job;
@@ -173,7 +174,10 @@ class JobDetailCard extends ConsumerWidget {
           ? Stack(
               children: [
                 Positioned.fill(
-                  child: imgWidget(context, firstImage),
+                  child: GestureDetector(
+                    onTap: () => showZoomableImagePreview(context, firstImage),
+                    child: imgWidget(context, firstImage),
+                  ),
                 ),
                 if (images.length > 1)
                   Positioned(
@@ -268,7 +272,10 @@ class JobDetailCard extends ConsumerWidget {
                               ? PageView.builder(
                                   itemCount: images.length,
                                   itemBuilder: (context, idx) {
-                                    return imgWidget(context, images[idx]);
+                                    return GestureDetector(
+                                      onTap: () => showZoomableImagePreview(context, images[idx]),
+                                      child: imgWidget(context, images[idx]),
+                                    );
                                   },
                                 )
                               : Container(

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$StudentProfile {
 
- String get nim; String get name; String get className; String get major; String get companyName; int get internshipDurationWeeks; String get whatsappNumber; String get lastDeviceId; int? get lastLogoutAllTimestamp; bool get logoutAllForce; int get updatedAt;
+ String get nim; String get name; String get className; String get major; String get companyName; String get division; String get mentorName; int get internshipDurationWeeks; String get whatsappNumber; String get lastDeviceId; int? get lastLogoutAllTimestamp; bool get logoutAllForce; int get updatedAt;
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $StudentProfileCopyWith<StudentProfile> get copyWith => _$StudentProfileCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.logoutAllForce, logoutAllForce) || other.logoutAllForce == logoutAllForce)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.division, division) || other.division == division)&&(identical(other.mentorName, mentorName) || other.mentorName == mentorName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.logoutAllForce, logoutAllForce) || other.logoutAllForce == logoutAllForce)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,logoutAllForce,updatedAt);
+int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,division,mentorName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,logoutAllForce,updatedAt);
 
 @override
 String toString() {
-  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, logoutAllForce: $logoutAllForce, updatedAt: $updatedAt)';
+  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, division: $division, mentorName: $mentorName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, logoutAllForce: $logoutAllForce, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $StudentProfileCopyWith<$Res>  {
   factory $StudentProfileCopyWith(StudentProfile value, $Res Function(StudentProfile) _then) = _$StudentProfileCopyWithImpl;
 @useResult
 $Res call({
- String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, bool logoutAllForce, int updatedAt
+ String nim, String name, String className, String major, String companyName, String division, String mentorName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, bool logoutAllForce, int updatedAt
 });
 
 
@@ -65,13 +65,15 @@ class _$StudentProfileCopyWithImpl<$Res>
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? logoutAllForce = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? division = null,Object? mentorName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? logoutAllForce = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,className: null == className ? _self.className : className // ignore: cast_nullable_to_non_nullable
 as String,major: null == major ? _self.major : major // ignore: cast_nullable_to_non_nullable
 as String,companyName: null == companyName ? _self.companyName : companyName // ignore: cast_nullable_to_non_nullable
+as String,division: null == division ? _self.division : division // ignore: cast_nullable_to_non_nullable
+as String,mentorName: null == mentorName ? _self.mentorName : mentorName // ignore: cast_nullable_to_non_nullable
 as String,internshipDurationWeeks: null == internshipDurationWeeks ? _self.internshipDurationWeeks : internshipDurationWeeks // ignore: cast_nullable_to_non_nullable
 as int,whatsappNumber: null == whatsappNumber ? _self.whatsappNumber : whatsappNumber // ignore: cast_nullable_to_non_nullable
 as String,lastDeviceId: null == lastDeviceId ? _self.lastDeviceId : lastDeviceId // ignore: cast_nullable_to_non_nullable
@@ -163,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  String division,  String mentorName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StudentProfile() when $default != null:
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.division,_that.mentorName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -184,10 +186,10 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  String name,  String className,  String major,  String companyName,  String division,  String mentorName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _StudentProfile():
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.division,_that.mentorName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +206,10 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  String name,  String className,  String major,  String companyName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  String name,  String className,  String major,  String companyName,  String division,  String mentorName,  int internshipDurationWeeks,  String whatsappNumber,  String lastDeviceId,  int? lastLogoutAllTimestamp,  bool logoutAllForce,  int updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _StudentProfile() when $default != null:
-return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
+return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyName,_that.division,_that.mentorName,_that.internshipDurationWeeks,_that.whatsappNumber,_that.lastDeviceId,_that.lastLogoutAllTimestamp,_that.logoutAllForce,_that.updatedAt);case _:
   return null;
 
 }
@@ -219,7 +221,7 @@ return $default(_that.nim,_that.name,_that.className,_that.major,_that.companyNa
 @JsonSerializable()
 
 class _StudentProfile implements StudentProfile {
-  const _StudentProfile({required this.nim, this.name = '', this.className = '', this.major = '', this.companyName = '', this.internshipDurationWeeks = 16, this.whatsappNumber = '', this.lastDeviceId = '', this.lastLogoutAllTimestamp, this.logoutAllForce = false, this.updatedAt = 0});
+  const _StudentProfile({required this.nim, this.name = '', this.className = '', this.major = '', this.companyName = '', this.division = '', this.mentorName = '', this.internshipDurationWeeks = 16, this.whatsappNumber = '', this.lastDeviceId = '', this.lastLogoutAllTimestamp, this.logoutAllForce = false, this.updatedAt = 0});
   factory _StudentProfile.fromJson(Map<String, dynamic> json) => _$StudentProfileFromJson(json);
 
 @override final  String nim;
@@ -227,6 +229,8 @@ class _StudentProfile implements StudentProfile {
 @override@JsonKey() final  String className;
 @override@JsonKey() final  String major;
 @override@JsonKey() final  String companyName;
+@override@JsonKey() final  String division;
+@override@JsonKey() final  String mentorName;
 @override@JsonKey() final  int internshipDurationWeeks;
 @override@JsonKey() final  String whatsappNumber;
 @override@JsonKey() final  String lastDeviceId;
@@ -247,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.logoutAllForce, logoutAllForce) || other.logoutAllForce == logoutAllForce)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StudentProfile&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.name, name) || other.name == name)&&(identical(other.className, className) || other.className == className)&&(identical(other.major, major) || other.major == major)&&(identical(other.companyName, companyName) || other.companyName == companyName)&&(identical(other.division, division) || other.division == division)&&(identical(other.mentorName, mentorName) || other.mentorName == mentorName)&&(identical(other.internshipDurationWeeks, internshipDurationWeeks) || other.internshipDurationWeeks == internshipDurationWeeks)&&(identical(other.whatsappNumber, whatsappNumber) || other.whatsappNumber == whatsappNumber)&&(identical(other.lastDeviceId, lastDeviceId) || other.lastDeviceId == lastDeviceId)&&(identical(other.lastLogoutAllTimestamp, lastLogoutAllTimestamp) || other.lastLogoutAllTimestamp == lastLogoutAllTimestamp)&&(identical(other.logoutAllForce, logoutAllForce) || other.logoutAllForce == logoutAllForce)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,logoutAllForce,updatedAt);
+int get hashCode => Object.hash(runtimeType,nim,name,className,major,companyName,division,mentorName,internshipDurationWeeks,whatsappNumber,lastDeviceId,lastLogoutAllTimestamp,logoutAllForce,updatedAt);
 
 @override
 String toString() {
-  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, logoutAllForce: $logoutAllForce, updatedAt: $updatedAt)';
+  return 'StudentProfile(nim: $nim, name: $name, className: $className, major: $major, companyName: $companyName, division: $division, mentorName: $mentorName, internshipDurationWeeks: $internshipDurationWeeks, whatsappNumber: $whatsappNumber, lastDeviceId: $lastDeviceId, lastLogoutAllTimestamp: $lastLogoutAllTimestamp, logoutAllForce: $logoutAllForce, updatedAt: $updatedAt)';
 }
 
 
@@ -267,7 +271,7 @@ abstract mixin class _$StudentProfileCopyWith<$Res> implements $StudentProfileCo
   factory _$StudentProfileCopyWith(_StudentProfile value, $Res Function(_StudentProfile) _then) = __$StudentProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String nim, String name, String className, String major, String companyName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, bool logoutAllForce, int updatedAt
+ String nim, String name, String className, String major, String companyName, String division, String mentorName, int internshipDurationWeeks, String whatsappNumber, String lastDeviceId, int? lastLogoutAllTimestamp, bool logoutAllForce, int updatedAt
 });
 
 
@@ -284,13 +288,15 @@ class __$StudentProfileCopyWithImpl<$Res>
 
 /// Create a copy of StudentProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? logoutAllForce = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? name = null,Object? className = null,Object? major = null,Object? companyName = null,Object? division = null,Object? mentorName = null,Object? internshipDurationWeeks = null,Object? whatsappNumber = null,Object? lastDeviceId = null,Object? lastLogoutAllTimestamp = freezed,Object? logoutAllForce = null,Object? updatedAt = null,}) {
   return _then(_StudentProfile(
 nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,className: null == className ? _self.className : className // ignore: cast_nullable_to_non_nullable
 as String,major: null == major ? _self.major : major // ignore: cast_nullable_to_non_nullable
 as String,companyName: null == companyName ? _self.companyName : companyName // ignore: cast_nullable_to_non_nullable
+as String,division: null == division ? _self.division : division // ignore: cast_nullable_to_non_nullable
+as String,mentorName: null == mentorName ? _self.mentorName : mentorName // ignore: cast_nullable_to_non_nullable
 as String,internshipDurationWeeks: null == internshipDurationWeeks ? _self.internshipDurationWeeks : internshipDurationWeeks // ignore: cast_nullable_to_non_nullable
 as int,whatsappNumber: null == whatsappNumber ? _self.whatsappNumber : whatsappNumber // ignore: cast_nullable_to_non_nullable
 as String,lastDeviceId: null == lastDeviceId ? _self.lastDeviceId : lastDeviceId // ignore: cast_nullable_to_non_nullable
@@ -308,7 +314,7 @@ as int,
 /// @nodoc
 mixin _$InternshipLog {
 
- String get id; String get date; String get activity; String get startTime; String get endTime; bool get isSigned; int get weekNumber; String get signatureData; String get versionHistory; int get updatedAt; bool get isDeleted;
+ String get id; String get date; String get activity; String get startTime; String get endTime; bool get isSigned; int get weekNumber; String get signatureData; String get versionHistory; List<String> get imageUrls; int get updatedAt; bool get isDeleted;
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -321,16 +327,16 @@ $InternshipLogCopyWith<InternshipLog> get copyWith => _$InternshipLogCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory)&&const DeepCollectionEquality().equals(other.imageUrls, imageUrls)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory,updatedAt,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory,const DeepCollectionEquality().hash(imageUrls),updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory, imageUrls: $imageUrls, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -341,7 +347,7 @@ abstract mixin class $InternshipLogCopyWith<$Res>  {
   factory $InternshipLogCopyWith(InternshipLog value, $Res Function(InternshipLog) _then) = _$InternshipLogCopyWithImpl;
 @useResult
 $Res call({
- String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory, int updatedAt, bool isDeleted
+ String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory, List<String> imageUrls, int updatedAt, bool isDeleted
 });
 
 
@@ -358,7 +364,7 @@ class _$InternshipLogCopyWithImpl<$Res>
 
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,Object? updatedAt = null,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,Object? imageUrls = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -369,7 +375,8 @@ as String,isSigned: null == isSigned ? _self.isSigned : isSigned // ignore: cast
 as bool,weekNumber: null == weekNumber ? _self.weekNumber : weekNumber // ignore: cast_nullable_to_non_nullable
 as int,signatureData: null == signatureData ? _self.signatureData : signatureData // ignore: cast_nullable_to_non_nullable
 as String,versionHistory: null == versionHistory ? _self.versionHistory : versionHistory // ignore: cast_nullable_to_non_nullable
-as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as String,imageUrls: null == imageUrls ? _self.imageUrls : imageUrls // ignore: cast_nullable_to_non_nullable
+as List<String>,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -456,10 +463,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  int updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  List<String> imageUrls,  int updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InternshipLog() when $default != null:
-return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.updatedAt,_that.isDeleted);case _:
+return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.imageUrls,_that.updatedAt,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -477,10 +484,10 @@ return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  int updatedAt,  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  List<String> imageUrls,  int updatedAt,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _InternshipLog():
-return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.updatedAt,_that.isDeleted);case _:
+return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.imageUrls,_that.updatedAt,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -497,10 +504,10 @@ return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  int updatedAt,  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String date,  String activity,  String startTime,  String endTime,  bool isSigned,  int weekNumber,  String signatureData,  String versionHistory,  List<String> imageUrls,  int updatedAt,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _InternshipLog() when $default != null:
-return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.updatedAt,_that.isDeleted);case _:
+return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime,_that.isSigned,_that.weekNumber,_that.signatureData,_that.versionHistory,_that.imageUrls,_that.updatedAt,_that.isDeleted);case _:
   return null;
 
 }
@@ -512,7 +519,7 @@ return $default(_that.id,_that.date,_that.activity,_that.startTime,_that.endTime
 @JsonSerializable()
 
 class _InternshipLog implements InternshipLog {
-  const _InternshipLog({required this.id, required this.date, required this.activity, required this.startTime, required this.endTime, this.isSigned = false, required this.weekNumber, this.signatureData = '', this.versionHistory = '', this.updatedAt = 0, this.isDeleted = false});
+  const _InternshipLog({required this.id, required this.date, required this.activity, required this.startTime, required this.endTime, this.isSigned = false, required this.weekNumber, this.signatureData = '', this.versionHistory = '', final  List<String> imageUrls = const [], this.updatedAt = 0, this.isDeleted = false}): _imageUrls = imageUrls;
   factory _InternshipLog.fromJson(Map<String, dynamic> json) => _$InternshipLogFromJson(json);
 
 @override final  String id;
@@ -524,6 +531,13 @@ class _InternshipLog implements InternshipLog {
 @override final  int weekNumber;
 @override@JsonKey() final  String signatureData;
 @override@JsonKey() final  String versionHistory;
+ final  List<String> _imageUrls;
+@override@JsonKey() List<String> get imageUrls {
+  if (_imageUrls is EqualUnmodifiableListView) return _imageUrls;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_imageUrls);
+}
+
 @override@JsonKey() final  int updatedAt;
 @override@JsonKey() final  bool isDeleted;
 
@@ -540,16 +554,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InternshipLog&&(identical(other.id, id) || other.id == id)&&(identical(other.date, date) || other.date == date)&&(identical(other.activity, activity) || other.activity == activity)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isSigned, isSigned) || other.isSigned == isSigned)&&(identical(other.weekNumber, weekNumber) || other.weekNumber == weekNumber)&&(identical(other.signatureData, signatureData) || other.signatureData == signatureData)&&(identical(other.versionHistory, versionHistory) || other.versionHistory == versionHistory)&&const DeepCollectionEquality().equals(other._imageUrls, _imageUrls)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory,updatedAt,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,date,activity,startTime,endTime,isSigned,weekNumber,signatureData,versionHistory,const DeepCollectionEquality().hash(_imageUrls),updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+  return 'InternshipLog(id: $id, date: $date, activity: $activity, startTime: $startTime, endTime: $endTime, isSigned: $isSigned, weekNumber: $weekNumber, signatureData: $signatureData, versionHistory: $versionHistory, imageUrls: $imageUrls, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -560,7 +574,7 @@ abstract mixin class _$InternshipLogCopyWith<$Res> implements $InternshipLogCopy
   factory _$InternshipLogCopyWith(_InternshipLog value, $Res Function(_InternshipLog) _then) = __$InternshipLogCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory, int updatedAt, bool isDeleted
+ String id, String date, String activity, String startTime, String endTime, bool isSigned, int weekNumber, String signatureData, String versionHistory, List<String> imageUrls, int updatedAt, bool isDeleted
 });
 
 
@@ -577,7 +591,7 @@ class __$InternshipLogCopyWithImpl<$Res>
 
 /// Create a copy of InternshipLog
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,Object? updatedAt = null,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? date = null,Object? activity = null,Object? startTime = null,Object? endTime = null,Object? isSigned = null,Object? weekNumber = null,Object? signatureData = null,Object? versionHistory = null,Object? imageUrls = null,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_InternshipLog(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -588,7 +602,322 @@ as String,isSigned: null == isSigned ? _self.isSigned : isSigned // ignore: cast
 as bool,weekNumber: null == weekNumber ? _self.weekNumber : weekNumber // ignore: cast_nullable_to_non_nullable
 as int,signatureData: null == signatureData ? _self.signatureData : signatureData // ignore: cast_nullable_to_non_nullable
 as String,versionHistory: null == versionHistory ? _self.versionHistory : versionHistory // ignore: cast_nullable_to_non_nullable
-as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as String,imageUrls: null == imageUrls ? _self._imageUrls : imageUrls // ignore: cast_nullable_to_non_nullable
+as List<String>,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$InternshipGrading {
+
+ String get nim; double get companyKerapian; double get companyDisiplin; double get companyKehadiran; double get companyTanggungJawab; double get companyKemandirian; double get companyInisiatif; double get companyPemahaman; double get companyKerjasamaRekan; double get companyKerjasamaAtasan; double get companyAdaptasi; String get companySaranKritik; double get dosenFormatLaporan; double get dosenUraianLaporan; double get dosenPresentasiLaporan; double get dosenTanyaJawabLaporan; int get updatedAt; bool get isDeleted;
+/// Create a copy of InternshipGrading
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$InternshipGradingCopyWith<InternshipGrading> get copyWith => _$InternshipGradingCopyWithImpl<InternshipGrading>(this as InternshipGrading, _$identity);
+
+  /// Serializes this InternshipGrading to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InternshipGrading&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.companyKerapian, companyKerapian) || other.companyKerapian == companyKerapian)&&(identical(other.companyDisiplin, companyDisiplin) || other.companyDisiplin == companyDisiplin)&&(identical(other.companyKehadiran, companyKehadiran) || other.companyKehadiran == companyKehadiran)&&(identical(other.companyTanggungJawab, companyTanggungJawab) || other.companyTanggungJawab == companyTanggungJawab)&&(identical(other.companyKemandirian, companyKemandirian) || other.companyKemandirian == companyKemandirian)&&(identical(other.companyInisiatif, companyInisiatif) || other.companyInisiatif == companyInisiatif)&&(identical(other.companyPemahaman, companyPemahaman) || other.companyPemahaman == companyPemahaman)&&(identical(other.companyKerjasamaRekan, companyKerjasamaRekan) || other.companyKerjasamaRekan == companyKerjasamaRekan)&&(identical(other.companyKerjasamaAtasan, companyKerjasamaAtasan) || other.companyKerjasamaAtasan == companyKerjasamaAtasan)&&(identical(other.companyAdaptasi, companyAdaptasi) || other.companyAdaptasi == companyAdaptasi)&&(identical(other.companySaranKritik, companySaranKritik) || other.companySaranKritik == companySaranKritik)&&(identical(other.dosenFormatLaporan, dosenFormatLaporan) || other.dosenFormatLaporan == dosenFormatLaporan)&&(identical(other.dosenUraianLaporan, dosenUraianLaporan) || other.dosenUraianLaporan == dosenUraianLaporan)&&(identical(other.dosenPresentasiLaporan, dosenPresentasiLaporan) || other.dosenPresentasiLaporan == dosenPresentasiLaporan)&&(identical(other.dosenTanyaJawabLaporan, dosenTanyaJawabLaporan) || other.dosenTanyaJawabLaporan == dosenTanyaJawabLaporan)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,nim,companyKerapian,companyDisiplin,companyKehadiran,companyTanggungJawab,companyKemandirian,companyInisiatif,companyPemahaman,companyKerjasamaRekan,companyKerjasamaAtasan,companyAdaptasi,companySaranKritik,dosenFormatLaporan,dosenUraianLaporan,dosenPresentasiLaporan,dosenTanyaJawabLaporan,updatedAt,isDeleted);
+
+@override
+String toString() {
+  return 'InternshipGrading(nim: $nim, companyKerapian: $companyKerapian, companyDisiplin: $companyDisiplin, companyKehadiran: $companyKehadiran, companyTanggungJawab: $companyTanggungJawab, companyKemandirian: $companyKemandirian, companyInisiatif: $companyInisiatif, companyPemahaman: $companyPemahaman, companyKerjasamaRekan: $companyKerjasamaRekan, companyKerjasamaAtasan: $companyKerjasamaAtasan, companyAdaptasi: $companyAdaptasi, companySaranKritik: $companySaranKritik, dosenFormatLaporan: $dosenFormatLaporan, dosenUraianLaporan: $dosenUraianLaporan, dosenPresentasiLaporan: $dosenPresentasiLaporan, dosenTanyaJawabLaporan: $dosenTanyaJawabLaporan, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $InternshipGradingCopyWith<$Res>  {
+  factory $InternshipGradingCopyWith(InternshipGrading value, $Res Function(InternshipGrading) _then) = _$InternshipGradingCopyWithImpl;
+@useResult
+$Res call({
+ String nim, double companyKerapian, double companyDisiplin, double companyKehadiran, double companyTanggungJawab, double companyKemandirian, double companyInisiatif, double companyPemahaman, double companyKerjasamaRekan, double companyKerjasamaAtasan, double companyAdaptasi, String companySaranKritik, double dosenFormatLaporan, double dosenUraianLaporan, double dosenPresentasiLaporan, double dosenTanyaJawabLaporan, int updatedAt, bool isDeleted
+});
+
+
+
+
+}
+/// @nodoc
+class _$InternshipGradingCopyWithImpl<$Res>
+    implements $InternshipGradingCopyWith<$Res> {
+  _$InternshipGradingCopyWithImpl(this._self, this._then);
+
+  final InternshipGrading _self;
+  final $Res Function(InternshipGrading) _then;
+
+/// Create a copy of InternshipGrading
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? nim = null,Object? companyKerapian = null,Object? companyDisiplin = null,Object? companyKehadiran = null,Object? companyTanggungJawab = null,Object? companyKemandirian = null,Object? companyInisiatif = null,Object? companyPemahaman = null,Object? companyKerjasamaRekan = null,Object? companyKerjasamaAtasan = null,Object? companyAdaptasi = null,Object? companySaranKritik = null,Object? dosenFormatLaporan = null,Object? dosenUraianLaporan = null,Object? dosenPresentasiLaporan = null,Object? dosenTanyaJawabLaporan = null,Object? updatedAt = null,Object? isDeleted = null,}) {
+  return _then(_self.copyWith(
+nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
+as String,companyKerapian: null == companyKerapian ? _self.companyKerapian : companyKerapian // ignore: cast_nullable_to_non_nullable
+as double,companyDisiplin: null == companyDisiplin ? _self.companyDisiplin : companyDisiplin // ignore: cast_nullable_to_non_nullable
+as double,companyKehadiran: null == companyKehadiran ? _self.companyKehadiran : companyKehadiran // ignore: cast_nullable_to_non_nullable
+as double,companyTanggungJawab: null == companyTanggungJawab ? _self.companyTanggungJawab : companyTanggungJawab // ignore: cast_nullable_to_non_nullable
+as double,companyKemandirian: null == companyKemandirian ? _self.companyKemandirian : companyKemandirian // ignore: cast_nullable_to_non_nullable
+as double,companyInisiatif: null == companyInisiatif ? _self.companyInisiatif : companyInisiatif // ignore: cast_nullable_to_non_nullable
+as double,companyPemahaman: null == companyPemahaman ? _self.companyPemahaman : companyPemahaman // ignore: cast_nullable_to_non_nullable
+as double,companyKerjasamaRekan: null == companyKerjasamaRekan ? _self.companyKerjasamaRekan : companyKerjasamaRekan // ignore: cast_nullable_to_non_nullable
+as double,companyKerjasamaAtasan: null == companyKerjasamaAtasan ? _self.companyKerjasamaAtasan : companyKerjasamaAtasan // ignore: cast_nullable_to_non_nullable
+as double,companyAdaptasi: null == companyAdaptasi ? _self.companyAdaptasi : companyAdaptasi // ignore: cast_nullable_to_non_nullable
+as double,companySaranKritik: null == companySaranKritik ? _self.companySaranKritik : companySaranKritik // ignore: cast_nullable_to_non_nullable
+as String,dosenFormatLaporan: null == dosenFormatLaporan ? _self.dosenFormatLaporan : dosenFormatLaporan // ignore: cast_nullable_to_non_nullable
+as double,dosenUraianLaporan: null == dosenUraianLaporan ? _self.dosenUraianLaporan : dosenUraianLaporan // ignore: cast_nullable_to_non_nullable
+as double,dosenPresentasiLaporan: null == dosenPresentasiLaporan ? _self.dosenPresentasiLaporan : dosenPresentasiLaporan // ignore: cast_nullable_to_non_nullable
+as double,dosenTanyaJawabLaporan: null == dosenTanyaJawabLaporan ? _self.dosenTanyaJawabLaporan : dosenTanyaJawabLaporan // ignore: cast_nullable_to_non_nullable
+as double,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [InternshipGrading].
+extension InternshipGradingPatterns on InternshipGrading {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _InternshipGrading value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _InternshipGrading() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _InternshipGrading value)  $default,){
+final _that = this;
+switch (_that) {
+case _InternshipGrading():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _InternshipGrading value)?  $default,){
+final _that = this;
+switch (_that) {
+case _InternshipGrading() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String nim,  double companyKerapian,  double companyDisiplin,  double companyKehadiran,  double companyTanggungJawab,  double companyKemandirian,  double companyInisiatif,  double companyPemahaman,  double companyKerjasamaRekan,  double companyKerjasamaAtasan,  double companyAdaptasi,  String companySaranKritik,  double dosenFormatLaporan,  double dosenUraianLaporan,  double dosenPresentasiLaporan,  double dosenTanyaJawabLaporan,  int updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _InternshipGrading() when $default != null:
+return $default(_that.nim,_that.companyKerapian,_that.companyDisiplin,_that.companyKehadiran,_that.companyTanggungJawab,_that.companyKemandirian,_that.companyInisiatif,_that.companyPemahaman,_that.companyKerjasamaRekan,_that.companyKerjasamaAtasan,_that.companyAdaptasi,_that.companySaranKritik,_that.dosenFormatLaporan,_that.dosenUraianLaporan,_that.dosenPresentasiLaporan,_that.dosenTanyaJawabLaporan,_that.updatedAt,_that.isDeleted);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String nim,  double companyKerapian,  double companyDisiplin,  double companyKehadiran,  double companyTanggungJawab,  double companyKemandirian,  double companyInisiatif,  double companyPemahaman,  double companyKerjasamaRekan,  double companyKerjasamaAtasan,  double companyAdaptasi,  String companySaranKritik,  double dosenFormatLaporan,  double dosenUraianLaporan,  double dosenPresentasiLaporan,  double dosenTanyaJawabLaporan,  int updatedAt,  bool isDeleted)  $default,) {final _that = this;
+switch (_that) {
+case _InternshipGrading():
+return $default(_that.nim,_that.companyKerapian,_that.companyDisiplin,_that.companyKehadiran,_that.companyTanggungJawab,_that.companyKemandirian,_that.companyInisiatif,_that.companyPemahaman,_that.companyKerjasamaRekan,_that.companyKerjasamaAtasan,_that.companyAdaptasi,_that.companySaranKritik,_that.dosenFormatLaporan,_that.dosenUraianLaporan,_that.dosenPresentasiLaporan,_that.dosenTanyaJawabLaporan,_that.updatedAt,_that.isDeleted);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String nim,  double companyKerapian,  double companyDisiplin,  double companyKehadiran,  double companyTanggungJawab,  double companyKemandirian,  double companyInisiatif,  double companyPemahaman,  double companyKerjasamaRekan,  double companyKerjasamaAtasan,  double companyAdaptasi,  String companySaranKritik,  double dosenFormatLaporan,  double dosenUraianLaporan,  double dosenPresentasiLaporan,  double dosenTanyaJawabLaporan,  int updatedAt,  bool isDeleted)?  $default,) {final _that = this;
+switch (_that) {
+case _InternshipGrading() when $default != null:
+return $default(_that.nim,_that.companyKerapian,_that.companyDisiplin,_that.companyKehadiran,_that.companyTanggungJawab,_that.companyKemandirian,_that.companyInisiatif,_that.companyPemahaman,_that.companyKerjasamaRekan,_that.companyKerjasamaAtasan,_that.companyAdaptasi,_that.companySaranKritik,_that.dosenFormatLaporan,_that.dosenUraianLaporan,_that.dosenPresentasiLaporan,_that.dosenTanyaJawabLaporan,_that.updatedAt,_that.isDeleted);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _InternshipGrading implements InternshipGrading {
+  const _InternshipGrading({required this.nim, this.companyKerapian = 0.0, this.companyDisiplin = 0.0, this.companyKehadiran = 0.0, this.companyTanggungJawab = 0.0, this.companyKemandirian = 0.0, this.companyInisiatif = 0.0, this.companyPemahaman = 0.0, this.companyKerjasamaRekan = 0.0, this.companyKerjasamaAtasan = 0.0, this.companyAdaptasi = 0.0, this.companySaranKritik = '', this.dosenFormatLaporan = 0.0, this.dosenUraianLaporan = 0.0, this.dosenPresentasiLaporan = 0.0, this.dosenTanyaJawabLaporan = 0.0, this.updatedAt = 0, this.isDeleted = false});
+  factory _InternshipGrading.fromJson(Map<String, dynamic> json) => _$InternshipGradingFromJson(json);
+
+@override final  String nim;
+@override@JsonKey() final  double companyKerapian;
+@override@JsonKey() final  double companyDisiplin;
+@override@JsonKey() final  double companyKehadiran;
+@override@JsonKey() final  double companyTanggungJawab;
+@override@JsonKey() final  double companyKemandirian;
+@override@JsonKey() final  double companyInisiatif;
+@override@JsonKey() final  double companyPemahaman;
+@override@JsonKey() final  double companyKerjasamaRekan;
+@override@JsonKey() final  double companyKerjasamaAtasan;
+@override@JsonKey() final  double companyAdaptasi;
+@override@JsonKey() final  String companySaranKritik;
+@override@JsonKey() final  double dosenFormatLaporan;
+@override@JsonKey() final  double dosenUraianLaporan;
+@override@JsonKey() final  double dosenPresentasiLaporan;
+@override@JsonKey() final  double dosenTanyaJawabLaporan;
+@override@JsonKey() final  int updatedAt;
+@override@JsonKey() final  bool isDeleted;
+
+/// Create a copy of InternshipGrading
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$InternshipGradingCopyWith<_InternshipGrading> get copyWith => __$InternshipGradingCopyWithImpl<_InternshipGrading>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$InternshipGradingToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InternshipGrading&&(identical(other.nim, nim) || other.nim == nim)&&(identical(other.companyKerapian, companyKerapian) || other.companyKerapian == companyKerapian)&&(identical(other.companyDisiplin, companyDisiplin) || other.companyDisiplin == companyDisiplin)&&(identical(other.companyKehadiran, companyKehadiran) || other.companyKehadiran == companyKehadiran)&&(identical(other.companyTanggungJawab, companyTanggungJawab) || other.companyTanggungJawab == companyTanggungJawab)&&(identical(other.companyKemandirian, companyKemandirian) || other.companyKemandirian == companyKemandirian)&&(identical(other.companyInisiatif, companyInisiatif) || other.companyInisiatif == companyInisiatif)&&(identical(other.companyPemahaman, companyPemahaman) || other.companyPemahaman == companyPemahaman)&&(identical(other.companyKerjasamaRekan, companyKerjasamaRekan) || other.companyKerjasamaRekan == companyKerjasamaRekan)&&(identical(other.companyKerjasamaAtasan, companyKerjasamaAtasan) || other.companyKerjasamaAtasan == companyKerjasamaAtasan)&&(identical(other.companyAdaptasi, companyAdaptasi) || other.companyAdaptasi == companyAdaptasi)&&(identical(other.companySaranKritik, companySaranKritik) || other.companySaranKritik == companySaranKritik)&&(identical(other.dosenFormatLaporan, dosenFormatLaporan) || other.dosenFormatLaporan == dosenFormatLaporan)&&(identical(other.dosenUraianLaporan, dosenUraianLaporan) || other.dosenUraianLaporan == dosenUraianLaporan)&&(identical(other.dosenPresentasiLaporan, dosenPresentasiLaporan) || other.dosenPresentasiLaporan == dosenPresentasiLaporan)&&(identical(other.dosenTanyaJawabLaporan, dosenTanyaJawabLaporan) || other.dosenTanyaJawabLaporan == dosenTanyaJawabLaporan)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,nim,companyKerapian,companyDisiplin,companyKehadiran,companyTanggungJawab,companyKemandirian,companyInisiatif,companyPemahaman,companyKerjasamaRekan,companyKerjasamaAtasan,companyAdaptasi,companySaranKritik,dosenFormatLaporan,dosenUraianLaporan,dosenPresentasiLaporan,dosenTanyaJawabLaporan,updatedAt,isDeleted);
+
+@override
+String toString() {
+  return 'InternshipGrading(nim: $nim, companyKerapian: $companyKerapian, companyDisiplin: $companyDisiplin, companyKehadiran: $companyKehadiran, companyTanggungJawab: $companyTanggungJawab, companyKemandirian: $companyKemandirian, companyInisiatif: $companyInisiatif, companyPemahaman: $companyPemahaman, companyKerjasamaRekan: $companyKerjasamaRekan, companyKerjasamaAtasan: $companyKerjasamaAtasan, companyAdaptasi: $companyAdaptasi, companySaranKritik: $companySaranKritik, dosenFormatLaporan: $dosenFormatLaporan, dosenUraianLaporan: $dosenUraianLaporan, dosenPresentasiLaporan: $dosenPresentasiLaporan, dosenTanyaJawabLaporan: $dosenTanyaJawabLaporan, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$InternshipGradingCopyWith<$Res> implements $InternshipGradingCopyWith<$Res> {
+  factory _$InternshipGradingCopyWith(_InternshipGrading value, $Res Function(_InternshipGrading) _then) = __$InternshipGradingCopyWithImpl;
+@override @useResult
+$Res call({
+ String nim, double companyKerapian, double companyDisiplin, double companyKehadiran, double companyTanggungJawab, double companyKemandirian, double companyInisiatif, double companyPemahaman, double companyKerjasamaRekan, double companyKerjasamaAtasan, double companyAdaptasi, String companySaranKritik, double dosenFormatLaporan, double dosenUraianLaporan, double dosenPresentasiLaporan, double dosenTanyaJawabLaporan, int updatedAt, bool isDeleted
+});
+
+
+
+
+}
+/// @nodoc
+class __$InternshipGradingCopyWithImpl<$Res>
+    implements _$InternshipGradingCopyWith<$Res> {
+  __$InternshipGradingCopyWithImpl(this._self, this._then);
+
+  final _InternshipGrading _self;
+  final $Res Function(_InternshipGrading) _then;
+
+/// Create a copy of InternshipGrading
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? nim = null,Object? companyKerapian = null,Object? companyDisiplin = null,Object? companyKehadiran = null,Object? companyTanggungJawab = null,Object? companyKemandirian = null,Object? companyInisiatif = null,Object? companyPemahaman = null,Object? companyKerjasamaRekan = null,Object? companyKerjasamaAtasan = null,Object? companyAdaptasi = null,Object? companySaranKritik = null,Object? dosenFormatLaporan = null,Object? dosenUraianLaporan = null,Object? dosenPresentasiLaporan = null,Object? dosenTanyaJawabLaporan = null,Object? updatedAt = null,Object? isDeleted = null,}) {
+  return _then(_InternshipGrading(
+nim: null == nim ? _self.nim : nim // ignore: cast_nullable_to_non_nullable
+as String,companyKerapian: null == companyKerapian ? _self.companyKerapian : companyKerapian // ignore: cast_nullable_to_non_nullable
+as double,companyDisiplin: null == companyDisiplin ? _self.companyDisiplin : companyDisiplin // ignore: cast_nullable_to_non_nullable
+as double,companyKehadiran: null == companyKehadiran ? _self.companyKehadiran : companyKehadiran // ignore: cast_nullable_to_non_nullable
+as double,companyTanggungJawab: null == companyTanggungJawab ? _self.companyTanggungJawab : companyTanggungJawab // ignore: cast_nullable_to_non_nullable
+as double,companyKemandirian: null == companyKemandirian ? _self.companyKemandirian : companyKemandirian // ignore: cast_nullable_to_non_nullable
+as double,companyInisiatif: null == companyInisiatif ? _self.companyInisiatif : companyInisiatif // ignore: cast_nullable_to_non_nullable
+as double,companyPemahaman: null == companyPemahaman ? _self.companyPemahaman : companyPemahaman // ignore: cast_nullable_to_non_nullable
+as double,companyKerjasamaRekan: null == companyKerjasamaRekan ? _self.companyKerjasamaRekan : companyKerjasamaRekan // ignore: cast_nullable_to_non_nullable
+as double,companyKerjasamaAtasan: null == companyKerjasamaAtasan ? _self.companyKerjasamaAtasan : companyKerjasamaAtasan // ignore: cast_nullable_to_non_nullable
+as double,companyAdaptasi: null == companyAdaptasi ? _self.companyAdaptasi : companyAdaptasi // ignore: cast_nullable_to_non_nullable
+as double,companySaranKritik: null == companySaranKritik ? _self.companySaranKritik : companySaranKritik // ignore: cast_nullable_to_non_nullable
+as String,dosenFormatLaporan: null == dosenFormatLaporan ? _self.dosenFormatLaporan : dosenFormatLaporan // ignore: cast_nullable_to_non_nullable
+as double,dosenUraianLaporan: null == dosenUraianLaporan ? _self.dosenUraianLaporan : dosenUraianLaporan // ignore: cast_nullable_to_non_nullable
+as double,dosenPresentasiLaporan: null == dosenPresentasiLaporan ? _self.dosenPresentasiLaporan : dosenPresentasiLaporan // ignore: cast_nullable_to_non_nullable
+as double,dosenTanyaJawabLaporan: null == dosenTanyaJawabLaporan ? _self.dosenTanyaJawabLaporan : dosenTanyaJawabLaporan // ignore: cast_nullable_to_non_nullable
+as double,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as int,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,
   ));

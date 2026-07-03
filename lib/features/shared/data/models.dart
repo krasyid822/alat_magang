@@ -11,6 +11,8 @@ abstract class StudentProfile with _$StudentProfile {
     @Default('') String className,
     @Default('') String major,
     @Default('') String companyName,
+    @Default('') String division,
+    @Default('') String mentorName,
     @Default(16) int internshipDurationWeeks,
     @Default('') String whatsappNumber,
     @Default('') String lastDeviceId,
@@ -35,12 +37,44 @@ abstract class InternshipLog with _$InternshipLog {
     required int weekNumber,
     @Default('') String signatureData,
     @Default('') String versionHistory,
+    @Default([]) List<String> imageUrls,
     @Default(0) int updatedAt,
     @Default(false) bool isDeleted,
   }) = _InternshipLog;
 
   factory InternshipLog.fromJson(Map<String, dynamic> json) =>
       _$InternshipLogFromJson(json);
+}
+
+@freezed
+abstract class InternshipGrading with _$InternshipGrading {
+  const factory InternshipGrading({
+    required String nim,
+    // Form-3.30 (Nilai Perusahaan / Mentor) - 10 kriteria
+    @Default(0.0) double companyKerapian,
+    @Default(0.0) double companyDisiplin,
+    @Default(0.0) double companyKehadiran,
+    @Default(0.0) double companyTanggungJawab,
+    @Default(0.0) double companyKemandirian,
+    @Default(0.0) double companyInisiatif,
+    @Default(0.0) double companyPemahaman,
+    @Default(0.0) double companyKerjasamaRekan,
+    @Default(0.0) double companyKerjasamaAtasan,
+    @Default(0.0) double companyAdaptasi,
+    @Default('') String companySaranKritik,
+    
+    // Form-3.31 (Nilai Dosen Pembimbing)
+    @Default(0.0) double dosenFormatLaporan,     // Bobot 15%
+    @Default(0.0) double dosenUraianLaporan,     // Bobot 25%
+    @Default(0.0) double dosenPresentasiLaporan,  // Bobot 20%
+    @Default(0.0) double dosenTanyaJawabLaporan,  // Bobot 40%
+    
+    @Default(0) int updatedAt,
+    @Default(false) bool isDeleted,
+  }) = _InternshipGrading;
+
+  factory InternshipGrading.fromJson(Map<String, dynamic> json) =>
+      _$InternshipGradingFromJson(json);
 }
 
 @freezed

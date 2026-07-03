@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/data/models.dart';
 import '../../provider/job_provider.dart';
 import '../../../shared/data/theme_provider.dart';
+import '../../../shared/presentation/image_preview_dialog.dart';
 
 class JobForm extends ConsumerStatefulWidget {
   final JobDetail? existingJob;
@@ -92,8 +93,8 @@ class _JobFormState extends ConsumerState<JobForm> {
       ..id = 'webcam_overlay';
 
     final card = html.DivElement()
-      ..style.width = '90%'
-      ..style.maxWidth = '500px'
+      ..style.width = '95%'
+      ..style.maxWidth = '550px'
       ..style.backgroundColor = '#1E293B'
       ..style.borderRadius = '24px'
       ..style.padding = '24px'
@@ -115,43 +116,69 @@ class _JobFormState extends ConsumerState<JobForm> {
     final video = html.VideoElement()
       ..autoplay = true
       ..style.width = '100%'
-      ..style.height = '300px'
+      ..style.height = '320px'
       ..style.borderRadius = '16px'
       ..style.objectFit = 'cover'
-      ..style.backgroundColor = '#0F172A'
-      ..style.transform = 'scaleX(-1)';
+      ..style.backgroundColor = '#0F172A';
 
     final buttonRow = html.DivElement()
       ..style.display = 'flex'
       ..style.justifyContent = 'center'
-      ..style.gap = '14px'
+      ..style.flexWrap = 'wrap'
+      ..style.gap = '10px'
       ..style.marginTop = '8px';
 
     final cancelBtn = html.ButtonElement()
       ..text = 'Batal'
-      ..style.padding = '12px 24px'
-      ..style.borderRadius = '12px'
+      ..style.padding = '10px 16px'
+      ..style.borderRadius = '10px'
       ..style.border = 'none'
       ..style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
       ..style.color = '#94A3B8'
-      ..style.fontSize = '14px'
+      ..style.fontSize = '12px'
+      ..style.fontWeight = 'bold'
+      ..style.cursor = 'pointer'
+      ..style.fontFamily = 'system-ui, sans-serif';
+
+    final switchCamBtn = html.ButtonElement()
+      ..text = 'Ganti Kamera'
+      ..style.padding = '10px 16px'
+      ..style.borderRadius = '10px'
+      ..style.border = 'none'
+      ..style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+      ..style.color = '#FFFFFF'
+      ..style.fontSize = '12px'
+      ..style.fontWeight = 'bold'
+      ..style.cursor = 'pointer'
+      ..style.fontFamily = 'system-ui, sans-serif';
+
+    final mirrorBtn = html.ButtonElement()
+      ..text = 'Cermin: NONAKTIF'
+      ..style.padding = '10px 16px'
+      ..style.borderRadius = '10px'
+      ..style.border = 'none'
+      ..style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+      ..style.color = '#FFFFFF'
+      ..style.fontSize = '12px'
       ..style.fontWeight = 'bold'
       ..style.cursor = 'pointer'
       ..style.fontFamily = 'system-ui, sans-serif';
 
     final captureBtn = html.ButtonElement()
       ..text = 'Ambil Foto'
-      ..style.padding = '12px 24px'
-      ..style.borderRadius = '12px'
+      ..style.padding = '10px 20px'
+      ..style.borderRadius = '10px'
       ..style.border = 'none'
       ..style.backgroundColor = 'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
       ..style.color = '#FFFFFF'
-      ..style.fontSize = '14px'
+      ..style.fontSize = '12px'
       ..style.fontWeight = 'bold'
       ..style.cursor = 'pointer'
       ..style.fontFamily = 'system-ui, sans-serif';
 
     buttonRow.append(cancelBtn);
+    buttonRow.append(switchCamBtn);
+    buttonRow.append(mirrorBtn);
     buttonRow.append(captureBtn);
 
     card.append(header);
@@ -163,6 +190,20 @@ class _JobFormState extends ConsumerState<JobForm> {
 
     bool isClosed = false;
     html.MediaStream? activeStream;
+    String facingMode = 'environment';
+    bool isMirrored = false;
+
+    void updateMirrorButtonUI() {
+      if (isMirrored) {
+        mirrorBtn.text = 'Cermin: AKTIF';
+        mirrorBtn.style.backgroundColor = 'rgba(59, 130, 246, 0.4)';
+        mirrorBtn.style.border = '1px solid #3B82F6';
+      } else {
+        mirrorBtn.text = 'Cermin: NONAKTIF';
+        mirrorBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        mirrorBtn.style.border = 'none';
+      }
+    }
 
     void closeCamera() {
       isClosed = true;
@@ -179,45 +220,80 @@ class _JobFormState extends ConsumerState<JobForm> {
       overlay.remove();
     }
 
-    cancelBtn.addEventListener('click', (_) => closeCamera());
-
-    try {
-      final stream = await mediaDevices.getUserMedia({'video': {'facingMode': 'environment'}});
-      if (isClosed) {
+    Future<void> startStream() async {
+      if (activeStream != null) {
         try {
-          final tracks = (stream as dynamic).getTracks() as List;
+          final tracks = (activeStream as dynamic).getTracks() as List;
           for (final track in tracks) {
             try {
               (track as dynamic).stop();
             } catch (_) {}
           }
         } catch (_) {}
-        return;
       }
-      activeStream = stream;
-      video.srcObject = stream;
-    } catch (e) {
-      if (!isClosed) {
-        closeCamera();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal membuka kamera: ${e.toString()}'),
-              backgroundColor: const Color(0xFFF43F5E),
-            ),
-          );
+
+      try {
+        final stream = await mediaDevices.getUserMedia({
+          'video': {
+            'facingMode': facingMode,
+            'width': {'ideal': 1280},
+            'height': {'ideal': 720}
+          }
+        });
+        if (isClosed) {
+          final tracks = (stream as dynamic).getTracks() as List;
+          for (final track in tracks) {
+            try {
+              (track as dynamic).stop();
+            } catch (_) {}
+          }
+          return;
+        }
+        activeStream = stream;
+        video.srcObject = stream;
+        video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+      } catch (e) {
+        if (!isClosed) {
+          closeCamera();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Gagal membuka kamera: ${e.toString()}'),
+                backgroundColor: const Color(0xFFF43F5E),
+              ),
+            );
+          }
         }
       }
-      return;
     }
+
+    cancelBtn.addEventListener('click', (_) => closeCamera());
+
+    switchCamBtn.addEventListener('click', (_) {
+      facingMode = (facingMode == 'user') ? 'environment' : 'user';
+      isMirrored = (facingMode == 'user'); // Auto mirror if front camera
+      updateMirrorButtonUI();
+      startStream();
+    });
+
+    mirrorBtn.addEventListener('click', (_) {
+      isMirrored = !isMirrored;
+      updateMirrorButtonUI();
+      video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+    });
+
+    // Jalankan stream pertama kali
+    await startStream();
 
     captureBtn.addEventListener('click', (_) {
       try {
         final canvas = html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
         final ctx = canvas.context2D;
         
-        ctx.translate(canvas.width ?? 0, 0);
-        ctx.scale(-1, 1);
+        if (isMirrored) {
+          ctx.translate(canvas.width ?? 0, 0);
+          ctx.scale(-1, 1);
+        }
         
         ctx.drawImage(video, 0, 0);
         
@@ -332,15 +408,18 @@ class _JobFormState extends ConsumerState<JobForm> {
                               child: Stack(
                                 children: [
                                   Positioned.fill(
-                                    child: imgUrl.startsWith('data:image')
-                                        ? Image.network(imgUrl, fit: BoxFit.cover)
-                                        : Image.network(
-                                            imgUrl,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => const Center(
-                                              child: Icon(Icons.broken_image_rounded, size: 24, color: Color(0xFF64748B)),
+                                    child: GestureDetector(
+                                      onTap: () => showZoomableImagePreview(context, imgUrl),
+                                      child: imgUrl.startsWith('data:image')
+                                          ? Image.network(imgUrl, fit: BoxFit.cover)
+                                          : Image.network(
+                                              imgUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => const Center(
+                                                child: Icon(Icons.broken_image_rounded, size: 24, color: Color(0xFF64748B)),
+                                              ),
                                             ),
-                                          ),
+                                    ),
                                   ),
                                   Positioned(
                                     top: 4,

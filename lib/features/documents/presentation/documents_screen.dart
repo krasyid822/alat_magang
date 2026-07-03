@@ -11,6 +11,7 @@ import '../../shared/data/file_chunk_service.dart';
 import '../../dashboard/provider/dashboard_provider.dart';
 import '../provider/documents_provider.dart';
 import 'widgets/bibliography_checker.dart';
+import '../../shared/data/zip_service.dart';
 
 class DocumentsScreen extends ConsumerStatefulWidget {
   const DocumentsScreen({super.key});
@@ -343,6 +344,18 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
           ),
         ),
         const SizedBox(width: 16),
+        OutlinedButton.icon(
+          onPressed: () => ZipService.downloadInternshipZip(ref),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: _accentColor, width: 1.2),
+            foregroundColor: _accentColor,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          ),
+          icon: const Icon(Icons.archive_rounded, size: 20),
+          label: const Text('Unduh ZIP', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(width: 12),
         ElevatedButton.icon(
           onPressed: _showAddCustomDialog,
           style: ElevatedButton.styleFrom(

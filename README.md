@@ -39,3 +39,15 @@ jadikan kelengkapan data profil sebagai pengaman tambahan untuk device yang mau 
 implementasikan pemerikasa akun sedang login device mana saja, berapa jumlahnya, sediakan fitur logout all untuk keluar dari semua device yang login ke akun tersebut. letakkan fitur ini di halaman info aplikasi (yang ada tulisan alat magang web v1.0.0+<nomor build>)
 
 logout semua perangkat belum punya fitur seperti logout biasa untuk validasi dahulu perangjat yangvterlogin agar menghapus data lokalnya (tapi sebelum itu pastikan sibkronisasi dahulu). kalau tidak bigini saja, beri user pilihan saat logout all apakah mau menunggu perangkat yang masih offline untuk online atau perintahkan perangkat terlogin yang offline untuk menghapus data lokalnya tanpa sinkronisasi begitu online
+
+Aspek Penulisan	Aturan Resmi Polmed TA 2025/2026	Catatan & Tips
+Ukuran & Bahan Kertas	A4 (21 cm x 29,7 cm), HVS 70 g/m², warna putih bersih.	Pastikan printer diatur ke A4 (bukan Letter).
+Batas Tepi (Margin)	Atas: 3 cm, Kiri: 4 cm, Bawah: 3 cm, Kanan: 3 cm.	Margin kiri lebih lebar (4 cm) untuk ruang penjilidan draf.
+Jenis Huruf (Font)	Times New Roman ukuran 12 pt untuk teks naskah dan judul tabel/gambar.	Kecuali isi tabel menggunakan ukuran 10 pt.
+Jarak Baris (Spasi)	1,5 spasi untuk naskah utama.	1 spasi untuk kutipan langsung > 4 baris, judul bab, judul tabel/gambar, dan daftar pustaka.
+Format Paragraf	Rata kiri-kanan (Justify).	Paragraf baru menjorok ke dalam. Kalimat awal wajib huruf kapital.
+Warna Sampul (Cover)	Menggunakan hard cover dengan warna sesuai bendera jurusan masing-masing.	Dibuat sama persis dengan Lembar Judul laporan.
+
+tambahkan fitur untuk menzip semua data alat magang dengan rapi terstruktur
+
+perbaiki kamera yang inverted, tambahkan switch kamera, izinkan preview gambar penuh dan bisa zoom in/out

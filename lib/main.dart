@@ -7,6 +7,7 @@ import 'features/logbook/presentation/logbook_screen.dart';
 import 'features/job_details/presentation/job_details_screen.dart';
 import 'features/research/presentation/research_screen.dart';
 import 'features/documents/presentation/documents_screen.dart';
+import 'features/grading/presentation/grading_screen.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
 import 'features/dashboard/presentation/widgets/nim_setup_dialog.dart';
@@ -180,6 +181,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
     'Form Detail Pekerjaan',
     'Bahan Riset Bab 2',
     'Dokumen Administratif',
+    'Simulasi Nilai Magang',
   ];
 
   @override
@@ -193,6 +195,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       const JobDetailsScreen(),
       const ResearchScreen(),
       const DocumentsScreen(),
+      const GradingScreen(),
     ];
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -294,6 +297,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
         NavigationRailDestination(icon: Icon(Icons.photo_library_rounded), label: Text('Pekerjaan')),
         NavigationRailDestination(icon: Icon(Icons.analytics_rounded), label: Text('Riset')),
         NavigationRailDestination(icon: Icon(Icons.folder_zip_rounded), label: Text('Berkas')),
+        NavigationRailDestination(icon: Icon(Icons.assessment_rounded), label: Text('Nilai')),
       ],
     );
   }
@@ -309,6 +313,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
         BottomNavigationBarItem(icon: Icon(Icons.photo_library_rounded), label: 'Tugas'),
         BottomNavigationBarItem(icon: Icon(Icons.analytics_rounded), label: 'Riset'),
         BottomNavigationBarItem(icon: Icon(Icons.folder_zip_rounded), label: 'Berkas'),
+        BottomNavigationBarItem(icon: Icon(Icons.assessment_rounded), label: 'Nilai'),
       ],
     );
   }

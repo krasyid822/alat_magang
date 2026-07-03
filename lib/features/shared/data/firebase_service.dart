@@ -20,6 +20,7 @@ class FirebaseService {
   static const String jobsSubcollection = 'jobs';
   static const String documentsSubcollection = 'documents';
   static const String sessionsSubcollection = 'sessions';
+  static const String gradingSubcollection = 'grading';
 
   // Student Profile
   Future<void> saveProfile(StudentProfile profile) async {
@@ -308,6 +309,57 @@ class FirebaseService {
         .doc(nim)
         .collection(documentsSubcollection)
         .doc(docId)
+        .delete();
+  }
+
+  // Internship Grading
+  Future<void> saveGrading(String nim, InternshipGrading grading) async {
+    if (nim.isEmpty) return;
+    await _db
+        .collection(studentsCollection)
+        .doc(nim)
+        .collection(gradingSubcollection)
+        .doc('main')
+        .set(grading.toJson());
+  }
+
+  Future<InternshipGrading?> getGrading(String nim) async {
+    if (nim.isEmpty) return null;
+    final doc = await _db
+        .collection(studentsCollection)
+        .doc(nim)
+        .collection(gradingSubcollection)
+        .doc('main')
+        .get();
+    if (doc.exists && doc.data() != null) {
+      return InternshipGrading.fromJson(doc.data()!);
+    }
+    return null;
+  }
+
+  Stream<InternshipGrading?> gradingStream(String nim) {
+    if (nim.isEmpty) return Stream.value(null);
+    return _db
+        .collection(studentsCollection)
+        .doc(nim)
+        .collection(gradingSubcollection)
+        .doc('main')
+        .snapshots()
+        .map((doc) {
+      if (doc.exists && doc.data() != null) {
+        return InternshipGrading.fromJson(doc.data()!);
+      }
+      return null;
+    });
+  }
+
+  Future<void> deleteGrading(String nim) async {
+    if (nim.isEmpty) return;
+    await _db
+        .collection(studentsCollection)
+        .doc(nim)
+        .collection(gradingSubcollection)
+        .doc('main')
         .delete();
   }
 }

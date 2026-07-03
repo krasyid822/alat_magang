@@ -23,6 +23,8 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
   final _classController = TextEditingController();
   final _majorController = TextEditingController();
   final _companyController = TextEditingController();
+  final _divisionController = TextEditingController();
+  final _mentorController = TextEditingController();
   final _waController = TextEditingController();
   int _durationWeeks = 16;
 
@@ -50,6 +52,8 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
     _classController.text = profile.className;
     _majorController.text = profile.major;
     _companyController.text = profile.companyName;
+    _divisionController.text = profile.division;
+    _mentorController.text = profile.mentorName;
     _waController.text = profile.whatsappNumber;
     _durationWeeks = profile.internshipDurationWeeks;
   }
@@ -61,6 +65,8 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
     _classController.dispose();
     _majorController.dispose();
     _companyController.dispose();
+    _divisionController.dispose();
+    _mentorController.dispose();
     _waController.dispose();
     _base64Controller.dispose();
     super.dispose();
@@ -85,6 +91,8 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         _classController.text = profile.className;
         _majorController.text = profile.major;
         _companyController.text = profile.companyName;
+        _divisionController.text = profile.division;
+        _mentorController.text = profile.mentorName;
         _waController.text = profile.whatsappNumber;
         _durationWeeks = profile.internshipDurationWeeks;
         _base64Decoded = true;
@@ -170,6 +178,8 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
       className: _classController.text,
       major: _majorController.text,
       companyName: _companyController.text,
+      division: _divisionController.text,
+      mentorName: _mentorController.text,
       internshipDurationWeeks: _durationWeeks,
       whatsappNumber: _waController.text,
     );
@@ -711,7 +721,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                         : 'Perusahaan Tempat Magang',
                     _companyController,
                     Icons.business_rounded,
-                    textInputAction: TextInputAction.done,
+                    textInputAction: TextInputAction.next,
                     validator: (v) {
                       if (!widget.forceSetup) return null;
                       final val = v?.trim() ?? '';
@@ -726,6 +736,20 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 14),
+                  _buildField(
+                    'Bagian / Divisi Kerja',
+                    _divisionController,
+                    Icons.schema_rounded,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildField(
+                    'Nama Pembimbing Lapangan',
+                    _mentorController,
+                    Icons.supervisor_account_rounded,
+                    textInputAction: TextInputAction.done,
                   ),
                   const SizedBox(height: 20),
                   _buildDurationStepper(isDark),

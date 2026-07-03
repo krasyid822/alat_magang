@@ -42,7 +42,7 @@ final class DashboardControllerProvider
 }
 
 String _$dashboardControllerHash() =>
-    r'1f1fd58e7ae26799c6fa0e561d5c63eeb7c80899';
+    r'9dca02b4cd2721b1156293cecc7a89ccad59833f';
 
 abstract class _$DashboardController extends $Notifier<StudentProfile> {
   StudentProfile build();

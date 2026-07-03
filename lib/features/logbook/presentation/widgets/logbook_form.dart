@@ -1,11 +1,15 @@
 import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../shared/data/models.dart';
 import '../../provider/logbook_provider.dart';
 import '../../../shared/data/theme_provider.dart';
+import '../../../shared/data/file_chunk_service.dart';
+import '../../../dashboard/provider/dashboard_provider.dart';
 
 class LogbookForm extends ConsumerStatefulWidget {
   final InternshipLog? existingLog;
@@ -23,6 +27,9 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _startTime = const TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 17, minute: 0);
+  List<String> _imageUrls = [];
+  bool _isUploading = false;
+  double _uploadProgress = 0.0;
 
   @override
   void initState() {
@@ -33,6 +40,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
       _selectedDate = DateTime.tryParse(log.date) ?? DateTime.now();
       _startTime = _parseTime(log.startTime);
       _endTime = _parseTime(log.endTime);
+      _imageUrls = List<String>.from(log.imageUrls);
     }
     _activityController.addListener(_onTextChanged);
   }
@@ -48,10 +56,14 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
     final formattedStartTime = '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
     final formattedEndTime = '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
     
+    // Check if images changed
+    final imagesChanged = !listEquals(existing.imageUrls, _imageUrls);
+
     return existing.activity != _activityController.text ||
         existing.date != formattedDate ||
         existing.startTime != formattedStartTime ||
-        existing.endTime != formattedEndTime;
+        existing.endTime != formattedEndTime ||
+        imagesChanged;
   }
 
   TimeOfDay _parseTime(String timeStr) {
@@ -84,6 +96,56 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
     final diffDays = inputMonday.difference(earliestMonday).inDays;
     final week = (diffDays / 7).floor() + 1;
     return week > 0 ? week : 1;
+  }
+
+  Future<void> _uploadImage() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    if (file.bytes == null) return;
+
+    final nim = ref.read(dashboardControllerProvider).nim;
+    if (nim.isEmpty) return;
+
+    final mimeType = file.extension != null
+        ? 'image/${file.extension}'
+        : 'image/jpeg';
+
+    setState(() {
+      _isUploading = true;
+      _uploadProgress = 0.0;
+    });
+
+    try {
+      final cloudUrl = await fileChunkService.uploadFile(
+        nim: nim,
+        fileName: file.name,
+        bytes: file.bytes!,
+        mimeType: mimeType,
+        onProgress: (p) {
+          setState(() {
+            _uploadProgress = p;
+          });
+        },
+      );
+
+      setState(() {
+        _imageUrls.add(cloudUrl);
+        _isUploading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isUploading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengunggah foto: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   @override
@@ -200,6 +262,11 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
                     decoration: _inputDecoration(context, 'Uraian Kegiatan / Pekerjaan', Icons.description_rounded),
                     validator: (v) => v!.trim().isEmpty ? 'Uraian kegiatan wajib diisi' : null,
                   ),
+                  const SizedBox(height: 14),
+                  
+                  // Dokumentasi Foto Section
+                  _buildPhotoSection(context, isDark),
+                  
                   if (widget.existingLog != null) ...[
                     const SizedBox(height: 14),
                     TextFormField(
@@ -230,6 +297,128 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPhotoSection(BuildContext context, bool isDark) {
+    final hasMinPhotos = _imageUrls.length >= 3;
+    final color = hasMinPhotos ? const Color(0xFF0D9488) : const Color(0xFFF43F5E);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.photo_library_rounded, size: 18, color: color),
+                const SizedBox(width: 8),
+                Text(
+                  'Dokumentasi Kegiatan',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '${_imageUrls.length}/3 Foto',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Pedoman Polmed mewajibkan minimal 3 foto kegiatan.',
+          style: TextStyle(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+        ),
+        const SizedBox(height: 10),
+        
+        // Horizontal list of images
+        if (_imageUrls.isNotEmpty || _isUploading)
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _imageUrls.length + (_isUploading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _imageUrls.length && _isUploading) {
+                  return Container(
+                    width: 90,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: context.toolColors.logbook.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: context.toolColors.logbook.withOpacity(0.15)),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: _uploadProgress > 0 ? _uploadProgress : null,
+                        color: context.toolColors.logbook,
+                      ),
+                    ),
+                  );
+                }
+                
+                final url = _imageUrls[index];
+                return Stack(
+                  children: [
+                    Container(
+                      width: 90,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                        image: DecorationImage(
+                          image: NetworkImage(url),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 14,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _imageUrls.removeAt(index);
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close_rounded, size: 12, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _isUploading ? null : _uploadImage,
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: color, width: 1.2),
+            foregroundColor: color,
+            minimumSize: const Size(double.infinity, 44),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          icon: const Icon(Icons.add_photo_alternate_rounded, size: 18),
+          label: const Text('Unggah Foto Kegiatan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        ),
+      ],
     );
   }
 
@@ -278,6 +467,23 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
 
   void _save(int calculatedWeek) {
     if (_formKey.currentState!.validate()) {
+      if (_imageUrls.length < 3) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Dokumentasi Kurang', style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text('Laporan magang wajib dilengkapi dengan minimal 3 foto kegiatan sebagai dokumentasi pelaksanaan magang.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
       final formattedDate = _selectedDate.toIso8601String().split('T')[0];
       final formattedStartTime = '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
       final formattedEndTime = '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
@@ -325,6 +531,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
         isSigned: willResetParaf ? false : (widget.existingLog?.isSigned ?? false),
         signatureData: willResetParaf ? '' : (widget.existingLog?.signatureData ?? ''),
         versionHistory: newVersionHistory,
+        imageUrls: _imageUrls,
       );
 
       final controller = ref.read(logbookControllerProvider.notifier);

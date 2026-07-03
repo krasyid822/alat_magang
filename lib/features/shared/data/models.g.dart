@@ -13,6 +13,8 @@ _StudentProfile _$StudentProfileFromJson(Map<String, dynamic> json) =>
       className: json['className'] as String? ?? '',
       major: json['major'] as String? ?? '',
       companyName: json['companyName'] as String? ?? '',
+      division: json['division'] as String? ?? '',
+      mentorName: json['mentorName'] as String? ?? '',
       internshipDurationWeeks:
           (json['internshipDurationWeeks'] as num?)?.toInt() ?? 16,
       whatsappNumber: json['whatsappNumber'] as String? ?? '',
@@ -29,6 +31,8 @@ Map<String, dynamic> _$StudentProfileToJson(_StudentProfile instance) =>
       'className': instance.className,
       'major': instance.major,
       'companyName': instance.companyName,
+      'division': instance.division,
+      'mentorName': instance.mentorName,
       'internshipDurationWeeks': instance.internshipDurationWeeks,
       'whatsappNumber': instance.whatsappNumber,
       'lastDeviceId': instance.lastDeviceId,
@@ -48,6 +52,11 @@ _InternshipLog _$InternshipLogFromJson(Map<String, dynamic> json) =>
       weekNumber: (json['weekNumber'] as num).toInt(),
       signatureData: json['signatureData'] as String? ?? '',
       versionHistory: json['versionHistory'] as String? ?? '',
+      imageUrls:
+          (json['imageUrls'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
       isDeleted: json['isDeleted'] as bool? ?? false,
     );
@@ -63,6 +72,57 @@ Map<String, dynamic> _$InternshipLogToJson(_InternshipLog instance) =>
       'weekNumber': instance.weekNumber,
       'signatureData': instance.signatureData,
       'versionHistory': instance.versionHistory,
+      'imageUrls': instance.imageUrls,
+      'updatedAt': instance.updatedAt,
+      'isDeleted': instance.isDeleted,
+    };
+
+_InternshipGrading _$InternshipGradingFromJson(
+  Map<String, dynamic> json,
+) => _InternshipGrading(
+  nim: json['nim'] as String,
+  companyKerapian: (json['companyKerapian'] as num?)?.toDouble() ?? 0.0,
+  companyDisiplin: (json['companyDisiplin'] as num?)?.toDouble() ?? 0.0,
+  companyKehadiran: (json['companyKehadiran'] as num?)?.toDouble() ?? 0.0,
+  companyTanggungJawab:
+      (json['companyTanggungJawab'] as num?)?.toDouble() ?? 0.0,
+  companyKemandirian: (json['companyKemandirian'] as num?)?.toDouble() ?? 0.0,
+  companyInisiatif: (json['companyInisiatif'] as num?)?.toDouble() ?? 0.0,
+  companyPemahaman: (json['companyPemahaman'] as num?)?.toDouble() ?? 0.0,
+  companyKerjasamaRekan:
+      (json['companyKerjasamaRekan'] as num?)?.toDouble() ?? 0.0,
+  companyKerjasamaAtasan:
+      (json['companyKerjasamaAtasan'] as num?)?.toDouble() ?? 0.0,
+  companyAdaptasi: (json['companyAdaptasi'] as num?)?.toDouble() ?? 0.0,
+  companySaranKritik: json['companySaranKritik'] as String? ?? '',
+  dosenFormatLaporan: (json['dosenFormatLaporan'] as num?)?.toDouble() ?? 0.0,
+  dosenUraianLaporan: (json['dosenUraianLaporan'] as num?)?.toDouble() ?? 0.0,
+  dosenPresentasiLaporan:
+      (json['dosenPresentasiLaporan'] as num?)?.toDouble() ?? 0.0,
+  dosenTanyaJawabLaporan:
+      (json['dosenTanyaJawabLaporan'] as num?)?.toDouble() ?? 0.0,
+  updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
+  isDeleted: json['isDeleted'] as bool? ?? false,
+);
+
+Map<String, dynamic> _$InternshipGradingToJson(_InternshipGrading instance) =>
+    <String, dynamic>{
+      'nim': instance.nim,
+      'companyKerapian': instance.companyKerapian,
+      'companyDisiplin': instance.companyDisiplin,
+      'companyKehadiran': instance.companyKehadiran,
+      'companyTanggungJawab': instance.companyTanggungJawab,
+      'companyKemandirian': instance.companyKemandirian,
+      'companyInisiatif': instance.companyInisiatif,
+      'companyPemahaman': instance.companyPemahaman,
+      'companyKerjasamaRekan': instance.companyKerjasamaRekan,
+      'companyKerjasamaAtasan': instance.companyKerjasamaAtasan,
+      'companyAdaptasi': instance.companyAdaptasi,
+      'companySaranKritik': instance.companySaranKritik,
+      'dosenFormatLaporan': instance.dosenFormatLaporan,
+      'dosenUraianLaporan': instance.dosenUraianLaporan,
+      'dosenPresentasiLaporan': instance.dosenPresentasiLaporan,
+      'dosenTanyaJawabLaporan': instance.dosenTanyaJawabLaporan,
       'updatedAt': instance.updatedAt,
       'isDeleted': instance.isDeleted,
     };

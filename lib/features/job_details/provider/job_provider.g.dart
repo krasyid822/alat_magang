@@ -41,7 +41,7 @@ final class JobNotifierProvider
   }
 }
 
-String _$jobNotifierHash() => r'9c414b39aa7ee0109302c94c4433b6a0260d1584';
+String _$jobNotifierHash() => r'd83ce4cd4bcc78c5915a6846352a3d91db78f8b4';
 
 abstract class _$JobNotifier extends $Notifier<List<JobDetail>> {
   List<JobDetail> build();

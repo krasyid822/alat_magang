@@ -9,6 +9,7 @@ import '../../logbook/provider/logbook_provider.dart';
 import '../../job_details/provider/job_provider.dart';
 import '../../research/provider/research_provider.dart';
 import '../../documents/provider/documents_provider.dart';
+import '../../grading/provider/grading_provider.dart';
 import '../../shared/data/models.dart';
 import '../../shared/data/theme_provider.dart';
 
@@ -105,7 +106,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 child: ProgressCircle(progress: averageProgress),
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
+            
+            // Simulasi Nilai Card
+            _buildGradeSummaryCard(context, ref, isDark),
+            
+            const SizedBox(height: 30),
             const Text(
               'Ceklis Kelengkapan Laporan Magang',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5),
@@ -222,5 +228,76 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
 
     return headerText;
+  }
+
+  Widget _buildGradeSummaryCard(BuildContext context, WidgetRef ref, bool isDark) {
+    final gradingNotifier = ref.watch(gradingProvider.notifier);
+    final finalScore = gradingNotifier.finalScore;
+    final finalLetter = gradingNotifier.finalGradeLetter;
+    final finalCriteria = gradingNotifier.getGradeCriteria(finalLetter);
+    final isPassed = finalScore >= 50.0;
+    final scoreColor = isPassed ? Theme.of(context).colorScheme.primary : const Color(0xFFF43F5E);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: scoreColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.assessment_rounded, color: scoreColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Estimasi Kelayakan & Nilai Magang',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Gabungan Nilai Perusahaan & Dosen Pembimbing',
+                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      'Nilai: ${finalScore.toStringAsFixed(1)} ($finalLetter)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: scoreColor),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: scoreColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        finalCriteria.toUpperCase(),
+                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: scoreColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[400], size: 16),
+        ],
+      ),
+    );
   }
 }
