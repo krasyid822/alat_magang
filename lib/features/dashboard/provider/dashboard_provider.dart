@@ -250,7 +250,7 @@ class DashboardController extends _$DashboardController {
 
     // 4. Dokumen
     try {
-      final cached = local.read('docs_$nim');
+      final cached = local.read('documents_$nim');
       if (cached != null) {
         final List decoded = jsonDecode(cached);
         final localDocs = decoded.map((e) => DocChecklist.fromJson(Map<String, dynamic>.from(e))).toList();
