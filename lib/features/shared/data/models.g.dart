@@ -59,6 +59,7 @@ _InternshipLog _$InternshipLogFromJson(Map<String, dynamic> json) =>
           const [],
       updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
       isDeleted: json['isDeleted'] as bool? ?? false,
+      isDraft: json['isDraft'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$InternshipLogToJson(_InternshipLog instance) =>
@@ -75,6 +76,7 @@ Map<String, dynamic> _$InternshipLogToJson(_InternshipLog instance) =>
       'imageUrls': instance.imageUrls,
       'updatedAt': instance.updatedAt,
       'isDeleted': instance.isDeleted,
+      'isDraft': instance.isDraft,
     };
 
 _InternshipGrading _$InternshipGradingFromJson(

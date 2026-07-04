@@ -287,9 +287,40 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          RunningText(
-                            text: log.activity,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: RunningText(
+                                  text: log.activity.isEmpty ? '(Belum ada uraian kegiatan)' : log.activity,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: log.activity.isEmpty ? Colors.grey : null,
+                                    fontStyle: log.activity.isEmpty ? FontStyle.italic : null,
+                                  ),
+                                ),
+                              ),
+                              if (log.isDraft) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                                  ),
+                                  child: const Text(
+                                    'DRAF',
+                                    style: TextStyle(
+                                      color: Colors.amber,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -333,7 +364,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                           ],
                         ),
                       ),
-                    ] else ...[
+                    ] else if (!log.isDraft) ...[
                       const SizedBox(width: 12),
                       OutlinedButton.icon(
                         onPressed: () => showDialog(
@@ -590,6 +621,36 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                                 _confirmDeleteSignature(context, log);
                               },
                               tooltip: 'Hapus Paraf',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (log.isDraft) ...[
+                      const Text(
+                        'Status Kegiatan:',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.amber),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.04),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.amber.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit_note_rounded, color: Colors.amber, size: 28),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Draf Kegiatan', style: TextStyle(color: const Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 2),
+                                  const Text('Lengkapi dan kirim kegiatan ini agar dapat diparaf mentor.', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                                ],
+                              ),
                             ),
                           ],
                         ),

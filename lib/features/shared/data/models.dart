@@ -40,6 +40,7 @@ abstract class InternshipLog with _$InternshipLog {
     @Default([]) List<String> imageUrls,
     @Default(0) int updatedAt,
     @Default(false) bool isDeleted,
+    @Default(false) bool isDraft,
   }) = _InternshipLog;
 
   factory InternshipLog.fromJson(Map<String, dynamic> json) =>

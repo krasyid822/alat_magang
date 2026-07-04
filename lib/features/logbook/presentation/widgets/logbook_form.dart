@@ -30,6 +30,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
   List<String> _imageUrls = [];
   bool _isUploading = false;
   double _uploadProgress = 0.0;
+  bool _isDraftSaving = false;
 
   @override
   void initState() {
@@ -260,7 +261,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
                     controller: _activityController,
                     maxLines: 3,
                     decoration: _inputDecoration(context, 'Uraian Kegiatan / Pekerjaan', Icons.description_rounded),
-                    validator: (v) => v!.trim().isEmpty ? 'Uraian kegiatan wajib diisi' : null,
+                    validator: (v) => (!_isDraftSaving && v!.trim().isEmpty) ? 'Uraian kegiatan wajib diisi' : null,
                   ),
                   const SizedBox(height: 14),
                   
@@ -284,17 +285,42 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
           ),
-          ElevatedButton(
-            onPressed: (widget.existingLog != null && !_hasChanges) ? null : () => _save(calculatedWeek),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.toolColors.logbook,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          if (widget.existingLog == null || widget.existingLog!.isDraft) ...[
+            OutlinedButton(
+              onPressed: () => _save(calculatedWeek, isDraft: true),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: context.toolColors.logbook, width: 1.2),
+                foregroundColor: context.toolColors.logbook,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              ),
+              child: const Text('Simpan sebagai Draf', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-            child: const Text('Simpan Kegiatan', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () => _save(calculatedWeek, isDraft: false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.toolColors.logbook,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              ),
+              child: const Text('Simpan & Kirim', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ] else ...[
+            ElevatedButton(
+              onPressed: !_hasChanges ? null : () => _save(calculatedWeek, isDraft: false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.toolColors.logbook,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              ),
+              child: const Text('Simpan Perubahan', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
         ],
       ),
     );
@@ -465,9 +491,10 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
     );
   }
 
-  void _save(int calculatedWeek) {
+  void _save(int calculatedWeek, {required bool isDraft}) {
+    _isDraftSaving = isDraft;
     if (_formKey.currentState!.validate()) {
-      if (_imageUrls.length < 3) {
+      if (!isDraft && _imageUrls.length < 3) {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -532,6 +559,7 @@ class _LogbookFormState extends ConsumerState<LogbookForm> {
         signatureData: willResetParaf ? '' : (widget.existingLog?.signatureData ?? ''),
         versionHistory: newVersionHistory,
         imageUrls: _imageUrls,
+        isDraft: isDraft,
       );
 
       final controller = ref.read(logbookControllerProvider.notifier);

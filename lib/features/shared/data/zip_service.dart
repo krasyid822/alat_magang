@@ -78,7 +78,7 @@ class ZipService {
       archive.addFile(ArchiveFile('profil_mahasiswa.txt', profileTxt.length, utf8.encode(profileTxt)));
 
       // 2. Logbooks (CSV)
-      final logs = ref.read(logbookProvider).where((e) => !e.isDeleted).toList();
+      final logs = ref.read(logbookProvider).where((e) => !e.isDeleted && !e.isDraft).toList();
       final logbookCsvHeader = 'Minggu,Tanggal,Jam Mulai,Jam Selesai,Uraian Kegiatan,Status Paraf,File Paraf,File Foto Kegiatan\n';
       final List<String> logsRows = [];
 
