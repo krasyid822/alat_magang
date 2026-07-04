@@ -15,6 +15,7 @@ import 'features/dashboard/presentation/widgets/app_info_dialog.dart';
 import 'features/dashboard/provider/dashboard_provider.dart';
 import 'features/shared/data/models.dart';
 import 'features/shared/data/theme_provider.dart';
+import 'features/shared/presentation/running_text.dart';
 
 
 
@@ -204,8 +205,8 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _titles[_currentIndex], 
+        title: RunningText(
+          text: _titles[_currentIndex], 
           style: TextStyle(
             fontWeight: FontWeight.w900, 
             color: isStandard ? (isDark ? Colors.white : Colors.black87) : Colors.white,

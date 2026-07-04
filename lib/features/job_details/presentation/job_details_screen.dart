@@ -35,19 +35,21 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     final crossAxisCount = width > 1200 ? 3 : (width > 800 ? 2 : 1);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context),
-          const SizedBox(height: 20),
-          _buildSearchBar(context, isDark),
-          const SizedBox(height: 20),
-          _buildFilters(context),
-          const SizedBox(height: 20),
-          Expanded(
-            child: jobsAsync.when(
+    return Scrollbar(
+      controller: _mainScrollController,
+      child: SingleChildScrollView(
+        controller: _mainScrollController,
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            const SizedBox(height: 20),
+            _buildSearchBar(context, isDark),
+            const SizedBox(height: 20),
+            _buildFilters(context),
+            const SizedBox(height: 20),
+            jobsAsync.when(
               data: (jobs) {
                 var filtered = jobs.where((job) {
                   if (_selectedFilter == 1) return job.isCompleted;
@@ -75,36 +77,30 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
                   columns[i % crossAxisCount].add(filtered[i]);
                 }
 
-                return Scrollbar(
-                  controller: _mainScrollController,
-                  child: SingleChildScrollView(
-                    controller: _mainScrollController,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (int colIndex = 0; colIndex < crossAxisCount; colIndex++) ...[
-                          if (colIndex > 0) const SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              children: columns[colIndex].map((job) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 20.0),
-                                  child: JobDetailCard(job: job),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ]
-                      ],
-                    ),
-                  ),
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int colIndex = 0; colIndex < crossAxisCount; colIndex++) ...[
+                      if (colIndex > 0) const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          children: columns[colIndex].map((job) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 20.0),
+                              child: JobDetailCard(job: job),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ]
+                  ],
                 );
               },
               loading: () => Center(child: CircularProgressIndicator(color: context.toolColors.job)),
               error: (err, _) => Center(child: Text('Gagal memuat tugas: $err')),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -152,9 +148,8 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
                 'Form Detail Pekerjaan',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
               ),
-              const SizedBox(height: 6),
               Text(
-                'Alat 1: Kumpulkan bukti visual berupa foto kegiatan serta kendala tugas.',
+                'Alat 1: Catat daftar tugas/proyek utama yang diberikan selama magang (bukan jurnal harian).',
                 style: TextStyle(color: const Color(0xFF64748B), fontSize: 13),
               ),
             ],

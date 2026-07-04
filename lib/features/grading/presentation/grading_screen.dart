@@ -95,33 +95,40 @@ class _GradingScreenState extends ConsumerState<GradingScreen> with SingleTicker
 
     final summaryPanel = _buildSummaryPanel(context, averageCompany, weightedDosen, finalScore, finalLetter, finalCriteria, isDark);
 
-    return Scrollbar(
-      controller: _mainScrollController,
-      child: SingleChildScrollView(
+    if (isDesktop) {
+      return Scrollbar(
         controller: _mainScrollController,
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isDesktop)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 3, child: _buildTabsContent(context, grading, isDark)),
-                  const SizedBox(width: 24),
-                  Expanded(flex: 2, child: summaryPanel),
-                ],
-              )
-            else
-              Column(
-                children: [
-                  summaryPanel,
-                  const SizedBox(height: 24),
-                  _buildTabsContent(context, grading, isDark),
-                ],
-              ),
-          ],
+        child: SingleChildScrollView(
+          controller: _mainScrollController,
+          padding: const EdgeInsets.all(24.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: _buildTabsContent(context, grading, isDark)),
+              const SizedBox(width: 24),
+              Expanded(flex: 2, child: summaryPanel),
+            ],
+          ),
         ),
+      );
+    }
+
+    // Mobile view: Use NestedScrollView so the summaryPanel card scrolls to the AppBar
+    // first, and then the form tabs contents scroll.
+    return NestedScrollView(
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 12.0),
+            sliver: SliverToBoxAdapter(
+              child: summaryPanel,
+            ),
+          ),
+        ];
+      },
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 24.0),
+        child: _buildTabsContent(context, grading, isDark, isMobile: true),
       ),
     );
   }
@@ -239,7 +246,15 @@ class _GradingScreenState extends ConsumerState<GradingScreen> with SingleTicker
     );
   }
 
-  Widget _buildTabsContent(BuildContext context, InternshipGrading grading, bool isDark) {
+  Widget _buildTabsContent(BuildContext context, InternshipGrading grading, bool isDark, {bool isMobile = false}) {
+    final tabBarView = TabBarView(
+      controller: _tabController,
+      children: [
+        _buildCompanyGradingTab(context, grading, isDark),
+        _buildDosenGradingTab(context, grading, isDark),
+      ],
+    );
+
     return Container(
       decoration: BoxDecoration(
         color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
@@ -260,17 +275,14 @@ class _GradingScreenState extends ConsumerState<GradingScreen> with SingleTicker
               Tab(icon: Icon(Icons.school_rounded), text: 'Nilai Dosen (Form-3.31)'),
             ],
           ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            height: 600,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildCompanyGradingTab(context, grading, isDark),
-                _buildDosenGradingTab(context, grading, isDark),
-              ],
+          if (isMobile)
+            Expanded(child: tabBarView)
+          else
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 600,
+              child: tabBarView,
             ),
-          ),
         ],
       ),
     );

@@ -13,11 +13,24 @@ import 'models.dart';
 
 class ZipService {
   static Future<Uint8List?> _getBytesFromUrl(String nim, String url) async {
-    if (url.startsWith('chunked://')) {
-      final ref = ChunkedFileRef.fromUrl(url);
+    if (url.startsWith('chunked:') || url.startsWith('chunked://')) {
+      final cleanUrl = url.startsWith('chunked://') ? 'chunked:${url.substring(10)}' : url;
+      final ref = ChunkedFileRef.fromUrl(cleanUrl);
       if (ref != null) {
         return await fileChunkService.downloadFile(nim, ref);
       }
+    } else if (url.startsWith('cloudfile:')) {
+      try {
+        final content = url.substring(10);
+        final firstPipe = content.indexOf('|');
+        if (firstPipe != -1) {
+          final secondPipe = content.indexOf('|', firstPipe + 1);
+          if (secondPipe != -1) {
+            final base64Str = content.substring(secondPipe + 1);
+            return base64Decode(base64Str.trim());
+          }
+        }
+      } catch (_) {}
     } else if (url.startsWith('data:')) {
       try {
         final commaIdx = url.indexOf(',');
@@ -28,6 +41,13 @@ class ZipService {
       } catch (_) {}
     }
     return null;
+  }
+
+  static String _escapeCsv(String val) {
+    if (val.contains('"') || val.contains(',') || val.contains('\n') || val.contains('\r')) {
+      return '"${val.replaceAll('"', '""')}"';
+    }
+    return val;
   }
 
   static Future<void> downloadInternshipZip(WidgetRef ref) async {
@@ -41,7 +61,10 @@ class ZipService {
       final archive = Archive();
 
       // 1. Student Profile
-      final profileTxt = 'NAMA MAHASISWA      : ${profile.name}\n'
+      final profileTxt = '==================================================\n'
+          'PROFIL MAHASISWA MAGANG\n'
+          '==================================================\n'
+          'NAMA MAHASISWA      : ${profile.name}\n'
           'NIM                 : ${profile.nim}\n'
           'KELAS               : ${profile.className}\n'
           'JURUSAN             : ${profile.major}\n'
@@ -49,53 +72,141 @@ class ZipService {
           'BAGIAN / DIVISI     : ${profile.division}\n'
           'PEMBIMBING LAPANGAN : ${profile.mentorName}\n'
           'DURASI MAGANG       : ${profile.internshipDurationWeeks} Minggu\n'
-          'NOMOR WHATSAPP      : ${profile.whatsappNumber}\n';
+          'NOMOR WHATSAPP      : ${profile.whatsappNumber}\n'
+          '==================================================\n';
 
       archive.addFile(ArchiveFile('profil_mahasiswa.txt', profileTxt.length, utf8.encode(profileTxt)));
-      archive.addFile(ArchiveFile('profil_mahasiswa.json', jsonEncode(profile.toJson()).length, utf8.encode(jsonEncode(profile.toJson()))));
 
-      // 2. Logbooks
-      final logs = ref.read(logbookProvider);
-      archive.addFile(ArchiveFile('logbook/logbook.json', jsonEncode(logs.map((e) => e.toJson()).toList()).length, utf8.encode(jsonEncode(logs.map((e) => e.toJson()).toList()))));
+      // 2. Logbooks (CSV)
+      final logs = ref.read(logbookProvider).where((e) => !e.isDeleted).toList();
+      final logbookCsvHeader = 'Minggu,Tanggal,Jam Mulai,Jam Selesai,Uraian Kegiatan,Status Paraf,File Paraf,File Foto Kegiatan\n';
+      final List<String> logsRows = [];
 
       for (final log in logs) {
+        final statusParaf = log.isSigned ? 'Sudah Diparaf' : 'Belum Diparaf';
+        String parafZipPath = '—';
+        final List<String> photosZipPaths = [];
+
         // Paraf/Signature
         if (log.isSigned && log.signatureData.isNotEmpty) {
           final signatureBytes = await _getBytesFromUrl(nim, log.signatureData);
           if (signatureBytes != null) {
-            archive.addFile(ArchiveFile('logbook/paraf_dan_foto/paraf_logbook_minggu_${log.weekNumber}_${log.id.substring(0, 5)}.png', signatureBytes.length, signatureBytes));
+            parafZipPath = 'logbook/paraf_dan_foto/paraf_logbook_minggu_${log.weekNumber}_${log.id.substring(0, 5)}.png';
+            archive.addFile(ArchiveFile(parafZipPath, signatureBytes.length, signatureBytes));
           }
         }
+        
         // Photos
         for (int i = 0; i < log.imageUrls.length; i++) {
           final photoBytes = await _getBytesFromUrl(nim, log.imageUrls[i]);
           if (photoBytes != null) {
-            archive.addFile(ArchiveFile('logbook/paraf_dan_foto/foto_logbook_minggu_${log.weekNumber}_${log.id.substring(0, 5)}_$i.jpg', photoBytes.length, photoBytes));
+            final photoZipPath = 'logbook/paraf_dan_foto/foto_logbook_minggu_${log.weekNumber}_${log.id.substring(0, 5)}_$i.jpg';
+            photosZipPaths.add(photoZipPath);
+            archive.addFile(ArchiveFile(photoZipPath, photoBytes.length, photoBytes));
           }
         }
-      }
 
-      // 3. Job Details
-      final jobs = ref.read(jobProvider);
-      archive.addFile(ArchiveFile('pekerjaan/tugas.json', jsonEncode(jobs.map((e) => e.toJson()).toList()).length, utf8.encode(jsonEncode(jobs.map((e) => e.toJson()).toList()))));
+        final photosCell = photosZipPaths.isEmpty ? '—' : photosZipPaths.join('; ');
+        logsRows.add(
+          '${log.weekNumber},'
+          '${_escapeCsv(log.date)},'
+          '${_escapeCsv(log.startTime)},'
+          '${_escapeCsv(log.endTime)},'
+          '${_escapeCsv(log.activity)},'
+          '$statusParaf,'
+          '${_escapeCsv(parafZipPath)},'
+          '${_escapeCsv(photosCell)}'
+        );
+      }
+      final logbookCsv = logbookCsvHeader + logsRows.join('\n');
+      archive.addFile(ArchiveFile('logbook/logbook.csv', logbookCsv.length, utf8.encode(logbookCsv)));
+
+      // 3. Job Details (CSV)
+      final jobs = ref.read(jobProvider).where((e) => !e.isDeleted).toList();
+      final jobsCsvHeader = 'Tanggal,Nama Tugas / Pekerjaan,Uraian / Langkah Kerja,Status,Kendala jika belum selesai,File Dokumentasi\n';
+      final List<String> jobsRows = [];
 
       for (final job in jobs) {
+        final status = job.isCompleted ? 'Selesai' : 'Belum Selesai';
+        final List<String> photosZipPaths = [];
+        
         final imageUrls = job.imageUrl.split('|||').where((s) => s.isNotEmpty).toList();
         for (int i = 0; i < imageUrls.length; i++) {
           final photoBytes = await _getBytesFromUrl(nim, imageUrls[i]);
           if (photoBytes != null) {
-            archive.addFile(ArchiveFile('pekerjaan/dokumentasi/foto_tugas_${job.id.substring(0, 5)}_$i.jpg', photoBytes.length, photoBytes));
+            final photoZipPath = 'pekerjaan/dokumentasi/foto_tugas_${job.id.substring(0, 5)}_$i.jpg';
+            photosZipPaths.add(photoZipPath);
+            archive.addFile(ArchiveFile(photoZipPath, photoBytes.length, photoBytes));
           }
         }
+
+        final photosCell = photosZipPaths.isEmpty ? '—' : photosZipPaths.join('; ');
+        jobsRows.add(
+          '${_escapeCsv(job.date)},'
+          '${_escapeCsv(job.title)},'
+          '${_escapeCsv(job.description)},'
+          '$status,'
+          '${_escapeCsv(job.reasonOfIncompletion)},'
+          '${_escapeCsv(photosCell)}'
+        );
       }
+      final jobsCsv = jobsCsvHeader + jobsRows.join('\n');
+      archive.addFile(ArchiveFile('pekerjaan/tugas.csv', jobsCsv.length, utf8.encode(jobsCsv)));
 
-      // 4. Research Data
+      // 4. Research Data (TXT)
       final research = ref.read(researchProvider);
-      archive.addFile(ArchiveFile('riset/riset_bab2.json', jsonEncode(research.toJson()).length, utf8.encode(jsonEncode(research.toJson()))));
+      final researchTxt = '==================================================\n'
+          'BAHAN RISET LAPORAN BAB 2\n'
+          '==================================================\n\n'
+          '1. SEJARAH PERUSAHAAN:\n${research.companyHistory}\n\n'
+          '2. VISI & MISI PERUSAHAAN:\n${research.companyVisionMission}\n\n'
+          '3. URL STRUKTUR ORGANISASI:\n${research.companyStructureUrl}\n\n'
+          '4. DESKRIPSI PEKERJAAN (JOB DESC):\n${research.jobDescription}\n\n'
+          '5. PROSEDUR KERJA:\n${research.procedureWork}\n\n'
+          '6. HAMBATAN KERJA:\n${research.obstacles}\n';
+      archive.addFile(ArchiveFile('riset/riset_bab2.txt', researchTxt.length, utf8.encode(researchTxt)));
 
-      // 5. Document Checklist
-      final docs = ref.read(documentsProvider);
-      archive.addFile(ArchiveFile('dokumen/checklist.json', jsonEncode(docs.map((e) => e.toJson()).toList()).length, utf8.encode(jsonEncode(docs.map((e) => e.toJson()).toList()))));
+      // 5. Document Checklist (CSV)
+      final docs = ref.read(documentsProvider).where((e) => !e.isDeleted).toList();
+      final docsCsvHeader = 'Kategori,Nama Dokumen,Status Kelengkapan,Catatan,File Dokumentasi / Pendukung\n';
+      final List<String> docsRows = [];
+
+      for (final doc in docs) {
+        final status = doc.isCompleted ? 'Lengkap' : 'Belum Lengkap';
+        String zipFilePath = '—';
+
+        if (doc.fileUrl.isNotEmpty) {
+          final fileBytes = await _getBytesFromUrl(nim, doc.fileUrl);
+          if (fileBytes != null) {
+            String entryName = '';
+            if (doc.fileUrl.startsWith('chunked:') || doc.fileUrl.startsWith('chunked://')) {
+              final cleanUrl = doc.fileUrl.startsWith('chunked://') ? 'chunked:${doc.fileUrl.substring(10)}' : doc.fileUrl;
+              final chunkRef = ChunkedFileRef.fromUrl(cleanUrl);
+              if (chunkRef != null) {
+                entryName = chunkRef.fileName;
+              }
+            }
+            if (entryName.isEmpty) {
+              final cleanTitle = doc.title.replaceAll(RegExp(r'[^\w\s\-]'), '_').replaceAll(' ', '_');
+              entryName = 'dokumen_${doc.id.substring(0, 5)}_$cleanTitle.pdf';
+            }
+
+            final cleanCategory = doc.category.replaceAll(RegExp(r'[^\w\s\-]'), '_').replaceAll(' ', '_');
+            zipFilePath = 'dokumen/file_pendukung/${cleanCategory}_$entryName';
+            archive.addFile(ArchiveFile(zipFilePath, fileBytes.length, fileBytes));
+          }
+        }
+
+        docsRows.add(
+          '${_escapeCsv(doc.category)},'
+          '${_escapeCsv(doc.title)},'
+          '$status,'
+          '${_escapeCsv(doc.notes)},'
+          '${_escapeCsv(zipFilePath)}'
+        );
+      }
+      final docsCsv = docsCsvHeader + docsRows.join('\n');
+      archive.addFile(ArchiveFile('dokumen/checklist.csv', docsCsv.length, utf8.encode(docsCsv)));
 
       // Encode ZIP
       final zipEncoder = ZipEncoder();

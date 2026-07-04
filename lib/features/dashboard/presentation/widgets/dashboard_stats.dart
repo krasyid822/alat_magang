@@ -45,12 +45,12 @@ class DashboardStats extends StatelessWidget {
       ),
       _TimelineStep(
         title: 'Tahap 3: Dokumentasi Detail Pekerjaan (Alat 1)',
-        subtitle: 'Tulis uraian teknis tugas & lampirkan foto dokumentasi kegiatan.',
+        subtitle: 'Catat daftar tugas utama/proyek besar yang diberikan (bukan jurnal harian).',
         progress: progressAlat1Job,
         accentColor: toolColors.job,
         icon: Icons.photo_library_rounded,
         tabIndex: 2,
-        typeLabel: 'Tanpa Batasan Jumlah (Fleksibel)',
+        typeLabel: 'Berbasis Proyek / Tugas Utama (Non-Harian)',
         typeColor: toolColors.job,
       ),
       _TimelineStep(

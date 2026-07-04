@@ -8,7 +8,7 @@ import 'widgets/signature_dialog.dart';
 import '../../shared/data/models.dart';
 import '../../shared/data/theme_provider.dart';
 import '../../shared/presentation/image_preview_dialog.dart';
-import '../../dashboard/provider/dashboard_provider.dart';
+import '../../shared/presentation/running_text.dart';
 
 class LogbookScreen extends ConsumerStatefulWidget {
   const LogbookScreen({super.key});
@@ -35,35 +35,56 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   @override
   Widget build(BuildContext context) {
     final logsAsync = ref.watch(logbookStreamProvider);
-    final profile = ref.watch(dashboardControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context),
-          const SizedBox(height: 16),
-          _buildProfileInfoCard(context, profile, isDark),
-          const SizedBox(height: 16),
-          _buildSearchBar(context, isDark),
-          const SizedBox(height: 16),
-          _buildWeekFilters(context, logsAsync.value ?? []),
-          const SizedBox(height: 16),
-          Expanded(
-            child: logsAsync.when(
+    return Scrollbar(
+      controller: _mainScrollController,
+      child: SingleChildScrollView(
+        controller: _mainScrollController,
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            const SizedBox(height: 16),
+            _buildSearchBar(context, isDark),
+            const SizedBox(height: 16),
+            _buildWeekFilters(context, logsAsync.value ?? []),
+            const SizedBox(height: 16),
+            logsAsync.when(
               data: (logs) {
                 var filtered = _selectedWeekFilter == 0
                     ? logs
                     : logs.where((l) => l.weekNumber == _selectedWeekFilter).toList();
                 
                 if (_searchQuery.isNotEmpty) {
-                  filtered = filtered.where((l) {
-                    final activity = l.activity.toLowerCase();
-                    final date = l.date.toLowerCase();
-                    return activity.contains(_searchQuery) || date.contains(_searchQuery);
-                  }).toList();
+                  final specQuery = _searchQuery.trim().toLowerCase();
+                  final regExpWDay = RegExp(r'^w(\d+)\s+(\d+)$');
+                  final regExpWOnly = RegExp(r'^w(\d+)$');
+
+                  final matchWDay = regExpWDay.firstMatch(specQuery);
+                  final matchWOnly = regExpWOnly.firstMatch(specQuery);
+
+                  if (matchWDay != null) {
+                    final targetWeek = int.tryParse(matchWDay.group(1) ?? '');
+                    var targetDayStr = matchWDay.group(2) ?? '';
+                    if (targetDayStr.length == 1) {
+                      targetDayStr = '0$targetDayStr';
+                    }
+                    filtered = filtered.where((l) {
+                      final dayPart = l.date.split('-').last;
+                      return l.weekNumber == targetWeek && dayPart == targetDayStr;
+                    }).toList();
+                  } else if (matchWOnly != null) {
+                    final targetWeek = int.tryParse(matchWOnly.group(1) ?? '');
+                    filtered = filtered.where((l) => l.weekNumber == targetWeek).toList();
+                  } else {
+                    filtered = filtered.where((l) {
+                      final activity = l.activity.toLowerCase();
+                      final date = l.date.toLowerCase();
+                      return activity.contains(_searchQuery) || date.contains(_searchQuery);
+                    }).toList();
+                  }
                 }
                 
                 if (filtered.isEmpty) return _buildEmptyState(isDark);
@@ -72,8 +93,8 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               loading: () => Center(child: CircularProgressIndicator(color: context.toolColors.logbook)),
               error: (err, _) => Center(child: Text('Gagal memuat logbook: $err')),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -188,71 +209,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     );
   }
 
-  Widget _buildProfileInfoCard(BuildContext context, StudentProfile profile, bool isDark) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.business_rounded, color: context.toolColors.logbook, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'Informasi Tempat Magang',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.black87),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 24,
-            runSpacing: 10,
-            children: [
-              _buildProfileItem('Nama Mahasiswa', profile.name.isEmpty ? '—' : profile.name, Icons.person_rounded),
-              _buildProfileItem('NIM / Kelas', '${profile.nim.isEmpty ? '—' : profile.nim} / ${profile.className.isEmpty ? '—' : profile.className}', Icons.badge_rounded),
-              _buildProfileItem('Nama Perusahaan', profile.companyName.isEmpty ? '—' : profile.companyName, Icons.corporate_fare_rounded),
-              _buildProfileItem('Bagian / Divisi', profile.division.isEmpty ? '—' : profile.division, Icons.schema_rounded),
-              _buildProfileItem('Pembimbing Lapangan', profile.mentorName.isEmpty ? '—' : profile.mentorName, Icons.supervisor_account_rounded),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileItem(String label, String value, IconData icon) {
-    return SizedBox(
-      width: 220,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.grey),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   String _getMonthName(String dateStr) {
     try {
@@ -283,241 +239,239 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   }
 
   Widget _buildLogsTableOrList(BuildContext context, List<dynamic> logs, bool isDark) {
-    return Scrollbar(
-      child: ListView.separated(
-        itemCount: logs.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemBuilder: (context, idx) {
-          final log = logs[idx];
-          return Container(
-            decoration: BoxDecoration(
-              color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: logs.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, idx) {
+        final log = logs[idx];
+        return Container(
+          decoration: BoxDecoration(
+            color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: context.toolColors.logbook.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('W${log.weekNumber}', style: TextStyle(fontWeight: FontWeight.bold, color: context.toolColors.logbook, fontSize: 13)),
+                          const SizedBox(height: 2),
+                          Text(log.date.split('-')[2], style: TextStyle(fontSize: 11, color: context.toolColors.logbook, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RunningText(
+                            text: log.activity,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Jam Kerja: ${log.startTime} - ${log.endTime} | ${_getDayAndDate(log.date)}',
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                          ),
+                          Text(
+                            'Bulan: ${_getMonthName(log.date)} | Minggu Ke-${log.weekNumber}',
+                            style: TextStyle(color: context.toolColors.logbook, fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (log.isSigned && log.signatureData.isNotEmpty) ...[
+                      const SizedBox(width: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: context.toolColors.logbook.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
+                          color: context.toolColors.job.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: context.toolColors.job.withOpacity(0.12)),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('W${log.weekNumber}', style: TextStyle(fontWeight: FontWeight.bold, color: context.toolColors.logbook, fontSize: 13)),
+                            SignaturePreviewWidget(
+                              signatureData: log.signatureData,
+                              width: 70,
+                              height: 35,
+                              color: context.toolColors.job,
+                            ),
                             const SizedBox(height: 2),
-                            Text(log.date.split('-')[2], style: TextStyle(fontSize: 11, color: context.toolColors.logbook, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
                             Text(
-                              log.activity,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, height: 1.3),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Jam Kerja: ${log.startTime} - ${log.endTime} | ${_getDayAndDate(log.date)}',
-                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                            ),
-                            Text(
-                              'Bulan: ${_getMonthName(log.date)} | Minggu Ke-${log.weekNumber}',
-                              style: TextStyle(color: context.toolColors.logbook, fontSize: 11, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (log.isSigned && log.signatureData.isNotEmpty) ...[
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: context.toolColors.job.withOpacity(0.06),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: context.toolColors.job.withOpacity(0.12)),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SignaturePreviewWidget(
-                                signatureData: log.signatureData,
-                                width: 70,
-                                height: 35,
+                              'Paraf Mentor',
+                              style: TextStyle(
                                 color: context.toolColors.job,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Paraf Mentor',
-                                style: TextStyle(
-                                  color: context.toolColors.job,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ] else ...[
-                        const SizedBox(width: 12),
-                        OutlinedButton.icon(
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (context) => SignatureDialog(logId: log.id),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: context.toolColors.logbook, width: 1.2),
-                            foregroundColor: context.toolColors.logbook,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          icon: const Icon(Icons.draw_rounded, size: 14),
-                          label: const Text('Paraf', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ] else ...[
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => showDialog(
+                          context: context,
+                          builder: (context) => SignatureDialog(logId: log.id),
                         ),
-                      ],
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: context.toolColors.logbook, width: 1.2),
+                          foregroundColor: context.toolColors.logbook,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.draw_rounded, size: 14),
+                        label: const Text('Paraf', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ],
+                ),
+                
+                // Image Gallery
+                if (log.imageUrls.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  const Divider(height: 1, color: Colors.white10),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(Icons.photo_library_rounded, size: 13, color: Colors.grey),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Dokumentasi Kegiatan (${log.imageUrls.length} Foto)',
+                        style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
-                  
-                  // Image Gallery
-                  if (log.imageUrls.isNotEmpty) ...[
-                    const SizedBox(height: 14),
-                    const Divider(height: 1, color: Colors.white10),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(Icons.photo_library_rounded, size: 13, color: Colors.grey),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Dokumentasi Kegiatan (${log.imageUrls.length} Foto)',
-                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 70,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: log.imageUrls.length,
-                        itemBuilder: (context, imgIdx) {
-                          final imgUrl = log.imageUrls[imgIdx];
-                          return GestureDetector(
-                            onTap: () => _showImagePreview(context, imgUrl),
-                            child: Container(
-                              width: 70,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-                                image: DecorationImage(
-                                  image: NetworkImage(imgUrl),
-                                  fit: BoxFit.cover,
-                                ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 70,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: log.imageUrls.length,
+                      itemBuilder: (context, imgIdx) {
+                        final imgUrl = log.imageUrls[imgIdx];
+                        return GestureDetector(
+                          onTap: () => _showImagePreview(context, imgUrl),
+                          child: Container(
+                            width: 70,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                              image: DecorationImage(
+                                image: NetworkImage(imgUrl),
+                                fit: BoxFit.cover,
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
+                  ),
+                ],
 
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.visibility_rounded, color: context.toolColors.logbook, size: 20),
-                        onPressed: () => _showViewDialog(context, log),
-                        constraints: const BoxConstraints(),
-                        padding: const EdgeInsets.all(8),
-                        tooltip: 'Lihat Detail',
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_rounded, color: Color(0xFFF43F5E), size: 20),
-                        onPressed: () {
-                          final isDark = Theme.of(context).brightness == Brightness.dark;
-                          showDialog(
-                            context: context,
-                            builder: (context) => BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-                              child: AlertDialog(
-                                backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24.0),
-                                  side: BorderSide(color: const Color(0xFFF43F5E).withOpacity(0.3), width: 1.5),
-                                ),
-                                title: Row(
-                                  children: [
-                                    const Icon(Icons.warning_amber_rounded, color: Color(0xFFF43F5E), size: 24),
-                                    const SizedBox(width: 12),
-                                    const Expanded(
-                                      child: Text(
-                                        'Hapus Logbook',
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                                      ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.visibility_rounded, color: context.toolColors.logbook, size: 20),
+                      onPressed: () => _showViewDialog(context, log),
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.all(8),
+                      tooltip: 'Lihat Detail',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_rounded, color: Color(0xFFF43F5E), size: 20),
+                      onPressed: () {
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        showDialog(
+                          context: context,
+                          builder: (context) => BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                            child: AlertDialog(
+                              backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24.0),
+                                side: BorderSide(color: const Color(0xFFF43F5E).withOpacity(0.3), width: 1.5),
+                              ),
+                              title: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFF43F5E), size: 24),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Text(
+                                      'Hapus Logbook',
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                                     ),
-                                  ],
-                                ),
-                                content: const Text(
-                                  'Apakah Anda yakin ingin menghapus logbook kegiatan ini? Tindakan ini tidak dapat dibatalkan.',
-                                  style: TextStyle(fontSize: 14, height: 1.4),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      ref.read(logbookControllerProvider.notifier).deleteLog(log.id);
-                                      Navigator.pop(context);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFF43F5E),
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-                                    ),
-                                    child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
+                              content: const Text(
+                                'Apakah Anda yakin ingin menghapus logbook kegiatan ini? Tindakan ini tidak dapat dibatalkan.',
+                                style: TextStyle(fontSize: 14, height: 1.4),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    ref.read(logbookControllerProvider.notifier).deleteLog(log.id);
+                                    Navigator.pop(context);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFF43F5E),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                                  ),
+                                  child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                        constraints: const BoxConstraints(),
-                        padding: const EdgeInsets.all(8),
-                        tooltip: 'Hapus Logbook',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                          ),
+                        );
+                      },
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.all(8),
+                      tooltip: 'Hapus Logbook',
+                    ),
+                  ],
+                ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

@@ -11,7 +11,7 @@ import '../../shared/data/file_chunk_service.dart';
 import '../../dashboard/provider/dashboard_provider.dart';
 import '../provider/documents_provider.dart';
 import 'widgets/bibliography_checker.dart';
-import '../../shared/data/zip_service.dart';
+import '../../shared/presentation/running_text.dart';
 
 class DocumentsScreen extends ConsumerStatefulWidget {
   const DocumentsScreen({super.key});
@@ -34,6 +34,10 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   // Upload progress per docId: null = idle, 0.0–1.0 = uploading
   final Map<String, double?> _uploadProgress = {};
 
+  // Focus nodes per doc to avoid flicker when rebuilding while editing
+  final Map<String, FocusNode> _notesFocusNodes = {};
+  final Map<String, FocusNode> _fileUrlFocusNodes = {};
+
   @override
   void dispose() {
     for (final c in _notesControllers.values) {
@@ -44,6 +48,12 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
     }
     for (final t in _debounceTimers.values) {
       t.cancel();
+    }
+    for (final f in _notesFocusNodes.values) {
+      f.dispose();
+    }
+    for (final f in _fileUrlFocusNodes.values) {
+      f.dispose();
     }
     _scrollController.dispose();
     super.dispose();
@@ -219,13 +229,45 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
     return _fileUrlControllers.putIfAbsent(doc.id, () => TextEditingController(text: doc.fileUrl));
   }
 
+  FocusNode _notesFocusNode(String docId) {
+    return _notesFocusNodes.putIfAbsent(docId, () => FocusNode());
+  }
+
+  FocusNode _fileUrlFocusNode(String docId) {
+    return _fileUrlFocusNodes.putIfAbsent(docId, () => FocusNode());
+  }
+
   String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
-    final docsAsync = ref.watch(documentsStreamProvider);
+    final docs = ref.watch(documentsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final width = MediaQuery.of(context).size.width;
+
+    // Sync controllers with fresh data on rebuild if not focused
+    for (final doc in docs) {
+      final nNode = _notesFocusNodes[doc.id];
+      if (nNode == null || !nNode.hasFocus) {
+        if (_notesControllers[doc.id]?.text != doc.notes) {
+          _notesControllers[doc.id]?.text = doc.notes;
+        }
+      }
+      final fNode = _fileUrlFocusNodes[doc.id];
+      if (fNode == null || !fNode.hasFocus) {
+        if (_fileUrlControllers[doc.id]?.text != doc.fileUrl) {
+          _fileUrlControllers[doc.id]?.text = doc.fileUrl;
+        }
+      }
+    }
+
+    // Filter documents by search query
+    final filteredDocs = docs.where((doc) {
+      return !doc.isDeleted &&
+          (doc.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              doc.category.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              doc.notes.toLowerCase().contains(_searchQuery.toLowerCase()));
+    }).toList();
 
     return Scrollbar(
       controller: _scrollController,
@@ -271,49 +313,26 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            docsAsync.when(
-              data: (docs) {
-                // Sync controllers with fresh data on rebuild
-                for (final doc in docs) {
-                  _notesControllers[doc.id]?.text != doc.notes
-                      ? _notesControllers[doc.id]?.text = doc.notes
-                      : null;
-                  _fileUrlControllers[doc.id]?.text != doc.fileUrl
-                      ? _fileUrlControllers[doc.id]?.text = doc.fileUrl
-                      : null;
-                }
-
-                // Filter documents by search query
-                final filteredDocs = docs.where((doc) {
-                  return doc.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                      doc.category.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                      doc.notes.toLowerCase().contains(_searchQuery.toLowerCase());
-                }).toList();
-
-                return Column(
-                  children: [
-                    if (width > 1000)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 3, child: _buildDocumentPanel(filteredDocs, isDark)),
-                          const SizedBox(width: 24),
-                          const Expanded(flex: 2, child: BibliographyChecker()),
-                        ],
-                      )
-                    else
-                      Column(
-                        children: [
-                          _buildDocumentPanel(filteredDocs, isDark),
-                          const SizedBox(height: 24),
-                          const BibliographyChecker(),
-                        ],
-                      ),
-                  ],
-                );
-              },
-              loading: () => Center(child: Padding(padding: const EdgeInsets.all(40), child: CircularProgressIndicator(color: _accentColor))),
-              error: (err, _) => Center(child: Text('Gagal: $err')),
+            Column(
+              children: [
+                if (width > 1000)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 3, child: _buildDocumentPanel(filteredDocs, isDark)),
+                      const SizedBox(width: 24),
+                      const Expanded(flex: 2, child: BibliographyChecker()),
+                    ],
+                  )
+                else
+                  Column(
+                    children: [
+                      _buildDocumentPanel(filteredDocs, isDark),
+                      const SizedBox(height: 24),
+                      const BibliographyChecker(),
+                    ],
+                  ),
+              ],
             ),
           ],
         ),
@@ -324,50 +343,60 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   // ─── Header ────────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 750;
+
+    final titleColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Checklist Dokumen Laporan',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Alat 3 & 4: Pastikan seluruh dokumen pendukung telah lengkap dan tervalidasi.',
+          style: TextStyle(color: const Color(0xFF64748B), fontSize: 13),
+        ),
+      ],
+    );
+
+    final customButton = ElevatedButton.icon(
+      onPressed: _showAddCustomDialog,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _accentColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      ),
+      icon: const Icon(Icons.add_task_rounded, size: 20),
+      label: const Text('Dokumen Kustom', style: TextStyle(fontWeight: FontWeight.bold)),
+    );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleColumn,
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: customButton),
+            ],
+          ),
+        ],
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Checklist Dokumen Laporan',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Alat 3 & 4: Pastikan seluruh dokumen pendukung telah lengkap dan tervalidasi.',
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
-              ),
-            ],
-          ),
+          child: titleColumn,
         ),
         const SizedBox(width: 16),
-        OutlinedButton.icon(
-          onPressed: () => ZipService.downloadInternshipZip(ref),
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: _accentColor, width: 1.2),
-            foregroundColor: _accentColor,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          ),
-          icon: const Icon(Icons.archive_rounded, size: 20),
-          label: const Text('Unduh ZIP', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
-        const SizedBox(width: 12),
-        ElevatedButton.icon(
-          onPressed: _showAddCustomDialog,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _accentColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          ),
-          icon: const Icon(Icons.add_task_rounded, size: 20),
-          label: const Text('Dokumen Kustom', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
+        customButton,
       ],
     );
   }
@@ -542,10 +571,11 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                         ),
                         if (hasNotes || hasFile) ...[
                           const SizedBox(height: 4),
-                          Row(
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
                               if (hasNotes) _buildBadge(Icons.notes_rounded, 'Ada catatan', const Color(0xFF64748B)),
-                              if (hasNotes && hasFile) const SizedBox(width: 6),
                               if (hasFile) _buildBadge(Icons.link_rounded, 'Ada file', const Color(0xFF38BDF8)),
                             ],
                           ),
@@ -644,6 +674,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
           _buildExpansionField(
             label: 'Catatan (kapan diterima, dari siapa, keterangan)',
             controller: notesCtrl,
+            focusNode: _notesFocusNode(doc.id),
             icon: Icons.notes_rounded,
             color: catColor,
             maxLines: 3,
@@ -815,6 +846,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
             _buildExpansionField(
               label: 'Link File (URL / Google Drive) atau Upload File',
               controller: fileCtrl,
+              focusNode: _fileUrlFocusNode(doc.id),
               icon: Icons.link_rounded,
               color: const Color(0xFF38BDF8),
               maxLines: 1,
@@ -1007,6 +1039,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   Widget _buildExpansionField({
     required String label,
     required TextEditingController controller,
+    required FocusNode focusNode,
     required IconData icon,
     required Color color,
     required int maxLines,
@@ -1021,8 +1054,13 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
           children: [
             Icon(icon, size: 12, color: color),
             const SizedBox(width: 6),
-            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
-            const Spacer(),
+            Expanded(
+              child: RunningText(
+                text: label,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+              ),
+            ),
+            const SizedBox(width: 8),
             // Autosaved badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1047,6 +1085,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
             Expanded(
               child: TextField(
                 controller: controller,
+                focusNode: focusNode,
                 maxLines: maxLines,
                 style: const TextStyle(fontSize: 12),
                 decoration: InputDecoration(

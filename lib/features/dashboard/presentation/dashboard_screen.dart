@@ -12,6 +12,7 @@ import '../../documents/provider/documents_provider.dart';
 import '../../grading/provider/grading_provider.dart';
 import '../../shared/data/models.dart';
 import '../../shared/data/theme_provider.dart';
+import '../../shared/data/zip_service.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   final Function(int) onTabSelected;
@@ -89,7 +90,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context, profile, syncState, isDark),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
+            _buildProfileInfoCard(context, profile, isDark),
+            const SizedBox(height: 24),
             Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 30.0),
@@ -227,7 +230,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ],
     );
 
-    return headerText;
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 720;
+
+    final zipButton = OutlinedButton.icon(
+      onPressed: () => ZipService.downloadInternshipZip(ref),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: primary, width: 1.2),
+        foregroundColor: primary,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      ),
+      icon: const Icon(Icons.archive_rounded, size: 20),
+      label: const Text('Unduh ZIP', style: TextStyle(fontWeight: FontWeight.bold)),
+    );
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          headerText,
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: zipButton,
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(child: headerText),
+        const SizedBox(width: 16),
+        zipButton,
+      ],
+    );
   }
 
   Widget _buildGradeSummaryCard(BuildContext context, WidgetRef ref, bool isDark) {
@@ -238,64 +277,137 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final isPassed = finalScore >= 50.0;
     final scoreColor = isPassed ? Theme.of(context).colorScheme.primary : const Color(0xFFF43F5E);
 
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => widget.onTabSelected(5),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scoreColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.assessment_rounded, color: scoreColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Estimasi Kelayakan & Nilai Magang',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Gabungan Nilai Perusahaan & Dosen Pembimbing',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text(
+                          'Nilai: ${finalScore.toStringAsFixed(1)} ($finalLetter)',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: scoreColor),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: scoreColor.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            finalCriteria.toUpperCase(),
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: scoreColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[400], size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileInfoCard(BuildContext context, StudentProfile profile, bool isDark) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: scoreColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.assessment_rounded, color: scoreColor, size: 24),
+          Row(
+            children: [
+              Icon(Icons.business_rounded, color: primaryColor, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Informasi Tempat Magang',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.black87),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 24,
+            runSpacing: 10,
+            children: [
+              _buildProfileItem('Nama Mahasiswa', profile.name.isEmpty ? '—' : profile.name, Icons.person_rounded),
+              _buildProfileItem('NIM / Kelas', '${profile.nim.isEmpty ? '—' : profile.nim} / ${profile.className.isEmpty ? '—' : profile.className}', Icons.badge_rounded),
+              _buildProfileItem('Nama Perusahaan', profile.companyName.isEmpty ? '—' : profile.companyName, Icons.corporate_fare_rounded),
+              _buildProfileItem('Bagian / Divisi', profile.division.isEmpty ? '—' : profile.division, Icons.schema_rounded),
+              _buildProfileItem('Pembimbing Lapangan', profile.mentorName.isEmpty ? '—' : profile.mentorName, Icons.supervisor_account_rounded),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileItem(String label, String value, IconData icon) {
+    return SizedBox(
+      width: 220,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Estimasi Kelayakan & Nilai Magang',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(height: 4),
+                Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
                 Text(
-                  'Gabungan Nilai Perusahaan & Dosen Pembimbing',
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      'Nilai: ${finalScore.toStringAsFixed(1)} ($finalLetter)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: scoreColor),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: scoreColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        finalCriteria.toUpperCase(),
-                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: scoreColor),
-                      ),
-                    ),
-                  ],
+                  value,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[400], size: 16),
         ],
       ),
     );

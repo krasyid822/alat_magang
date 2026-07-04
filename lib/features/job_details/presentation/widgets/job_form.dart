@@ -363,7 +363,7 @@ class _JobFormState extends ConsumerState<JobForm> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _titleController,
-                    decoration: _inputDecoration(context, 'Nama Tugas / Pekerjaan', Icons.task_alt_rounded),
+                    decoration: _inputDecoration(context, 'Nama Tugas / Pekerjaan Utama (Non-Harian)', Icons.task_alt_rounded),
                     validator: (v) => v!.trim().isEmpty ? 'Nama tugas wajib diisi' : null,
                   ),
                   const SizedBox(height: 14),
