@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'chunked_image.dart';
 
 void showZoomableImagePreview(BuildContext context, String url) {
   showDialog(
@@ -15,15 +16,13 @@ void showZoomableImagePreview(BuildContext context, String url) {
             minScale: 0.5,
             maxScale: 4.0,
             child: Center(
-              child: url.startsWith('data:image')
-                  ? Image.network(url, fit: BoxFit.contain)
-                  : Image.network(
-                      url,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Center(
-                        child: Icon(Icons.broken_image_rounded, color: Colors.white, size: 50),
-                      ),
-                    ),
+              child: ChunkedImage(
+                url: url,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Icon(Icons.broken_image_rounded, color: Colors.white, size: 50),
+                ),
+              ),
             ),
           ),
           Positioned(

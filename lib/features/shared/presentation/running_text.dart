@@ -16,23 +16,42 @@ class RunningText extends StatefulWidget {
 
 class _RunningTextState extends State<RunningText> {
   late ScrollController _scrollController;
+  String? _currentText;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _currentText = widget.text;
     WidgetsBinding.instance.addPostFrameCallback((_) => _startScrolling());
   }
 
+  @override
+  void didUpdateWidget(covariant RunningText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _currentText = widget.text;
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startScrolling());
+    }
+  }
+
   void _startScrolling() async {
+    final textToScroll = widget.text;
     if (!_scrollController.hasClients) return;
     
+    // Let layout settle so maxScrollExtent is calculated correctly
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!mounted || !_scrollController.hasClients || _currentText != textToScroll) return;
+
     final maxScrollExtent = _scrollController.position.maxScrollExtent;
     if (maxScrollExtent <= 0) return;
 
-    while (mounted) {
+    while (mounted && _currentText == textToScroll) {
       await Future.delayed(const Duration(seconds: 1));
-      if (!mounted || !_scrollController.hasClients) break;
+      if (!mounted || !_scrollController.hasClients || _currentText != textToScroll) break;
       
       await _scrollController.animateTo(
         maxScrollExtent,
@@ -41,7 +60,7 @@ class _RunningTextState extends State<RunningText> {
       );
       
       await Future.delayed(const Duration(seconds: 1));
-      if (!mounted || !_scrollController.hasClients) break;
+      if (!mounted || !_scrollController.hasClients || _currentText != textToScroll) break;
       
       await _scrollController.animateTo(
         0,

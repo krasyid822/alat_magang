@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:convert';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../provider/logbook_provider.dart';
@@ -9,6 +10,7 @@ import '../../shared/data/models.dart';
 import '../../shared/data/theme_provider.dart';
 import '../../shared/presentation/image_preview_dialog.dart';
 import '../../shared/presentation/running_text.dart';
+import '../../shared/presentation/chunked_image.dart';
 
 class LogbookScreen extends ConsumerStatefulWidget {
   const LogbookScreen({super.key});
@@ -384,47 +386,92 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   ],
                 ),
                 
-                // Image Gallery
-                if (log.imageUrls.isNotEmpty) ...[
+                // Image Gallery & Doc Link
+                if (log.imageUrls.isNotEmpty || log.docLink.isNotEmpty) ...[
                   const SizedBox(height: 14),
                   const Divider(height: 1, color: Colors.white10),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(Icons.photo_library_rounded, size: 13, color: Colors.grey),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Dokumentasi Kegiatan (${log.imageUrls.length} Foto)',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 70,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: log.imageUrls.length,
-                      itemBuilder: (context, imgIdx) {
-                        final imgUrl = log.imageUrls[imgIdx];
-                        return GestureDetector(
-                          onTap: () => _showImagePreview(context, imgUrl),
-                          child: Container(
-                            width: 70,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-                              image: DecorationImage(
-                                image: NetworkImage(imgUrl),
-                                fit: BoxFit.cover,
+                  if (log.imageUrls.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.photo_library_rounded, size: 13, color: Colors.grey),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Dokumentasi Kegiatan (${log.imageUrls.length} Foto)',
+                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 70,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: log.imageUrls.length,
+                        itemBuilder: (context, imgIdx) {
+                          final imgUrl = log.imageUrls[imgIdx];
+                          return GestureDetector(
+                            onTap: () => _showImagePreview(context, imgUrl),
+                            child: Container(
+                              width: 70,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: ChunkedImage(
+                                  url: imgUrl,
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
+                  ],
+                  if (log.docLink.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: () {
+                        html.window.open(log.docLink, '_blank');
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: context.toolColors.logbook.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: context.toolColors.logbook.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.link_rounded, color: context.toolColors.logbook, size: 16),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'Buka Tautan Dokumentasi',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.toolColors.logbook,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.open_in_new_rounded, color: context.toolColors.logbook, size: 12),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
 
                 const SizedBox(height: 14),
@@ -706,15 +753,19 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.history_rounded, color: context.toolColors.logbook, size: 18),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Lihat Riwayat Perubahan (${jsonDecode(log.versionHistory).length} Versi)',
-                                    style: TextStyle(color: context.toolColors.logbook, fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
+                               Expanded(
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.history_rounded, color: context.toolColors.logbook, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: RunningText(
+                                        text: 'Lihat Riwayat Perubahan (${jsonDecode(log.versionHistory).length} Versi)',
+                                        style: TextStyle(color: context.toolColors.logbook, fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               Icon(Icons.chevron_right_rounded, color: context.toolColors.logbook, size: 18),
                             ],

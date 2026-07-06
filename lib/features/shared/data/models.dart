@@ -38,6 +38,7 @@ abstract class InternshipLog with _$InternshipLog {
     @Default('') String signatureData,
     @Default('') String versionHistory,
     @Default([]) List<String> imageUrls,
+    @Default('') String docLink,
     @Default(0) int updatedAt,
     @Default(false) bool isDeleted,
     @Default(false) bool isDraft,

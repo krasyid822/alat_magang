@@ -51,3 +51,5 @@ Warna Sampul (Cover)	Menggunakan hard cover dengan warna sesuai bendera jurusan 
 tambahkan fitur untuk menzip semua data alat magang dengan rapi terstruktur
 
 perbaiki kamera yang inverted, tambahkan switch kamera, izinkan preview gambar penuh dan bisa zoom in/out
+
+pembungkus RunningText

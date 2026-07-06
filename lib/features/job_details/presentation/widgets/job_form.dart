@@ -448,36 +448,53 @@ class _JobFormState extends ConsumerState<JobForm> {
 
                   // Pilihan tombol penambah foto
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF64748B).withOpacity(0.04),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF64748B).withOpacity(0.1)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildOptionButton(
-                          context,
-                          icon: Icons.camera_alt_rounded,
-                          label: 'Kamera',
-                          onTap: _captureFromCamera,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _captureFromCamera,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: context.toolColors.job, width: 1.2),
+                            foregroundColor: context.toolColors.job,
+                            minimumSize: const Size(0, 44),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                          ),
+                          icon: const Icon(Icons.camera_alt_rounded, size: 16),
+                          label: const Text('Kamera', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
-                        _buildOptionButton(
-                          context,
-                          icon: Icons.photo_library_rounded,
-                          label: 'Galeri',
-                          onTap: _pickFromGallery,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _pickFromGallery,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: context.toolColors.job, width: 1.2),
+                            foregroundColor: context.toolColors.job,
+                            minimumSize: const Size(0, 44),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                          ),
+                          icon: const Icon(Icons.photo_library_rounded, size: 16),
+                          label: const Text('Galeri', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
-                        _buildOptionButton(
-                          context,
-                          icon: Icons.link_rounded,
-                          label: 'Tautan URL',
-                          onTap: () => setState(() => _showUrlField = !_showUrlField),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => setState(() => _showUrlField = !_showUrlField),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: context.toolColors.job, width: 1.2),
+                            foregroundColor: context.toolColors.job,
+                            minimumSize: const Size(0, 44),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                          ),
+                          icon: const Icon(Icons.link_rounded, size: 16),
+                          label: const Text('Tautan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   
                   // Jika tombol Tautan URL ditekan, tampilkan text inputnya
@@ -610,30 +627,7 @@ class _JobFormState extends ConsumerState<JobForm> {
     );
   }
 
-  Widget _buildOptionButton(BuildContext context, {required IconData icon, required String label, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: context.toolColors.job.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: context.toolColors.job, size: 22),
-            ),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   void _save() {
     if (_imageUrls.isEmpty) {

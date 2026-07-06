@@ -6,6 +6,8 @@ import '../../provider/dashboard_provider.dart';
 import '../../../shared/data/firebase_service.dart';
 import '../../../shared/data/local_storage.dart';
 import '../../../../app_version.dart';
+import '../../../shared/presentation/error_dialog.dart';
+
 
 class AppInfoDialog extends ConsumerWidget {
   const AppInfoDialog({super.key});
@@ -15,6 +17,14 @@ class AppInfoDialog extends ConsumerWidget {
     final profile = ref.watch(dashboardControllerProvider);
     final nim = profile.nim;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (nim.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+        showErrorDialog(context, 'Anda belum login. Silakan masukkan NIM Anda terlebih dahulu.');
+      });
+      return const SizedBox.shrink();
+    }
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
@@ -85,30 +95,7 @@ class AppInfoDialog extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Device Audit Section
-                if (nim.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(width: 1, color: Colors.red.withOpacity(0.2)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Anda belum login. Silakan masukkan NIM Anda terlebih dahulu.',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else ...[
-                  Align(
+                Align(
                     alignment: Alignment.centerLeft,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -298,7 +285,6 @@ class AppInfoDialog extends ConsumerWidget {
                       ),
                     ),
                   ),
-                ],
               ],
             ),
           ),

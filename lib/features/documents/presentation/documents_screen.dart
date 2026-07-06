@@ -139,10 +139,177 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
       );
     } else if (isPdf) {
       final viewId = 'pdf-view-${DateTime.now().millisecondsSinceEpoch}';
+      final pdfJsHtml = '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>PDF Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0f172a;
+      overflow-x: auto;
+      overflow-y: auto;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #viewer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 16px 0;
+      box-sizing: border-box;
+    }
+    .page-container {
+      margin: 12px auto;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      width: 90%;
+      max-width: none;
+      box-sizing: border-box;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .loading {
+      color: #38bdf8;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 40px;
+      text-align: center;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">Memuat dokumen PDF...</div>
+  <div id="viewer"></div>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    const url = "$url";
+    
+    pdfjsLib.getDocument(url).promise.then(pdf => {
+      document.getElementById('loading').style.display = 'none';
+      const viewer = document.getElementById('viewer');
+      
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        pdf.getPage(pageNum).then(page => {
+          const viewport = page.getViewport({ scale: 1.5 });
+          
+          const container = document.createElement('div');
+          container.className = 'page-container';
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          container.appendChild(canvas);
+          viewer.appendChild(container);
+          
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+          page.render(renderContext);
+        });
+      }
+    }).catch(err => {
+      console.error('Error rendering PDF:', err);
+      document.getElementById('loading').style.display = 'none';
+      
+      const viewer = document.getElementById('viewer');
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.style.border = 'none';
+      iframe.style.width = '100vw';
+      iframe.style.height = '100vh';
+      viewer.appendChild(iframe);
+    });
+
+    // Touch Zoom (Pinch) & Desktop Zoom (Ctrl + Wheel) Implementation
+    let currentScale = 1;
+    let startDist = 0;
+
+    document.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        startDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    });
+
+    document.addEventListener('touchmove', e => {
+      if (e.touches.length === 2 && startDist > 0) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / startDist;
+        let newScale = currentScale * factor;
+        
+        newScale = Math.min(Math.max(newScale, 1), 3);
+        
+        const pages = document.querySelectorAll('.page-container');
+        pages.forEach(page => {
+          page.style.width = (newScale * 90) + '%';
+        });
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', e => {
+      if (startDist > 0) {
+        const pages = document.querySelectorAll('.page-container');
+        if (pages.length > 0) {
+          const widthStr = pages[0].style.width;
+          if (widthStr) {
+            currentScale = parseFloat(widthStr) / 90;
+          }
+        }
+        startDist = 0;
+      }
+    });
+
+    // Support Ctrl + Trackpad/Wheel scrolling to zoom
+    document.addEventListener('wheel', e => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const delta = -e.deltaY * 0.01;
+        let newScale = currentScale + delta;
+        newScale = Math.min(Math.max(newScale, 1), 3);
+        
+        const pages = document.querySelectorAll('.page-container');
+        pages.forEach(page => {
+          page.style.width = (newScale * 90) + '%';
+        });
+        currentScale = newScale;
+      }
+    }, { passive: false });
+  </script>
+</body>
+</html>
+''';
+
       // ignore: undefined_prefixed_name
       ui_web.platformViewRegistry.registerViewFactory(viewId, (int id) {
         return html.IFrameElement()
-          ..src = url
+          ..srcdoc = pdfJsHtml
           ..style.border = 'none'
           ..style.width = '100%'
           ..style.height = '100%';
@@ -705,139 +872,161 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.2)),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.insert_drive_file_rounded, color: Color(0xFF38BDF8), size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              displayFileName,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              isChunkedFile
-                                  ? '☁️ Tersedia di semua perangkat'
-                                  : isCloudFile
-                                      ? '☁️ Tersedia di semua perangkat'
-                                      : '💻 File lokal (lama)',
-                              style: TextStyle(
-                                fontSize: 9,
-                                color: (isChunkedFile || isCloudFile)
-                                    ? const Color(0xFF38BDF8)
-                                    : const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.visibility_rounded, color: Color(0xFF38BDF8), size: 20),
-                        onPressed: () async {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => const Center(
-                              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
-                            ),
-                          );
-                          try {
-                            String? url;
-                            if (isChunkedFile && chunkedRef != null) {
-                              final nim = ref.read(dashboardControllerProvider).nim;
-                              url = await fileChunkService.getDataUrl(nim, chunkedRef);
-                            } else if (isCloudFile && cloudDataUrl.isNotEmpty) {
-                              url = cloudDataUrl;
-                            } else if (isLocalFile) {
-                              final fileData = await indexedDBService.getFile(localId);
-                              if (fileData != null) {
-                                final blob = fileData['data'] as html.Blob;
-                                url = html.Url.createObjectUrlFromBlob(blob);
-                              }
-                            }
-
-                            if (mounted) Navigator.pop(context); // Pop loading
-
-                            if (url != null && mounted) {
-                              _showPreviewDialog(
-                                context,
-                                displayFileName,
-                                url,
-                                displayFileName,
-                                onDownload: () => _downloadFile(
-                                  doc,
-                                  isLocalFile: isLocalFile,
-                                  isCloudFile: isCloudFile,
-                                  isChunkedFile: isChunkedFile,
-                                  localId: localId,
-                                  cloudDataUrl: cloudDataUrl,
-                                  chunkedRef: chunkedRef,
-                                  displayFileName: displayFileName,
+                  child: LayoutBuilder(
+                    builder: (_, constraints) {
+                      final maxWidth = constraints.maxWidth;
+                      final fileInfoWidth = maxWidth > 300 ? maxWidth - 130 : maxWidth;
+                      return Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 10,
+                        children: [
+                          Container(
+                            constraints: BoxConstraints(maxWidth: fileInfoWidth),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.insert_drive_file_rounded, color: Color(0xFF38BDF8), size: 20),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      RunningText(
+                                        text: displayFileName,
+                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        isChunkedFile
+                                            ? '☁️ Tersedia di semua perangkat'
+                                            : isCloudFile
+                                                ? '☁️ Tersedia di semua perangkat'
+                                                : '💻 File lokal (lama)',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          color: (isChunkedFile || isCloudFile)
+                                              ? const Color(0xFF38BDF8)
+                                              : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              );
-                            } else {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Gagal memuat file untuk pratinjau')),
-                                );
-                              }
-                            }
-                          } catch (e) {
-                            if (mounted) Navigator.pop(context); // Pop loading
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Terjadi kesalahan: $e')),
-                              );
-                            }
-                          }
-                        },
-                        tooltip: 'Pratinjau File',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: const Icon(Icons.download_rounded, color: Color(0xFF38BDF8), size: 20),
-                        onPressed: () async {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => const Center(
-                              child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+                              ],
                             ),
-                          );
-                          try {
-                            await _downloadFile(
-                              doc,
-                              isLocalFile: isLocalFile,
-                              isCloudFile: isCloudFile,
-                              isChunkedFile: isChunkedFile,
-                              localId: localId,
-                              cloudDataUrl: cloudDataUrl,
-                              chunkedRef: chunkedRef,
-                              displayFileName: displayFileName,
-                            );
-                          } finally {
-                            if (mounted) Navigator.pop(context);
-                          }
-                        },
-                        tooltip: 'Unduh File',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFFF43F5E), size: 20),
-                        onPressed: () => _confirmDeleteFile(doc, localId, chunkedRef: chunkedRef),
-                        tooltip: 'Hapus File',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.visibility_rounded, color: Color(0xFF38BDF8), size: 20),
+                                onPressed: () async {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => const Center(
+                                      child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+                                    ),
+                                  );
+                                  try {
+                                    String? url;
+                                    if (isChunkedFile && chunkedRef != null) {
+                                      final nim = ref.read(dashboardControllerProvider).nim;
+                                      url = await fileChunkService.getDataUrl(nim, chunkedRef);
+                                    } else if (isCloudFile && cloudDataUrl.isNotEmpty) {
+                                      url = cloudDataUrl;
+                                    } else if (isLocalFile) {
+                                      final fileData = await indexedDBService.getFile(localId);
+                                      if (fileData != null) {
+                                        final blob = fileData['data'] as html.Blob;
+                                        url = html.Url.createObjectUrlFromBlob(blob);
+                                      }
+                                    }
+
+                                    if (mounted) Navigator.pop(context); // Pop loading
+
+                                    if (url != null && mounted) {
+                                      _showPreviewDialog(
+                                        context,
+                                        displayFileName,
+                                        url,
+                                        displayFileName,
+                                        onDownload: () => _downloadFile(
+                                          doc,
+                                          isLocalFile: isLocalFile,
+                                          isCloudFile: isCloudFile,
+                                          isChunkedFile: isChunkedFile,
+                                          localId: localId,
+                                          cloudDataUrl: cloudDataUrl,
+                                          chunkedRef: chunkedRef,
+                                          displayFileName: displayFileName,
+                                        ),
+                                      );
+                                    } else {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Gagal memuat file untuk pratinjau')),
+                                        );
+                                      }
+                                    }
+                                  } catch (e) {
+                                    if (mounted) Navigator.pop(context); // Pop loading
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Terjadi kesalahan: $e')),
+                                      );
+                                    }
+                                  }
+                                },
+                                tooltip: 'Pratinjau File',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                icon: const Icon(Icons.download_rounded, color: Color(0xFF38BDF8), size: 20),
+                                onPressed: () async {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => const Center(
+                                      child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+                                    ),
+                                  );
+                                  try {
+                                      await _downloadFile(
+                                        doc,
+                                        isLocalFile: isLocalFile,
+                                        isCloudFile: isCloudFile,
+                                        isChunkedFile: isChunkedFile,
+                                        localId: localId,
+                                        cloudDataUrl: cloudDataUrl,
+                                        chunkedRef: chunkedRef,
+                                        displayFileName: displayFileName,
+                                      );
+                                  } finally {
+                                    if (mounted) Navigator.pop(context);
+                                  }
+                                },
+                                tooltip: 'Unduh File',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                icon: const Icon(Icons.close_rounded, color: Color(0xFFF43F5E), size: 20),
+                                onPressed: () => _confirmDeleteFile(doc, localId, chunkedRef: chunkedRef),
+                                tooltip: 'Hapus File',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],

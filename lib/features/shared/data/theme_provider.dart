@@ -104,5 +104,10 @@ class ThemeNotifier extends _$ThemeNotifier {
 }
 
 extension ToolColorsTheme on BuildContext {
-  ToolColors get toolColors => Theme.of(this).extension<ToolColors>()!;
+  ToolColors get toolColors => Theme.of(this).extension<ToolColors>() ?? const ToolColors(
+    job: Color(0xFF0D9488),
+    logbook: Color(0xFF38BDF8),
+    research: Color(0xFFF59E0B),
+    documents: Color(0xFFEC4899),
+  );
 }

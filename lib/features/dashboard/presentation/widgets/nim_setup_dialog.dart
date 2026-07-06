@@ -7,6 +7,7 @@ import '../../../shared/data/firebase_service.dart';
 import '../../../shared/data/models.dart';
 import 'dart:convert';
 import 'dart:html' as html;
+import '../../../shared/presentation/error_dialog.dart';
 
 class NimSetupDialog extends ConsumerStatefulWidget {
   final bool forceSetup;
@@ -26,6 +27,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
   final _divisionController = TextEditingController();
   final _mentorController = TextEditingController();
   final _waController = TextEditingController();
+  final _scrollController = ScrollController();
   int _durationWeeks = 16;
 
   bool _isLoading = false;
@@ -60,6 +62,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _nimController.dispose();
     _nameController.dispose();
     _classController.dispose();
@@ -72,11 +75,21 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
     super.dispose();
   }
 
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   /// Decode Base64 token and pre-fill the form fields
   void _decodeBase64Token() {
     final token = _base64Controller.text.trim();
     if (token.isEmpty) {
-      setState(() => _errorMessage = 'Token Base64 tidak boleh kosong.');
+      showErrorDialog(context, 'Token Base64 tidak boleh kosong.');
       return;
     }
     try {
@@ -100,14 +113,17 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         _errorMessage = null;
       });
     } catch (e) {
-      setState(() => _errorMessage = 'Token Base64 tidak valid atau rusak. Pastikan Anda menyalin seluruh kode.');
+      showErrorDialog(context, 'Token Base64 tidak valid atau rusak. Pastikan Anda menyalin seluruh kode.');
     }
   }
 
   Future<void> _checkNimAndProceed() async {
     // 1. Jalankan validasi awal
     setState(() => _errorMessage = null);
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      _scrollToTop();
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {
@@ -128,6 +144,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         // 2. Jalankan validasi ulang sekarang setelah aturan "required" aktif
         if (!_formKey.currentState!.validate()) {
           setState(() => _isLoading = false);
+          _scrollToTop();
           return;
         }
 
@@ -136,8 +153,10 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
             _durationWeeks != profile.internshipDurationWeeks) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Durasi magang tidak sesuai dengan database';
           });
+          if (mounted) {
+            showErrorDialog(context, 'Durasi magang tidak sesuai dengan database');
+          }
           return;
         }
 
@@ -153,8 +172,10 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Gagal mengecek NIM. Periksa koneksi Anda.';
       });
+      if (mounted) {
+        showErrorDialog(context, 'Gagal mengecek NIM. Periksa koneksi Anda.');
+      }
     }
   }
 
@@ -557,6 +578,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
         content: SizedBox(
           width: 500,
           child: SingleChildScrollView(
+            controller: _scrollController,
             child: Form(
               key: _formKey,
               child: Column(
@@ -783,10 +805,7 @@ class _NimSetupDialogState extends ConsumerState<NimSetupDialog> {
                         child: InkWell(
                           onTap: () {
                             if (_nimController.text.trim().isEmpty) {
-                              setState(() {
-                                _errorMessage =
-                                    'Silakan masukkan NIM Anda terlebih dahulu pada form utama.';
-                              });
+                              showErrorDialog(context, 'Silakan masukkan NIM Anda terlebih dahulu pada form utama.');
                               return;
                             }
                             _showForgotPasswordDialog();

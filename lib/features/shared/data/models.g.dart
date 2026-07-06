@@ -57,6 +57,7 @@ _InternshipLog _$InternshipLogFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      docLink: json['docLink'] as String? ?? '',
       updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
       isDeleted: json['isDeleted'] as bool? ?? false,
       isDraft: json['isDraft'] as bool? ?? false,
@@ -74,6 +75,7 @@ Map<String, dynamic> _$InternshipLogToJson(_InternshipLog instance) =>
       'signatureData': instance.signatureData,
       'versionHistory': instance.versionHistory,
       'imageUrls': instance.imageUrls,
+      'docLink': instance.docLink,
       'updatedAt': instance.updatedAt,
       'isDeleted': instance.isDeleted,
       'isDraft': instance.isDraft,
