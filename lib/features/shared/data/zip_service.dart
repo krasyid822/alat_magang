@@ -75,7 +75,8 @@ class ZipService {
           'NOMOR WHATSAPP      : ${profile.whatsappNumber}\n'
           '==================================================\n';
 
-      archive.addFile(ArchiveFile('profil_mahasiswa.txt', profileTxt.length, utf8.encode(profileTxt)));
+      final profileBytes = utf8.encode(profileTxt);
+      archive.addFile(ArchiveFile('profil_mahasiswa.txt', profileBytes.length, profileBytes));
 
       // 2. Logbooks (CSV)
       final logs = ref.read(logbookProvider).where((e) => !e.isDeleted && !e.isDraft).toList();
@@ -118,8 +119,9 @@ class ZipService {
           '${_escapeCsv(photosCell)}'
         );
       }
-      final logbookCsv = logbookCsvHeader + logsRows.join('\n');
-      archive.addFile(ArchiveFile('logbook/logbook.csv', logbookCsv.length, utf8.encode(logbookCsv)));
+      final logbookCsv = '\uFEFF$logbookCsvHeader${logsRows.join('\n')}';
+      final logbookCsvBytes = utf8.encode(logbookCsv);
+      archive.addFile(ArchiveFile('logbook/logbook.csv', logbookCsvBytes.length, logbookCsvBytes));
 
       // 3. Job Details (CSV)
       final jobs = ref.read(jobProvider).where((e) => !e.isDeleted).toList();
@@ -150,8 +152,9 @@ class ZipService {
           '${_escapeCsv(photosCell)}'
         );
       }
-      final jobsCsv = jobsCsvHeader + jobsRows.join('\n');
-      archive.addFile(ArchiveFile('pekerjaan/tugas.csv', jobsCsv.length, utf8.encode(jobsCsv)));
+      final jobsCsv = '\uFEFF$jobsCsvHeader${jobsRows.join('\n')}';
+      final jobsCsvBytes = utf8.encode(jobsCsv);
+      archive.addFile(ArchiveFile('pekerjaan/tugas.csv', jobsCsvBytes.length, jobsCsvBytes));
 
       // 4. Research Data (TXT)
       final research = ref.read(researchProvider);
@@ -164,7 +167,8 @@ class ZipService {
           '4. DESKRIPSI PEKERJAAN (JOB DESC):\n${research.jobDescription}\n\n'
           '5. PROSEDUR KERJA:\n${research.procedureWork}\n\n'
           '6. HAMBATAN KERJA:\n${research.obstacles}\n';
-      archive.addFile(ArchiveFile('riset/riset_bab2.txt', researchTxt.length, utf8.encode(researchTxt)));
+      final researchBytes = utf8.encode(researchTxt);
+      archive.addFile(ArchiveFile('riset/riset_bab2.txt', researchBytes.length, researchBytes));
 
       // 5. Document Checklist (CSV)
       final docs = ref.read(documentsProvider).where((e) => !e.isDeleted).toList();
@@ -205,8 +209,9 @@ class ZipService {
           '${_escapeCsv(zipFilePath)}'
         );
       }
-      final docsCsv = docsCsvHeader + docsRows.join('\n');
-      archive.addFile(ArchiveFile('dokumen/checklist.csv', docsCsv.length, utf8.encode(docsCsv)));
+      final docsCsv = '\uFEFF$docsCsvHeader${docsRows.join('\n')}';
+      final docsCsvBytes = utf8.encode(docsCsv);
+      archive.addFile(ArchiveFile('dokumen/checklist.csv', docsCsvBytes.length, docsCsvBytes));
 
       // Encode ZIP
       final zipEncoder = ZipEncoder();
