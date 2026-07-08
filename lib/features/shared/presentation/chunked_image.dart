@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/file_chunk_service.dart';
 import '../../dashboard/provider/dashboard_provider.dart';
+import 'web_cache_helper.dart';
 
 class ChunkedImage extends ConsumerStatefulWidget {
   final String url;
@@ -26,6 +27,7 @@ class ChunkedImage extends ConsumerStatefulWidget {
 
 class _ChunkedImageState extends ConsumerState<ChunkedImage> {
   static final Map<String, Uint8List> _memoryCache = {};
+  static const String _cacheName = 'chunked_image_cache';
   
   Uint8List? _bytes;
   bool _isLoading = false;
@@ -89,14 +91,23 @@ class _ChunkedImageState extends ConsumerState<ChunkedImage> {
         throw Exception('Invalid chunked URL format');
       }
 
-      final nim = ref.read(dashboardControllerProvider).nim;
-      if (nim.isEmpty) {
-        throw Exception('User NIM is empty');
-      }
+      // 1. Coba baca dari Web Cache Storage
+      Uint8List? bytes = await readFromWebCache(url, _cacheName);
 
-      final bytes = await fileChunkService.downloadFile(nim, chunkedRef);
+      // 2. Jika tidak ada di cache, unduh dari Firestore
       if (bytes == null) {
-        throw Exception('Failed to download file chunks');
+        final nim = ref.read(dashboardControllerProvider).nim;
+        if (nim.isEmpty) {
+          throw Exception('User NIM is empty');
+        }
+
+        bytes = await fileChunkService.downloadFile(nim, chunkedRef);
+        if (bytes == null) {
+          throw Exception('Failed to download file chunks');
+        }
+
+        // Simpan ke Web Cache Storage secara async
+        writeToWebCache(url, bytes, chunkedRef.mimeType, _cacheName);
       }
 
       _memoryCache[url] = bytes;
