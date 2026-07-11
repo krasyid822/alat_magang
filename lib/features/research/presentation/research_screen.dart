@@ -1,6 +1,7 @@
 import 'dart:html' as html;
 import 'dart:convert';
 import 'dart:async';
+import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/data/models.dart';
@@ -30,9 +31,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
   List<Map<String, String>> _stepList = [];
   List<Map<String, String>> _obstacleList = [];
 
-  bool _isSaving = false;
   int _activeTab = 0; // 0 = Profil, 1 = Alur, 2 = Hambatan
   bool _isInitialized = false;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -43,10 +44,31 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
 
   void _onTextChanged() {
     setState(() {});
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted && _isInitialized) {
+        _autoSaveResearch();
+      }
+    });
+  }
+
+  Future<void> _autoSaveResearch() async {
+    final research = ResearchData(
+      companyHistory: _historyController.text,
+      companyVisionMission: _visionController.text,
+      companyStructureUrl: jsonEncode(_companyImageList),
+      jobDescription: jsonEncode(_taskList),
+      procedureWork: jsonEncode(_stepList),
+      obstacles: jsonEncode(_obstacleList),
+    );
+    await ref
+        .read(researchControllerProvider.notifier)
+        .updateResearch(research);
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _historyController.removeListener(_onTextChanged);
     _visionController.removeListener(_onTextChanged);
 
@@ -253,24 +275,28 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         'caption': 'Gambar 2.${_companyImageList.length + 1} Keterangan Gambar',
       });
     });
+    _onTextChanged();
   }
 
   void _addNewTask() {
     setState(() {
       _taskList.add({'task': '', 'details': ''});
     });
+    _onTextChanged();
   }
 
   void _addNewStep() {
     setState(() {
       _stepList.add({'step': '', 'description': ''});
     });
+    _onTextChanged();
   }
 
   void _addNewObstacle() {
     setState(() {
       _obstacleList.add({'obstacle': '', 'solution': ''});
     });
+    _onTextChanged();
   }
 
   void _confirmDeleteImage(int index) {
@@ -451,32 +477,26 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final researchAsync = ref.watch(researchStreamProvider);
+    final research = ref.watch(researchProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (researchAsync.hasValue && !_isInitialized) {
+    if (!_isInitialized) {
       _isInitialized = true;
-      final data = researchAsync.value!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
-            _populateFields(data);
+            _populateFields(research);
           });
         }
       });
     }
 
-    ref.listen<AsyncValue<ResearchData>>(researchStreamProvider, (
-      previous,
-      next,
-    ) {
-      if (next.hasValue && !next.isLoading) {
-        if (!_isInitialized) {
-          _isInitialized = true;
-          _populateFields(next.value!);
-        } else {
-          _populateFields(next.value!, previous?.value);
-        }
+    ref.listen<ResearchData>(researchProvider, (previous, next) {
+      if (!_isInitialized) {
+        _isInitialized = true;
+        _populateFields(next);
+      } else {
+        _populateFields(next, previous);
       }
     });
 
@@ -494,21 +514,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               const SizedBox(height: 24),
               _buildTabBar(isDark),
               const SizedBox(height: 20),
-              researchAsync.when(
-                data: (data) => _buildFormContent(isDark),
-                loading: () => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: CircularProgressIndicator(color: _accentColor),
-                  ),
-                ),
-                error: (err, _) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Text('Gagal memuat riset: $err'),
-                  ),
-                ),
-              ),
+              _buildFormContent(isDark),
             ],
           ),
         ),
@@ -517,55 +523,21 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Profil Perusahaan & Bahan Riset',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Alat 2: Kumpulkan bahan baku riset Bab 2 dan Bab Pembahasan Laporan Magang Anda.',
-                style: TextStyle(color: const Color(0xFF64748B), fontSize: 13),
-              ),
-            ],
+        Text(
+          'Profil Perusahaan & Bahan Riset',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: _saveResearch,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _accentColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-          ),
-          icon: _isSaving
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Icon(Icons.cloud_upload_rounded, size: 20),
-          label: Text(
-            _isSaving ? 'Menyimpan...' : 'Simpan Riset',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+        SizedBox(height: 6),
+        Text(
+          'Alat 2: Kumpulkan bahan baku riset Bab 2 dan Bab Pembahasan Laporan Magang Anda.',
+          style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
         ),
       ],
     );
@@ -725,6 +697,13 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               desc:
                   'Gambarkan tugas utama di unit tempat Anda magang dalam bentuk daftar tugas, serta susun langkah-langkah alur kerja sistem/alat secara kronologis.',
               icon: Icons.info_outline_rounded,
+              onTap: () {
+                _showPdfPreview(
+                  context,
+                  'Panduan Deskripsi Unit & Alur Proses Laporan',
+                  'assets/pdf/Panduan_alur_dan_unit_kerja.pdf',
+                );
+              },
             ),
             const SizedBox(height: 20),
             const Text(
@@ -1930,8 +1909,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     required String title,
     required String desc,
     required IconData icon,
+    VoidCallback? onTap,
   }) {
-    return Padding(
+    final content = Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1964,6 +1944,80 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           ),
         ],
       ),
+    );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(padding: const EdgeInsets.all(8.0), child: content),
+      );
+    }
+    return content;
+  }
+
+  void _showPdfPreview(BuildContext context, String title, String path) {
+    final viewId = 'pdf-view-${DateTime.now().millisecondsSinceEpoch}';
+
+    // ignore: undefined_prefixed_name
+    ui_web.platformViewRegistry.registerViewFactory(viewId, (int id) {
+      return html.IFrameElement()
+        ..src = path
+        ..style.border = 'none'
+        ..style.width = '100%'
+        ..style.height = '100%';
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.8,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const Divider(color: Color(0xFF334155)),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: HtmlElementView(viewType: viewId),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -2036,35 +2090,5 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _saveResearch() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isSaving = true);
-      final research = ResearchData(
-        companyHistory: _historyController.text,
-        companyVisionMission: _visionController.text,
-        companyStructureUrl: jsonEncode(_companyImageList),
-        jobDescription: jsonEncode(_taskList),
-        procedureWork: jsonEncode(_stepList),
-        obstacles: jsonEncode(_obstacleList),
-      );
-
-      await ref
-          .read(researchControllerProvider.notifier)
-          .updateResearch(research);
-      setState(() => _isSaving = false);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Bahan riset berhasil disimpan di penyimpanan lokal browser!',
-            ),
-            backgroundColor: Color(0xFF0D9488),
-          ),
-        );
-      }
-    }
   }
 }
