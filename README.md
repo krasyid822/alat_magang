@@ -53,3 +53,5 @@ tambahkan fitur untuk menzip semua data alat magang dengan rapi terstruktur
 perbaiki kamera yang inverted, tambahkan switch kamera, izinkan preview gambar penuh dan bisa zoom in/out
 
 pembungkus RunningText
+
+kartu bimbingan magang, laporan kehadiran magang dari perusahaan

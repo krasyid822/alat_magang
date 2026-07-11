@@ -1,5 +1,6 @@
 import 'dart:html' as html;
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/data/models.dart';
@@ -28,9 +29,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
   List<Map<String, String>> _taskList = [];
   List<Map<String, String>> _stepList = [];
   List<Map<String, String>> _obstacleList = [];
-  
+
   bool _isSaving = false;
   int _activeTab = 0; // 0 = Profil, 1 = Alur, 2 = Hambatan
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -57,17 +59,38 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     super.dispose();
   }
 
-  void _populateFields(ResearchData data) {
-    if (_historyController.text != data.companyHistory) {
+  void _populateFields(ResearchData data, [ResearchData? previous]) {
+    if (previous == null) {
       _historyController.text = data.companyHistory;
-    }
-    if (_visionController.text != data.companyVisionMission) {
       _visionController.text = data.companyVisionMission;
+      _parseCompanyImages(data.companyStructureUrl);
+      _parseJobDescription(data.jobDescription);
+      _parseProcedure(data.procedureWork);
+      _parseObstacles(data.obstacles);
+    } else {
+      if (_historyController.text == previous.companyHistory) {
+        if (_historyController.text != data.companyHistory) {
+          _historyController.text = data.companyHistory;
+        }
+      }
+      if (_visionController.text == previous.companyVisionMission) {
+        if (_visionController.text != data.companyVisionMission) {
+          _visionController.text = data.companyVisionMission;
+        }
+      }
+      if (jsonEncode(_companyImageList) == previous.companyStructureUrl) {
+        _parseCompanyImages(data.companyStructureUrl);
+      }
+      if (jsonEncode(_taskList) == previous.jobDescription) {
+        _parseJobDescription(data.jobDescription);
+      }
+      if (jsonEncode(_stepList) == previous.procedureWork) {
+        _parseProcedure(data.procedureWork);
+      }
+      if (jsonEncode(_obstacleList) == previous.obstacles) {
+        _parseObstacles(data.obstacles);
+      }
     }
-    _parseCompanyImages(data.companyStructureUrl);
-    _parseJobDescription(data.jobDescription);
-    _parseProcedure(data.procedureWork);
-    _parseObstacles(data.obstacles);
   }
 
   void _parseCompanyImages(String rawImages) {
@@ -89,7 +112,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     } catch (_) {
       // Fallback untuk single URL/Base64 legacy gambar struktur organisasi
       _companyImageList = [
-        {'url': rawImages, 'caption': 'Gambar 2.1 Struktur Organisasi Perusahaan'}
+        {
+          'url': rawImages,
+          'caption': 'Gambar 2.1 Struktur Organisasi Perusahaan',
+        },
       ];
     }
   }
@@ -112,7 +138,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       }
     } catch (_) {
       _taskList = [
-        {'task': rawDesc, 'details': ''}
+        {'task': rawDesc, 'details': ''},
       ];
     }
   }
@@ -135,7 +161,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       }
     } catch (_) {
       _stepList = [
-        {'step': rawProc, 'description': ''}
+        {'step': rawProc, 'description': ''},
       ];
     }
   }
@@ -158,9 +184,43 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       }
     } catch (_) {
       _obstacleList = [
-        {'obstacle': rawObstacles, 'solution': ''}
+        {'obstacle': rawObstacles, 'solution': ''},
       ];
     }
+  }
+
+  Future<String> _compressDataUrl(String dataUrl) {
+    final completer = Completer<String>();
+    final image = html.ImageElement()..src = dataUrl;
+
+    image.onLoad.listen((_) {
+      const maxDimension = 1024;
+      int width = image.naturalWidth;
+      int height = image.naturalHeight;
+
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = (height * maxDimension / width).round();
+          width = maxDimension;
+        } else {
+          width = (width * maxDimension / height).round();
+          height = maxDimension;
+        }
+      }
+
+      final canvas = html.CanvasElement(width: width, height: height);
+      final ctx = canvas.context2D;
+      ctx.drawImageScaled(image, 0, 0, width, height);
+
+      final compressedDataUrl = canvas.toDataUrl('image/jpeg', 0.85);
+      completer.complete(compressedDataUrl);
+    });
+
+    image.onError.listen((e) {
+      completer.complete(dataUrl); // Fallback to original
+    });
+
+    return completer.future;
   }
 
   void _pickImageFromGallery(int index) {
@@ -172,11 +232,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         final file = files[0];
         final reader = html.FileReader();
         reader.readAsDataUrl(file);
-        reader.onLoadEnd.listen((e) {
-          setState(() {
-            _companyImageList[index]['url'] = reader.result as String;
-          });
-          _onTextChanged();
+        reader.onLoadEnd.listen((e) async {
+          final originalUrl = reader.result as String;
+          final compressedUrl = await _compressDataUrl(originalUrl);
+          if (mounted) {
+            setState(() {
+              _companyImageList[index]['url'] = compressedUrl;
+            });
+            _onTextChanged();
+          }
         });
       }
     });
@@ -216,12 +280,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E293B)
             : Colors.white,
-        title: const Text('Hapus Gambar Profil?', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('Apakah Anda yakin ingin menghapus Gambar #${index + 1}? Tindakan ini tidak dapat dibatalkan.'),
+        title: const Text(
+          'Hapus Gambar Profil?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus Gambar #${index + 1}? Tindakan ini tidak dapat dibatalkan.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -231,8 +303,14 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               Navigator.pop(context);
               _onTextChanged();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E), foregroundColor: Colors.white),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF43F5E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -246,12 +324,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E293B)
             : Colors.white,
-        title: const Text('Hapus Poin Tugas?', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('Apakah Anda yakin ingin menghapus Tugas Unit #${index + 1}? Tindakan ini tidak dapat dibatalkan.'),
+        title: const Text(
+          'Hapus Poin Tugas?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus Tugas Unit #${index + 1}? Tindakan ini tidak dapat dibatalkan.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -261,8 +347,14 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               Navigator.pop(context);
               _onTextChanged();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E), foregroundColor: Colors.white),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF43F5E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -276,12 +368,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E293B)
             : Colors.white,
-        title: const Text('Hapus Langkah Alur?', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('Apakah Anda yakin ingin menghapus Tahapan Alur #${index + 1}? Tindakan ini tidak dapat dibatalkan.'),
+        title: const Text(
+          'Hapus Langkah Alur?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus Tahapan Alur #${index + 1}? Tindakan ini tidak dapat dibatalkan.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -291,8 +391,14 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               Navigator.pop(context);
               _onTextChanged();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E), foregroundColor: Colors.white),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF43F5E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -306,12 +412,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         backgroundColor: Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF1E293B)
             : Colors.white,
-        title: const Text('Hapus Poin Hambatan?', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('Apakah Anda yakin ingin menghapus Hambatan #${index + 1}? Tindakan ini tidak dapat dibatalkan.'),
+        title: const Text(
+          'Hapus Poin Hambatan?',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus Hambatan #${index + 1}? Tindakan ini tidak dapat dibatalkan.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -321,8 +435,14 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               Navigator.pop(context);
               _onTextChanged();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E), foregroundColor: Colors.white),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF43F5E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -334,9 +454,29 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     final researchAsync = ref.watch(researchStreamProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    ref.listen<AsyncValue<ResearchData>>(researchStreamProvider, (previous, next) {
-      if (next.hasValue && !ref.read(researchStreamProvider).isLoading) {
-        _populateFields(next.value!);
+    if (researchAsync.hasValue && !_isInitialized) {
+      _isInitialized = true;
+      final data = researchAsync.value!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _populateFields(data);
+          });
+        }
+      });
+    }
+
+    ref.listen<AsyncValue<ResearchData>>(researchStreamProvider, (
+      previous,
+      next,
+    ) {
+      if (next.hasValue && !next.isLoading) {
+        if (!_isInitialized) {
+          _isInitialized = true;
+          _populateFields(next.value!);
+        } else {
+          _populateFields(next.value!, previous?.value);
+        }
       }
     });
 
@@ -386,7 +526,11 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             children: [
               const Text(
                 'Profil Perusahaan & Bahan Riset',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
@@ -404,24 +548,46 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             foregroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
           ),
           icon: _isSaving
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
               : const Icon(Icons.cloud_upload_rounded, size: 20),
-          label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Riset', style: const TextStyle(fontWeight: FontWeight.bold)),
+          label: Text(
+            _isSaving ? 'Menyimpan...' : 'Simpan Riset',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );
   }
 
-
-
   Widget _buildTabBar(bool isDark) {
     final tabs = [
-      {'title': 'Profil Perusahaan', 'icon': Icons.business_rounded, 'subtitle': 'Bab 2 Laporan'},
-      {'title': 'Alur & Unit Kerja', 'icon': Icons.alt_route_rounded, 'subtitle': 'Deskripsi & Prosedur'},
-      {'title': 'Hambatan Magang', 'icon': Icons.warning_amber_rounded, 'subtitle': 'Bab Pembahasan'},
+      {
+        'title': 'Profil Perusahaan',
+        'icon': Icons.business_rounded,
+        'subtitle': 'Bab 2 Laporan',
+      },
+      {
+        'title': 'Alur & Unit Kerja',
+        'icon': Icons.alt_route_rounded,
+        'subtitle': 'Deskripsi & Prosedur',
+      },
+      {
+        'title': 'Hambatan Magang',
+        'icon': Icons.warning_amber_rounded,
+        'subtitle': 'Bab Pembahasan',
+      },
     ];
 
     final width = MediaQuery.of(context).size.width;
@@ -442,11 +608,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 width: isSmall ? 140 : null,
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 12,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? _accentColor.withOpacity(0.08)
-                      : (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.4),
+                      : (isDark ? const Color(0xFF1E293B) : Colors.white)
+                            .withOpacity(0.4),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected
@@ -463,8 +633,12 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     RunningText(
                       text: tabs[idx]['title'] as String,
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? (isDark ? Colors.white : Colors.black87) : const Color(0xFF64748B),
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? (isDark ? Colors.white : Colors.black87)
+                            : const Color(0xFF64748B),
                         fontSize: 13,
                       ),
                     ),
@@ -495,7 +669,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           children: [
             _buildGuidelineBox(
               title: 'Panduan Profil Perusahaan (Bab 2)',
-              desc: 'Tuliskan sejarah berdiri, visi, misi, dan cantumkan bagan struktur organisasi serta dokumentasi gambar profil unit magang Anda.',
+              desc:
+                  'Tuliskan sejarah berdiri, visi, misi, dan cantumkan bagan struktur organisasi serta dokumentasi gambar profil unit magang Anda.',
               icon: Icons.info_outline_rounded,
             ),
             const SizedBox(height: 16),
@@ -519,7 +694,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               scrollController: _visionScrollController,
               icon: Icons.track_changes_rounded,
               accentColor: const Color(0xFF38BDF8),
-              hintText: 'Contoh:\nVisi: Menjadi perusahaan terdepan di ...\n\nMisi:\n1. Menghadirkan layanan berkualitas ...\n2. Mendorong inovasi ...',
+              hintText:
+                  'Contoh:\nVisi: Menjadi perusahaan terdepan di ...\n\nMisi:\n1. Menghadirkan layanan berkualitas ...\n2. Mendorong inovasi ...',
               tips: [
                 'Tuliskan visi perusahaan (tujuan jangka panjang)',
                 'Tuliskan misi poin per poin (beri nomor 1, 2, 3...)',
@@ -529,7 +705,11 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             const SizedBox(height: 20),
             const Text(
               'Dokumentasi Gambar Profil & Struktur Organisasi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFD97706)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Color(0xFFD97706),
+              ),
             ),
             const SizedBox(height: 10),
             _buildCompanyImageList(isDark),
@@ -542,20 +722,29 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           children: [
             _buildGuidelineBox(
               title: 'Panduan Deskripsi Unit & Alur Proses Laporan',
-              desc: 'Gambarkan tugas utama di unit tempat Anda magang dalam bentuk daftar tugas, serta susun langkah-langkah alur kerja sistem/alat secara kronologis.',
+              desc:
+                  'Gambarkan tugas utama di unit tempat Anda magang dalam bentuk daftar tugas, serta susun langkah-langkah alur kerja sistem/alat secara kronologis.',
               icon: Icons.info_outline_rounded,
             ),
             const SizedBox(height: 20),
             const Text(
               '1. Daftar Tugas & Tanggung Jawab Unit Kerja',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFD97706)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Color(0xFFD97706),
+              ),
             ),
             const SizedBox(height: 10),
             _buildTaskList(isDark),
             const SizedBox(height: 24),
             const Text(
               '2. Alur Proses / Tahapan Kerja Sistem / Prosedur Alat',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFD97706)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Color(0xFFD97706),
+              ),
             ),
             const SizedBox(height: 10),
             _buildStepList(isDark),
@@ -569,7 +758,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           children: [
             _buildGuidelineBox(
               title: 'Panduan Hambatan Magang (Bab Pembahasan)',
-              desc: 'Petakan kendala teknis lapangan yang Anda temui beserta solusi nyata yang telah Anda lakukan selama magang untuk kelengkapan Bab Pembahasan Anda.',
+              desc:
+                  'Petakan kendala teknis lapangan yang Anda temui beserta solusi nyata yang telah Anda lakukan selama magang untuk kelengkapan Bab Pembahasan Anda.',
               icon: Icons.info_outline_rounded,
             ),
             const SizedBox(height: 16),
@@ -583,13 +773,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       isDark,
       title: _activeTab == 0
           ? 'Bagian A: Profil Perusahaan'
-          : (_activeTab == 1 ? 'Bagian B: Alur & Prosedur Kerja' : 'Bagian C: Hambatan & Solusi Lapangan'),
+          : (_activeTab == 1
+                ? 'Bagian B: Alur & Prosedur Kerja'
+                : 'Bagian C: Hambatan & Solusi Lapangan'),
       icon: _activeTab == 0
           ? Icons.business_rounded
-          : (_activeTab == 1 ? Icons.alt_route_rounded : Icons.warning_amber_rounded),
-      children: [
-        activeContent,
-      ],
+          : (_activeTab == 1
+                ? Icons.alt_route_rounded
+                : Icons.warning_amber_rounded),
+      children: [activeContent],
     );
   }
 
@@ -605,7 +797,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         ),
         child: Column(
           children: [
-            const Text('Belum ada gambar profil yang ditambahkan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const Text(
+              'Belum ada gambar profil yang ditambahkan',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _addNewImage,
@@ -613,10 +808,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 14),
-              label: const Text('Tambah Gambar Profil', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              label: const Text(
+                'Tambah Gambar Profil',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+              ),
             ),
           ],
         ),
@@ -635,7 +835,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(color: _accentColor.withOpacity(0.15)),
             ),
-            color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
+            color: (isDark ? const Color(0xFF1E293B) : Colors.white)
+                .withOpacity(0.5),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -646,12 +847,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     children: [
                       Text(
                         'Gambar #${idx + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD97706)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Color(0xFFD97706),
+                        ),
                       ),
                       IconButton(
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFF43F5E), size: 18),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Color(0xFFF43F5E),
+                          size: 18,
+                        ),
                         onPressed: () => _confirmDeleteImage(idx),
                         tooltip: 'Hapus Gambar',
                       ),
@@ -660,7 +869,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     initialValue: item['caption'],
-                    decoration: _inputDecorationSmall('Label Keterangan Gambar (Caption)'),
+                    decoration: _inputDecorationSmall(
+                      'Label Keterangan Gambar (Caption)',
+                    ),
                     onChanged: (val) {
                       _companyImageList[idx]['caption'] = val;
                       _onTextChanged();
@@ -672,7 +883,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                       Expanded(
                         child: TextFormField(
                           initialValue: item['url'],
-                          decoration: _inputDecorationSmall('URL Gambar / Data Base64'),
+                          decoration: _inputDecorationSmall(
+                            'URL Gambar / Data Base64',
+                          ),
                           onChanged: (val) {
                             _companyImageList[idx]['url'] = val;
                             _onTextChanged();
@@ -686,11 +899,22 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                           backgroundColor: _accentColor.withOpacity(0.12),
                           foregroundColor: const Color(0xFFD97706),
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         icon: const Icon(Icons.photo_library_rounded, size: 14),
-                        label: const Text('Galeri', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                        label: const Text(
+                          'Galeri',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -707,8 +931,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: _addNewImage,
-            icon: const Icon(Icons.add_rounded, size: 16, color: Color(0xFFD97706)),
-            label: const Text('Tambah Gambar Baru', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD97706), fontSize: 12)),
+            icon: const Icon(
+              Icons.add_rounded,
+              size: 16,
+              color: Color(0xFFD97706),
+            ),
+            label: const Text(
+              'Tambah Gambar Baru',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFD97706),
+                fontSize: 12,
+              ),
+            ),
           ),
         ),
       ],
@@ -727,7 +962,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         ),
         child: Column(
           children: [
-            const Text('Belum ada tugas unit yang ditambahkan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const Text(
+              'Belum ada tugas unit yang ditambahkan',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _addNewTask,
@@ -735,10 +973,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 14),
-              label: const Text('Tambah Tugas Unit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              label: const Text(
+                'Tambah Tugas Unit',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+              ),
             ),
           ],
         ),
@@ -757,7 +1000,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: _accentColor.withOpacity(0.15)),
             ),
-            color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
+            color: (isDark ? const Color(0xFF1E293B) : Colors.white)
+                .withOpacity(0.5),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -768,12 +1012,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     children: [
                       Text(
                         'Tugas #${idx + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD97706)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Color(0xFFD97706),
+                        ),
                       ),
                       IconButton(
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFF43F5E), size: 18),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Color(0xFFF43F5E),
+                          size: 18,
+                        ),
                         onPressed: () => _confirmDeleteTask(idx),
                         tooltip: 'Hapus Tugas',
                       ),
@@ -782,7 +1034,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     initialValue: item['task'],
-                    decoration: _inputDecorationSmall('Nama Tugas / Tanggung Jawab Unit'),
+                    decoration: _inputDecorationSmall(
+                      'Nama Tugas / Tanggung Jawab Unit',
+                    ),
                     onChanged: (val) {
                       _taskList[idx]['task'] = val;
                       _onTextChanged();
@@ -792,7 +1046,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   TextFormField(
                     initialValue: item['details'],
                     maxLines: 2,
-                    decoration: _inputDecorationSmall('Rincian Detail Tugas / Frekuensi Pelaksanaan'),
+                    decoration: _inputDecorationSmall(
+                      'Rincian Detail Tugas / Frekuensi Pelaksanaan',
+                    ),
                     onChanged: (val) {
                       _taskList[idx]['details'] = val;
                       _onTextChanged();
@@ -807,8 +1063,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: _addNewTask,
-            icon: const Icon(Icons.add_rounded, size: 16, color: Color(0xFFD97706)),
-            label: const Text('Tambah Tugas Baru', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD97706), fontSize: 12)),
+            icon: const Icon(
+              Icons.add_rounded,
+              size: 16,
+              color: Color(0xFFD97706),
+            ),
+            label: const Text(
+              'Tambah Tugas Baru',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFD97706),
+                fontSize: 12,
+              ),
+            ),
           ),
         ),
       ],
@@ -827,7 +1094,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         ),
         child: Column(
           children: [
-            const Text('Belum ada tahapan alur kerja yang ditambahkan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const Text(
+              'Belum ada tahapan alur kerja yang ditambahkan',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _addNewStep,
@@ -835,10 +1105,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 14),
-              label: const Text('Tambah Tahapan Alur', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              label: const Text(
+                'Tambah Tahapan Alur',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+              ),
             ),
           ],
         ),
@@ -857,7 +1132,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: _accentColor.withOpacity(0.15)),
             ),
-            color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
+            color: (isDark ? const Color(0xFF1E293B) : Colors.white)
+                .withOpacity(0.5),
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
@@ -868,12 +1144,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     children: [
                       Text(
                         'Tahapan #${idx + 1} (Kronologis)',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD97706)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Color(0xFFD97706),
+                        ),
                       ),
                       IconButton(
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFF43F5E), size: 18),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Color(0xFFF43F5E),
+                          size: 18,
+                        ),
                         onPressed: () => _confirmDeleteStep(idx),
                         tooltip: 'Hapus Tahapan',
                       ),
@@ -882,7 +1166,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   const SizedBox(height: 8),
                   TextFormField(
                     initialValue: item['step'],
-                    decoration: _inputDecorationSmall('Nama Langkah / Nama Proses'),
+                    decoration: _inputDecorationSmall(
+                      'Nama Langkah / Nama Proses',
+                    ),
                     onChanged: (val) {
                       _stepList[idx]['step'] = val;
                       _onTextChanged();
@@ -892,7 +1178,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   TextFormField(
                     initialValue: item['description'],
                     maxLines: 2,
-                    decoration: _inputDecorationSmall('Deskripsi Tindakan / Keterangan Proses Detail'),
+                    decoration: _inputDecorationSmall(
+                      'Deskripsi Tindakan / Keterangan Proses Detail',
+                    ),
                     onChanged: (val) {
                       _stepList[idx]['description'] = val;
                       _onTextChanged();
@@ -907,8 +1195,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: _addNewStep,
-            icon: const Icon(Icons.add_rounded, size: 16, color: Color(0xFFD97706)),
-            label: const Text('Tambah Tahapan Baru', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD97706), fontSize: 12)),
+            icon: const Icon(
+              Icons.add_rounded,
+              size: 16,
+              color: Color(0xFFD97706),
+            ),
+            label: const Text(
+              'Tambah Tahapan Baru',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFD97706),
+                fontSize: 12,
+              ),
+            ),
           ),
         ),
       ],
@@ -927,7 +1226,11 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         ),
         child: Column(
           children: [
-            Icon(Icons.warning_amber_rounded, color: _accentColor.withOpacity(0.6), size: 40),
+            Icon(
+              Icons.warning_amber_rounded,
+              color: _accentColor.withOpacity(0.6),
+              size: 40,
+            ),
             const SizedBox(height: 12),
             const Text(
               'Belum ada hambatan yang ditambahkan',
@@ -946,10 +1249,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 backgroundColor: _accentColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 16),
-              label: const Text('Tambah Hambatan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              label: const Text(
+                'Tambah Hambatan',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
             ),
           ],
         ),
@@ -968,7 +1276,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(color: _accentColor.withOpacity(0.2)),
             ),
-            color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.6),
+            color: (isDark ? const Color(0xFF1E293B) : Colors.white)
+                .withOpacity(0.6),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -979,12 +1288,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     children: [
                       Text(
                         'Poin Hambatan #${idx + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD97706)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Color(0xFFD97706),
+                        ),
                       ),
                       IconButton(
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFF43F5E), size: 20),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: Color(0xFFF43F5E),
+                          size: 20,
+                        ),
                         onPressed: () => _confirmDeleteObstacle(idx),
                         tooltip: 'Hapus Hambatan',
                       ),
@@ -996,11 +1313,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     maxLines: 3,
                     decoration: InputDecoration(
                       labelText: 'Hambatan / Perbedaan Teori & Lapangan',
-                      labelStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                      labelStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                      ),
                       filled: true,
                       fillColor: const Color(0xFF64748B).withOpacity(0.04),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide(color: _accentColor, width: 1.5)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(color: _accentColor, width: 1.5),
+                      ),
                       contentPadding: const EdgeInsets.all(12.0),
                     ),
                     onChanged: (val) {
@@ -1014,11 +1340,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     maxLines: 2,
                     decoration: InputDecoration(
                       labelText: 'Solusi / Pemecahan Masalah (Tindakan)',
-                      labelStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                      labelStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                      ),
                       filled: true,
                       fillColor: const Color(0xFF64748B).withOpacity(0.04),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide(color: _accentColor, width: 1.5)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: BorderSide(color: _accentColor, width: 1.5),
+                      ),
                       contentPadding: const EdgeInsets.all(12.0),
                     ),
                     onChanged: (val) {
@@ -1041,20 +1376,32 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               foregroundColor: const Color(0xFFD97706),
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             icon: const Icon(Icons.add_rounded, size: 16),
-            label: const Text('Tambah Hambatan Baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            label: const Text(
+              'Tambah Hambatan Baru',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionCard(bool isDark, {required String title, required IconData icon, required List<Widget> children}) {
+  Widget _buildSectionCard(
+    bool isDark, {
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(
+          0.85,
+        ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
@@ -1069,7 +1416,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               Expanded(
                 child: RunningText(
                   text: title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],
@@ -1108,7 +1458,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: accentColor.withOpacity(0.07),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
             ),
             child: Row(
               children: [
@@ -1131,7 +1483,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   children: [
                     Text(
                       '$charCount kar · $lineCount baris',
-                      style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF64748B),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1149,7 +1504,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                         ),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: accentColor.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(8),
@@ -1157,11 +1515,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.open_in_full_rounded, size: 13, color: accentColor),
+                              Icon(
+                                Icons.open_in_full_rounded,
+                                size: 13,
+                                color: accentColor,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Layar Penuh',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: accentColor),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: accentColor,
+                                ),
                               ),
                             ],
                           ),
@@ -1198,9 +1564,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                         scrollController: scrollController,
                         maxLines: null,
                         minLines: 5,
-                        readOnly: true,           // ← tidak bisa diketik langsung
-                        showCursor: false,        // ← tidak tampilkan kursor
-                        enableInteractiveSelection: false, // ← tidak bisa select/copy
+                        readOnly: true, // ← tidak bisa diketik langsung
+                        showCursor: false, // ← tidak tampilkan kursor
+                        enableInteractiveSelection:
+                            false, // ← tidak bisa select/copy
                         style: const TextStyle(fontSize: 13.5, height: 1.6),
                         decoration: InputDecoration(
                           hintText: hintText,
@@ -1220,7 +1587,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -1239,11 +1609,18 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.edit_note_rounded, color: accentColor.withOpacity(0.35), size: 32),
+                                Icon(
+                                  Icons.edit_note_rounded,
+                                  color: accentColor.withOpacity(0.35),
+                                  size: 32,
+                                ),
                                 const SizedBox(height: 6),
                                 Text(
                                   'Ketuk "Layar Penuh" di atas untuk mulai mengetik',
-                                  style: TextStyle(fontSize: 11, color: accentColor.withOpacity(0.45)),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: accentColor.withOpacity(0.45),
+                                  ),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -1262,12 +1639,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
             child: Row(
               children: [
-                Icon(Icons.lock_outline_rounded, size: 11, color: accentColor.withOpacity(0.5)),
+                Icon(
+                  Icons.lock_outline_rounded,
+                  size: 11,
+                  color: accentColor.withOpacity(0.5),
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     'Mode tampilan — gunakan tombol "Layar Penuh" untuk mengedit',
-                    style: TextStyle(fontSize: 10, color: accentColor.withOpacity(0.5)),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: accentColor.withOpacity(0.5),
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1284,30 +1668,50 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.lightbulb_outline_rounded, size: 12, color: accentColor),
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      size: 12,
+                      color: accentColor,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'Tips Penulisan:',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: accentColor),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: accentColor,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                ...tips.map((tip) => Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('• ', style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B))),
-                      Expanded(
-                        child: Text(
-                          tip,
-                          style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B), height: 1.35),
+                ...tips.map(
+                  (tip) => Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '• ',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFF64748B),
+                          ),
                         ),
-                      ),
-                    ],
+                        Expanded(
+                          child: Text(
+                            tip,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              color: Color(0xFF64748B),
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ),
@@ -1341,11 +1745,18 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   color: accentColor.withOpacity(0.08),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  border: Border(bottom: BorderSide(color: accentColor.withOpacity(0.15))),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(color: accentColor.withOpacity(0.15)),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -1364,11 +1775,17 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                         children: [
                           Text(
                             label,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                           Text(
                             'Editor Layar Penuh — ketik dengan nyaman tanpa batas',
-                            style: TextStyle(fontSize: 11, color: accentColor.withOpacity(0.7)),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: accentColor.withOpacity(0.7),
+                            ),
                           ),
                         ],
                       ),
@@ -1378,11 +1795,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                       builder: (ctx2, setS) {
                         tempController.addListener(() => setS(() {}));
                         final c = tempController.text.length;
-                        final l = '\n'.allMatches(tempController.text).length + 1;
+                        final l =
+                            '\n'.allMatches(tempController.text).length + 1;
                         return Text(
                           '$c kar\n$l baris',
                           textAlign: TextAlign.right,
-                          style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF64748B),
+                          ),
                         );
                       },
                     ),
@@ -1403,7 +1824,11 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     style: const TextStyle(fontSize: 14, height: 1.7),
                     decoration: InputDecoration(
                       hintText: hintText,
-                      hintStyle: const TextStyle(color: Color(0xFF334155), fontSize: 13, height: 1.7),
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF334155),
+                        fontSize: 13,
+                        height: 1.7,
+                      ),
                       filled: true,
                       fillColor: const Color(0xFF1E293B),
                       border: OutlineInputBorder(
@@ -1412,7 +1837,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(color: accentColor.withOpacity(0.5), width: 1.5),
+                        borderSide: BorderSide(
+                          color: accentColor.withOpacity(0.5),
+                          width: 1.5,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.all(18),
                     ),
@@ -1433,10 +1861,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                           foregroundColor: const Color(0xFF64748B),
                           side: const BorderSide(color: Color(0xFF334155)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         icon: const Icon(Icons.close_rounded, size: 18),
-                        label: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: const Text(
+                          'Batal',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1454,10 +1887,15 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         icon: const Icon(Icons.check_rounded, size: 18),
-                        label: const Text('Terapkan Perubahan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: const Text(
+                          'Terapkan Perubahan',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -1476,13 +1914,23 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       labelStyle: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
       filled: true,
       fillColor: const Color(0xFF64748B).withOpacity(0.04),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0), borderSide: BorderSide(color: _accentColor, width: 1.2)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide(color: _accentColor, width: 1.2),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     );
   }
 
-  Widget _buildGuidelineBox({required String title, required String desc, required IconData icon}) {
+  Widget _buildGuidelineBox({
+    required String title,
+    required String desc,
+    required IconData icon,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -1496,12 +1944,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD97706)),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Color(0xFFD97706),
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   desc,
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), height: 1.3),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF64748B),
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
@@ -1514,7 +1970,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
   Widget _buildImagePreview(String url, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.5),
+        color: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(
+          0.5,
+        ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _accentColor.withOpacity(0.15)),
       ),
@@ -1526,7 +1984,11 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             padding: EdgeInsets.only(left: 8.0, bottom: 6.0),
             child: Text(
               'Pratinjau Struktur/Gambar:',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF64748B),
+              ),
             ),
           ),
           ClipRRect(
@@ -1543,9 +2005,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.broken_image_rounded, color: Color(0xFFF43F5E), size: 28),
+                      Icon(
+                        Icons.broken_image_rounded,
+                        color: Color(0xFFF43F5E),
+                        size: 28,
+                      ),
                       SizedBox(height: 6),
-                      Text('URL Gambar tidak valid atau tidak dapat dimuat', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                      Text(
+                        'URL Gambar tidak valid atau tidak dapat dimuat',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1578,13 +2050,17 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         obstacles: jsonEncode(_obstacleList),
       );
 
-      await ref.read(researchControllerProvider.notifier).updateResearch(research);
+      await ref
+          .read(researchControllerProvider.notifier)
+          .updateResearch(research);
       setState(() => _isSaving = false);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Bahan riset berhasil disimpan di penyimpanan lokal browser!'),
+            content: Text(
+              'Bahan riset berhasil disimpan di penyimpanan lokal browser!',
+            ),
             backgroundColor: Color(0xFF0D9488),
           ),
         );
@@ -1592,4 +2068,3 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     }
   }
 }
-

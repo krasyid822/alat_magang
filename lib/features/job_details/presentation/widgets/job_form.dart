@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:html' as html;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,7 +23,7 @@ class _JobFormState extends ConsumerState<JobForm> {
   final _descController = TextEditingController();
   final _imageController = TextEditingController();
   final _reasonController = TextEditingController();
-  
+
   bool _isCompleted = true;
   DateTime _selectedDate = DateTime.now();
   bool _showUrlField = false;
@@ -36,11 +37,48 @@ class _JobFormState extends ConsumerState<JobForm> {
       final job = widget.existingJob!;
       _titleController.text = job.title;
       _descController.text = job.description;
-      _imageUrls = job.imageUrl.split('|||').where((s) => s.isNotEmpty).toList();
+      _imageUrls = job.imageUrl
+          .split('|||')
+          .where((s) => s.isNotEmpty)
+          .toList();
       _isCompleted = job.isCompleted;
       _reasonController.text = job.reasonOfIncompletion;
       _selectedDate = DateTime.tryParse(job.date) ?? DateTime.now();
     }
+  }
+
+  Future<String> _compressDataUrl(String dataUrl) {
+    final completer = Completer<String>();
+    final image = html.ImageElement()..src = dataUrl;
+
+    image.onLoad.listen((_) {
+      const maxDimension = 1024;
+      int width = image.naturalWidth;
+      int height = image.naturalHeight;
+
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = (height * maxDimension / width).round();
+          width = maxDimension;
+        } else {
+          width = (width * maxDimension / height).round();
+          height = maxDimension;
+        }
+      }
+
+      final canvas = html.CanvasElement(width: width, height: height);
+      final ctx = canvas.context2D;
+      ctx.drawImageScaled(image, 0, 0, width, height);
+
+      final compressedDataUrl = canvas.toDataUrl('image/jpeg', 0.85);
+      completer.complete(compressedDataUrl);
+    });
+
+    image.onError.listen((e) {
+      completer.complete(dataUrl); // Fallback to original
+    });
+
+    return completer.future;
   }
 
   void _pickFromGallery() {
@@ -52,11 +90,15 @@ class _JobFormState extends ConsumerState<JobForm> {
         final file = files[0];
         final reader = html.FileReader();
         reader.readAsDataUrl(file);
-        reader.onLoadEnd.listen((e) {
-          setState(() {
-            _imageUrls.add(reader.result as String);
-            _imageError = null;
-          });
+        reader.onLoadEnd.listen((e) async {
+          final originalUrl = reader.result as String;
+          final compressedUrl = await _compressDataUrl(originalUrl);
+          if (mounted) {
+            setState(() {
+              _imageUrls.add(compressedUrl);
+              _imageError = null;
+            });
+          }
         });
       }
     });
@@ -98,7 +140,8 @@ class _JobFormState extends ConsumerState<JobForm> {
       ..style.backgroundColor = '#1E293B'
       ..style.borderRadius = '24px'
       ..style.padding = '24px'
-      ..style.border = '1.5px solid rgba(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue}, 0.3)'
+      ..style.border =
+          '1.5px solid rgba(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue}, 0.3)'
       ..style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
       ..style.display = 'flex'
       ..style.flexDirection = 'column'
@@ -106,7 +149,8 @@ class _JobFormState extends ConsumerState<JobForm> {
 
     final header = html.HeadingElement.h3()
       ..text = 'Kamera Dokumentasi Magang'
-      ..style.color = 'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
+      ..style.color =
+          'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
       ..style.margin = '0'
       ..style.fontSize = '20px'
       ..style.fontWeight = 'bold'
@@ -169,7 +213,8 @@ class _JobFormState extends ConsumerState<JobForm> {
       ..style.padding = '10px 20px'
       ..style.borderRadius = '10px'
       ..style.border = 'none'
-      ..style.backgroundColor = 'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
+      ..style.backgroundColor =
+          'rgb(${context.toolColors.job.red}, ${context.toolColors.job.green}, ${context.toolColors.job.blue})'
       ..style.color = '#FFFFFF'
       ..style.fontSize = '12px'
       ..style.fontWeight = 'bold'
@@ -237,8 +282,8 @@ class _JobFormState extends ConsumerState<JobForm> {
           'video': {
             'facingMode': facingMode,
             'width': {'ideal': 1280},
-            'height': {'ideal': 720}
-          }
+            'height': {'ideal': 720},
+          },
         });
         if (isClosed) {
           final tracks = (stream as dynamic).getTracks() as List;
@@ -287,18 +332,21 @@ class _JobFormState extends ConsumerState<JobForm> {
 
     captureBtn.addEventListener('click', (_) {
       try {
-        final canvas = html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
+        final canvas = html.CanvasElement(
+          width: video.videoWidth,
+          height: video.videoHeight,
+        );
         final ctx = canvas.context2D;
-        
+
         if (isMirrored) {
           ctx.translate(canvas.width ?? 0, 0);
           ctx.scale(-1, 1);
         }
-        
+
         ctx.drawImage(video, 0, 0);
-        
+
         final dataUrl = canvas.toDataUrl('image/jpeg', 0.85);
-        
+
         setState(() {
           _imageUrls.add(dataUrl);
           _imageError = null;
@@ -330,23 +378,36 @@ class _JobFormState extends ConsumerState<JobForm> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
       child: AlertDialog(
-        backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white).withOpacity(0.85),
+        backgroundColor: (isDark ? const Color(0xFF1E293B) : Colors.white)
+            .withOpacity(0.85),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.0),
-          side: BorderSide(color: context.toolColors.job.withOpacity(0.3), width: 1.5),
+          side: BorderSide(
+            color: context.toolColors.job.withOpacity(0.3),
+            width: 1.5,
+          ),
         ),
         title: Row(
           children: [
-            Icon(Icons.add_photo_alternate_rounded, color: context.toolColors.job, size: 24),
+            Icon(
+              Icons.add_photo_alternate_rounded,
+              color: context.toolColors.job,
+              size: 24,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                widget.existingJob == null ? 'Tambah Detail Pekerjaan' : 'Sunting Detail Pekerjaan',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                widget.existingJob == null
+                    ? 'Tambah Detail Pekerjaan'
+                    : 'Sunting Detail Pekerjaan',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
             ),
           ],
@@ -363,15 +424,26 @@ class _JobFormState extends ConsumerState<JobForm> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _titleController,
-                    decoration: _inputDecoration(context, 'Nama Tugas / Pekerjaan Utama (Non-Harian)', Icons.task_alt_rounded),
-                    validator: (v) => v!.trim().isEmpty ? 'Nama tugas wajib diisi' : null,
+                    decoration: _inputDecoration(
+                      context,
+                      'Nama Tugas / Pekerjaan Utama (Non-Harian)',
+                      Icons.task_alt_rounded,
+                    ),
+                    validator: (v) =>
+                        v!.trim().isEmpty ? 'Nama tugas wajib diisi' : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _descController,
                     maxLines: 3,
-                    decoration: _inputDecoration(context, 'Uraian Pekerjaan / Langkah Kerja', Icons.description_rounded),
-                    validator: (v) => v!.trim().isEmpty ? 'Uraian pekerjaan wajib diisi' : null,
+                    decoration: _inputDecoration(
+                      context,
+                      'Uraian Pekerjaan / Langkah Kerja',
+                      Icons.description_rounded,
+                    ),
+                    validator: (v) => v!.trim().isEmpty
+                        ? 'Uraian pekerjaan wajib diisi'
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   // --- AREA FOTO DOKUMENTASI ---
@@ -380,11 +452,15 @@ class _JobFormState extends ConsumerState<JobForm> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Foto Dokumentasi Kegiatan (Bisa Lebih dari 1)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.toolColors.job.withOpacity(0.9)),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: context.toolColors.job.withOpacity(0.9),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Preview jika ada foto
                   if (_imageUrls.isNotEmpty) ...[
                     SizedBox(
@@ -401,7 +477,9 @@ class _JobFormState extends ConsumerState<JobForm> {
                             height: 100,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: context.toolColors.job.withOpacity(0.3)),
+                              border: Border.all(
+                                color: context.toolColors.job.withOpacity(0.3),
+                              ),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
@@ -409,15 +487,27 @@ class _JobFormState extends ConsumerState<JobForm> {
                                 children: [
                                   Positioned.fill(
                                     child: GestureDetector(
-                                      onTap: () => showZoomableImagePreview(context, imgUrl),
+                                      onTap: () => showZoomableImagePreview(
+                                        context,
+                                        imgUrl,
+                                      ),
                                       child: imgUrl.startsWith('data:image')
-                                          ? Image.network(imgUrl, fit: BoxFit.cover)
+                                          ? Image.network(
+                                              imgUrl,
+                                              fit: BoxFit.cover,
+                                            )
                                           : Image.network(
                                               imgUrl,
                                               fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => const Center(
-                                                child: Icon(Icons.broken_image_rounded, size: 24, color: Color(0xFF64748B)),
-                                              ),
+                                              errorBuilder: (_, __, ___) =>
+                                                  const Center(
+                                                    child: Icon(
+                                                      Icons
+                                                          .broken_image_rounded,
+                                                      size: 24,
+                                                      color: Color(0xFF64748B),
+                                                    ),
+                                                  ),
                                             ),
                                     ),
                                   ),
@@ -430,7 +520,10 @@ class _JobFormState extends ConsumerState<JobForm> {
                                       child: IconButton(
                                         iconSize: 12,
                                         padding: EdgeInsets.zero,
-                                        icon: const Icon(Icons.close_rounded, color: Color(0xFFF43F5E)),
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          color: Color(0xFFF43F5E),
+                                        ),
                                         onPressed: () => setState(() {
                                           _imageUrls.removeAt(index);
                                         }),
@@ -454,14 +547,25 @@ class _JobFormState extends ConsumerState<JobForm> {
                         child: OutlinedButton.icon(
                           onPressed: _captureFromCamera,
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: context.toolColors.job, width: 1.2),
+                            side: BorderSide(
+                              color: context.toolColors.job,
+                              width: 1.2,
+                            ),
                             foregroundColor: context.toolColors.job,
                             minimumSize: const Size(0, 44),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                           ),
                           icon: const Icon(Icons.camera_alt_rounded, size: 16),
-                          label: const Text('Kamera', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          label: const Text(
+                            'Kamera',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -469,34 +573,60 @@ class _JobFormState extends ConsumerState<JobForm> {
                         child: OutlinedButton.icon(
                           onPressed: _pickFromGallery,
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: context.toolColors.job, width: 1.2),
+                            side: BorderSide(
+                              color: context.toolColors.job,
+                              width: 1.2,
+                            ),
                             foregroundColor: context.toolColors.job,
                             minimumSize: const Size(0, 44),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                           ),
-                          icon: const Icon(Icons.photo_library_rounded, size: 16),
-                          label: const Text('Galeri', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          icon: const Icon(
+                            Icons.photo_library_rounded,
+                            size: 16,
+                          ),
+                          label: const Text(
+                            'Galeri',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => setState(() => _showUrlField = !_showUrlField),
+                          onPressed: () =>
+                              setState(() => _showUrlField = !_showUrlField),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: context.toolColors.job, width: 1.2),
+                            side: BorderSide(
+                              color: context.toolColors.job,
+                              width: 1.2,
+                            ),
                             foregroundColor: context.toolColors.job,
                             minimumSize: const Size(0, 44),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                           ),
                           icon: const Icon(Icons.link_rounded, size: 16),
-                          label: const Text('Tautan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          label: const Text(
+                            'Tautan',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   // Jika tombol Tautan URL ditekan, tampilkan text inputnya
                   if (_showUrlField) ...[
                     const SizedBox(height: 12),
@@ -505,12 +635,20 @@ class _JobFormState extends ConsumerState<JobForm> {
                         Expanded(
                           child: TextFormField(
                             controller: _imageController,
-                            decoration: _inputDecoration(context, 'Tempel / Input URL Foto Baru', Icons.link_rounded),
+                            decoration: _inputDecoration(
+                              context,
+                              'Tempel / Input URL Foto Baru',
+                              Icons.link_rounded,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: Icon(Icons.add_circle_rounded, color: context.toolColors.job, size: 28),
+                          icon: Icon(
+                            Icons.add_circle_rounded,
+                            color: context.toolColors.job,
+                            size: 28,
+                          ),
                           onPressed: () {
                             final val = _imageController.text.trim();
                             if (val.isNotEmpty) {
@@ -532,7 +670,11 @@ class _JobFormState extends ConsumerState<JobForm> {
                       alignment: Alignment.centerLeft,
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: Color(0xFFF43F5E), size: 16),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Color(0xFFF43F5E),
+                            size: 16,
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -555,8 +697,14 @@ class _JobFormState extends ConsumerState<JobForm> {
                     TextFormField(
                       controller: _reasonController,
                       maxLines: 2,
-                      decoration: _inputDecoration(context, 'Alasan Tugas Tidak Selesai', Icons.warning_amber_rounded),
-                      validator: (v) => !_isCompleted && v!.trim().isEmpty ? 'Wajib menuliskan alasan jika belum selesai' : null,
+                      decoration: _inputDecoration(
+                        context,
+                        'Alasan Tugas Tidak Selesai',
+                        Icons.warning_amber_rounded,
+                      ),
+                      validator: (v) => !_isCompleted && v!.trim().isEmpty
+                          ? 'Wajib menuliskan alasan jika belum selesai'
+                          : null,
                     ),
                   ],
                 ],
@@ -567,7 +715,10 @@ class _JobFormState extends ConsumerState<JobForm> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
           ElevatedButton(
             onPressed: _save,
@@ -576,9 +727,14 @@ class _JobFormState extends ConsumerState<JobForm> {
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
             ),
-            child: const Text('Simpan Detail', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Simpan Detail',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -597,15 +753,24 @@ class _JobFormState extends ConsumerState<JobForm> {
         if (date != null) setState(() => _selectedDate = date);
       },
       child: InputDecorator(
-        decoration: _inputDecoration(context, 'Tanggal Eksekusi', Icons.calendar_today_rounded),
-        child: Text('${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
+        decoration: _inputDecoration(
+          context,
+          'Tanggal Eksekusi',
+          Icons.calendar_today_rounded,
+        ),
+        child: Text(
+          '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+        ),
       ),
     );
   }
 
   Widget _buildCompletionStatusSwitch(BuildContext context) {
     return SwitchListTile(
-      title: const Text('Status Tugas: Selesai?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      title: const Text(
+        'Status Tugas: Selesai?',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
       value: _isCompleted,
       activeColor: context.toolColors.job,
       onChanged: (val) => setState(() => _isCompleted = val),
@@ -615,24 +780,33 @@ class _JobFormState extends ConsumerState<JobForm> {
     );
   }
 
-  InputDecoration _inputDecoration(BuildContext context, String label, IconData icon) {
+  InputDecoration _inputDecoration(
+    BuildContext context,
+    String label,
+    IconData icon,
+  ) {
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, size: 20, color: context.toolColors.job),
       filled: true,
       fillColor: const Color(0xFF64748B).withOpacity(0.06),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0), borderSide: BorderSide(color: context.toolColors.job, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: BorderSide(color: context.toolColors.job, width: 1.5),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 
-
-
   void _save() {
     if (_imageUrls.isEmpty) {
       setState(() {
-        _imageError = 'Foto dokumentasi wajib diambil minimal 1 foto dari Kamera, Galeri, atau URL!';
+        _imageError =
+            'Foto dokumentasi wajib diambil minimal 1 foto dari Kamera, Galeri, atau URL!';
       });
       return;
     }
@@ -641,7 +815,9 @@ class _JobFormState extends ConsumerState<JobForm> {
       final formattedDate = _selectedDate.toIso8601String().split('T')[0];
 
       final job = JobDetail(
-        id: widget.existingJob?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        id:
+            widget.existingJob?.id ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text,
         description: _descController.text,
         imageUrl: _imageUrls.join('|||'),
