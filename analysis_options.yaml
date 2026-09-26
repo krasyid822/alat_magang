@@ -15,7 +15,8 @@ analyzer:
     - "**/*.freezed.dart"
     - "build/**"
     - ".dart_tool/**"
-    - "lib/features/shared/presentation/web_cache_helper_web.dart"
+    - android/**
+    - web/**
   errors:
     # Elevate critical issues to errors for strict code quality
     missing_required_param: error

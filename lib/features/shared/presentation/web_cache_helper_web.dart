@@ -1,74 +1,53 @@
-import 'dart:html' as html;
+import 'dart:js_interop';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
-import 'package:js/js_util.dart';
 
-String _getCacheUrl(String url) {
+import 'package:flutter/foundation.dart';
+import 'package:web/web.dart' as web;
+
+/// URL chunked bukan URL sungguhan, jadi harus dipetakan ke origin yang valid
+/// sebelum dipakai sebagai kunci Cache Storage.
+String _toCacheUrl(String url) {
   return url.replaceFirst('chunked:', 'https://local-chunked/');
 }
 
+/// Membaca byte dari Web Cache Storage. `null` bila tidak ada / gagal.
 Future<Uint8List?> readFromWebCache(String url, String cacheName) async {
   try {
-    final cachesObj = html.window.caches;
-    if (cachesObj == null) return null;
+    final cache = await web.window.caches.open(cacheName).toDart;
+    final response = await cache.match(_toCacheUrl(url).toJS).toDart;
+    if (response == null) return null;
 
-    final cacheObj = await promiseToFuture(
-      callMethod(cachesObj, 'open', [cacheName])
-    );
-    if (cacheObj == null) return null;
-
-    final cacheUrl = _getCacheUrl(url);
-    final responseObj = await promiseToFuture(
-      callMethod(cacheObj, 'match', [cacheUrl])
-    );
-    if (responseObj == null) return null;
-
-    final blob = await promiseToFuture(
-      callMethod(responseObj, 'blob', [])
-    );
-    if (blob == null) return null;
-
-    final reader = html.FileReader();
-    reader.readAsArrayBuffer(blob as html.Blob);
-    await reader.onLoadEnd.first;
-    
-    final result = reader.result;
-    if (result is Uint8List) {
-      return result;
-    } else if (result is ByteBuffer) {
-      return result.asUint8List();
-    } else if (result is List<int>) {
-      return Uint8List.fromList(result);
-    }
+    final blob = await response.blob().toDart;
+    final buffer = await blob.arrayBuffer().toDart;
+    return buffer.toDart.asUint8List();
   } catch (e) {
+    // Cache Storage tidak tersedia di beberapa konteks (mis. iframe non-secure).
     debugPrint('Error reading from Web Cache: $e');
+    return null;
   }
-  return null;
 }
 
-Future<void> writeToWebCache(String url, Uint8List bytes, String mimeType, String cacheName) async {
+/// Menyimpan byte ke Web Cache Storage agar tidak diunduh ulang dari Firestore.
+Future<void> writeToWebCache(
+  String url,
+  Uint8List bytes,
+  String mimeType,
+  String cacheName,
+) async {
   try {
-    final cachesObj = html.window.caches;
-    if (cachesObj == null) return;
+    final cache = await web.window.caches.open(cacheName).toDart;
 
-    final cacheObj = await promiseToFuture(
-      callMethod(cachesObj, 'open', [cacheName])
+    final headers = web.Headers();
+    headers.set('content-type', mimeType);
+
+    final response = web.Response(
+      bytes.toJS,
+      web.ResponseInit(headers: headers),
     );
-    if (cacheObj == null) return;
 
-    final responseConstructor = getProperty(html.window, 'Response');
-    final response = callConstructor(responseConstructor, [
-      bytes,
-      jsify({
-        'headers': {'content-type': mimeType}
-      })
-    ]);
-
-    final cacheUrl = _getCacheUrl(url);
-    await promiseToFuture(
-      callMethod(cacheObj, 'put', [cacheUrl, response])
-    );
+    await cache.put(_toCacheUrl(url).toJS, response).toDart;
   } catch (e) {
+    // Gagal menulis cache tidak boleh menggagalkan pemuatan gambar.
     debugPrint('Error writing to Web Cache: $e');
   }
 }

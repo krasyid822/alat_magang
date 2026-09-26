@@ -31,6 +31,10 @@ Gunakan perintah berikut untuk menjalankan build runner dan mengupdate kode real
 dart run build_runner watch
 ```
 
+## Open-code
+  Session   Konfirmasi penggunaan Flutter
+  Continue  opencode -s ses_f24538a10ffe3ytuXwzv4ooorH
+
 ## Catatan
 sepertinya belum ada validator otomatis untuk memastikan semua device memiliki data yang sama, contohnya di satu device sudah ada beberapa data saat aplikasi belim mengimplementasikan firestore, satu device lagi baru membuka aplikasi datanya jadi berbeda karena ternyata dari device yang terlanjur punya data tidak melakukan upload ke firestore
 

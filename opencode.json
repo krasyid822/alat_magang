@@ -1,0 +1,20 @@
+{
+  "mcp": {
+    "servers": {
+      "dart": {
+        "type": "local",
+        "command": [
+          "dart",
+          "mcp-server"
+        ]
+      },
+      "google-developer-knowledge": {
+        "type": "remote",
+        "url": "https://developerknowledge.googleapis.com/mcp",
+        "headers": {
+          "X-Goog-Api-Key": "{env:DEVELOPERKNOWLEDGE_API_KEY}"
+        }
+      }
+    }
+  }
+}
