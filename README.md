@@ -17,14 +17,44 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 ## Build & Deploy
-Gunakan perintah berikut untuk men-generate build web dengan auto-increment nomor build:
+
+Semua perintah deploy memakai satu skrip yang sama. Pilih sesuai terminal Anda:
+
 ```bash
-dart scripts/increment_build.dart && flutter build web --release && firebase deploy --only hosting
+./deploy.sh            # Linux, macOS, Git Bash
 ```
-atau
-```pwsh
-.\deploy.ps1
+
+```powershell
+.\deploy.ps1           # Windows PowerShell
 ```
+
+Keduanya cuma launcher; logika deploy ada di `deploy.py`. Yang sama bisa
+dipanggil langsung: `python deploy.py` (opsi `--yes` untuk skip konfirmasi).
+
+Pipeline yang dijalankan:
+
+| # | Langkah | Kenapa |
+|---|---|---|
+| 1 | Cek `dart`, `flutter`, `firebase` | Gagal cepat, bukan di tengah build |
+| 2 | Cek kredensial Firebase | Token kedaluwarsa tetap menampilkan "Logged in" di `firebase login:list` — tanpa cek ini deploy baru gagal setelah build selesai |
+| 3 | Cek working tree git bersih | Peringatan agar tidak deploy kode yang belum di-commit |
+| 4 | `flutter pub get` | Sinkron dependency |
+| 5 | `dart run build_runner build` | Regenerate `.g.dart` / `.freezed.dart` — **wajib**, kalau tidak release build bisa memakai kode lama |
+| 6 | `dart analyze` | Gate: error menghentikan deploy |
+| 7 | `dart scripts/increment_build.dart` | Naikkan build number + sinkronkan `pubspec.yaml` |
+| 8 | `flutter build web --release` | Build ke `build/web` |
+| 9 | Konfirmasi versi | Tampilkan versi yang akan live, lalu tanya |
+| 10 | `firebase deploy --only hosting` | Upload |
+
+Tidak ada yang dimutasi (build number) sampai langkah 6 lolos.
+
+Kredensial Firebase kedaluwarsa secara rutin. Kalau deploy berhenti di langkah 2,
+jalankan `firebase login` lalu ulangi.
+
+Nomor build naik sendiri setiap deploy. `kAppVersion` (semantic version) tetap
+diubah manual di `lib/app_version.dart`. Kalau `kAppYear` ternyata lebih besar
+daripada tahun sistem, script berhenti dan menolak mengubah apa pun — itu
+indikasi jam salah atau file pernah diedit manual.
 ## Development
 Gunakan perintah berikut untuk menjalankan build runner dan mengupdate kode real-time:
 ```dart
@@ -34,6 +64,9 @@ dart run build_runner watch
 ## Open-code
   Session   Konfirmasi penggunaan Flutter
   Continue  opencode -s ses_f24538a10ffe3ytuXwzv4ooorH
+
+## Jika deploy gagal
+firebase login --reauth
 
 ## Catatan
 sepertinya belum ada validator otomatis untuk memastikan semua device memiliki data yang sama, contohnya di satu device sudah ada beberapa data saat aplikasi belim mengimplementasikan firestore, satu device lagi baru membuka aplikasi datanya jadi berbeda karena ternyata dari device yang terlanjur punya data tidak melakukan upload ke firestore

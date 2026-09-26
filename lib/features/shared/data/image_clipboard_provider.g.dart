@@ -54,7 +54,7 @@ final class ImageClipboardNotifierProvider
 }
 
 String _$imageClipboardNotifierHash() =>
-    r'c1c1faa20494dff28042d6838aef36491aa09cab';
+    r'8a8c25c12ececbd7e937fe39e853b15841470266';
 
 /// Menyediakan aksi "copy gambar ke clipboard" untuk seluruh aplikasi.
 ///

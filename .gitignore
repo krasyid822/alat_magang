@@ -33,6 +33,14 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Firebase CLI menyimpan cache lokal di .firebase/ — bukan bagian dari repo.
+.firebase/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
 # Symbolication related
 app.*.symbols
 
